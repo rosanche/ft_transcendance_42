@@ -10,7 +10,8 @@ RUN npm install
 RUN npm install glob rimraf
 
 COPY . .
-RUN chmod -R +wr ./node_modules/.prisma  ./node_modules/prisma
+RUN chmod -R 777 ./node_modules/.prisma  ./node_modules/prisma
+COPY ../.env .
 RUN npm run build
 
 FROM node:lts-alpine as prod
@@ -27,7 +28,7 @@ COPY prisma ./prisma/
 RUN npm install --production
 
 COPY . .
-RUN chmod -R +wr ./node_modules/.prisma  ./node_modules/prisma
+RUN chmod -R 777 ./node_modules/.prisma  ./node_modules/prisma
 COPY --from=dev /usr/src/app/dist ./dist
 
 CMD ["node", "dist/main"]
