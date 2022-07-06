@@ -9,5 +9,13 @@ export class UserService
     findAll() : Promise<any[]> {
         return this.Prisma.user.findMany();  
     }
+
+    findname(nbr: any) : any {
+        return this.Prisma.user.findUnique({
+            where: { 
+            id: nbr }
+        });  
+        
+    }
 }
 

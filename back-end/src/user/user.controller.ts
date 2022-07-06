@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { Controller , Get } from "@nestjs/common"
+import { Query ,Controller , Get } from "@nestjs/common"
 import { UserService } from "./user.service"
 
 
@@ -7,9 +7,14 @@ import { UserService } from "./user.service"
 export class UserController
 {
   constructor(private  UserService: UserService){}
-  @Get()
+  @Get('all')
   findAll() : Promise<any[]>
   {
     return this.UserService.findAll();
+  }
+  @Get('id')
+  findname(@Query() id: number) : any
+  {
+    return this.UserService.findname(1);
   }
 }
