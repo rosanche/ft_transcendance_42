@@ -11,7 +11,6 @@ RUN npm install glob rimraf
 
 COPY . .
 RUN chmod -R 777 ./node_modules/.prisma  ./node_modules/prisma
-COPY ../.env .
 RUN npm run build
 
 FROM node:lts-alpine as prod
