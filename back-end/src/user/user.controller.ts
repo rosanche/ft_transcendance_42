@@ -1,9 +1,12 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { Query ,Controller , Get, Param } from "@nestjs/common"
+import { Query ,Controller , Get, Param , Req, UseGuards } from "@nestjs/common"
 import { UserService } from "./user.service"
+import { User } from '@prisma/client';
+import { GetUser } from 'src/auth/decorator';
+import { JwtGuard } from 'src/auth/guard';
 
 
-@Controller('userinfo')
+
+@Controller('user')
 export class UserController
 {
   constructor(private  UserService: UserService){}
@@ -29,5 +32,11 @@ export class UserController
   findpseudo( @Param('pseudo') pseudo ) : any
   {
     return this.UserService.findpseudo(pseudo);
+  }
+
+  @UseGuards(JwtGuard)
+  @Get('me')
+  getMe(@GetUser() user: User) {
+      return user;
   }
 }
