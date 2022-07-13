@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { Query ,Controller , Get } from "@nestjs/common"
+import { Query ,Controller , Get, Param } from "@nestjs/common"
 import { UserService } from "./user.service"
 
 
@@ -12,9 +12,22 @@ export class UserController
   {
     return this.UserService.findAll();
   }
-  @Get('id')
-  findname(@Query() id: number) : any
+
+  @Get('id/:id')
+  findid( @Param('id') id ) : any
   {
-    return this.UserService.findname(1);
+    return this.UserService.findid(id);
+  }
+
+  @Get('email/:email')
+  findemail( @Param('email') pseudo ) : any
+  {
+    return this.UserService.findemail(pseudo);
+  }
+
+  @Get('pseudo/:pseudo')
+  findpseudo( @Param('pseudo') pseudo ) : any
+  {
+    return this.UserService.findpseudo(pseudo);
   }
 }
