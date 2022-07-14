@@ -1,18 +1,19 @@
 import { ForbiddenException, Injectable } from "@nestjs/common";
 import { PrismaService } from "src/prisma/prisma.service";
 import { AuthDto } from "./dto";
-import * as argon from 'argon2';
+import * as bcrypt from 'bcrypt';
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime";
 import { JwtService } from "@nestjs/jwt";
 import { ConfigService } from "@nestjs/config";
+import { Request, Response } from "express";
 
 @Injectable()
 export class AuthService {
     constructor(private prisma: PrismaService, private jwt: JwtService, private config: ConfigService){}
     async signup(dto: AuthDto) {
         try {
-            console.log("yo");
-            const hash = await argon.hash(dto.password);
+            const pass = dto.password;
+            const hash = bcrypt.hashSync(pass, 10);
             const user = await this.prisma.user.create({
                 data: {
                 email: dto.email,
@@ -21,7 +22,8 @@ export class AuthService {
             });
             console.log("user");
             console.log(user);
-            return this.signToken(user.id, user.email);
+            const access_token = this.signToken(user.id, user.email);
+            return access_token;
         }
         catch(error)
         {
@@ -44,7 +46,7 @@ export class AuthService {
             }
         });
         if (!user) throw new ForbiddenException('Credentials incorrect');
-        const pwdMatches = await argon.verify(user.hash, dto.password);
+        const pwdMatches = bcrypt.compareSync(dto.password, user.hash) //  await argon.verify(user.hash, dto.password);
         if (!pwdMatches) throw new ForbiddenException('Credentials incorrect');
         
         return this.signToken(user.id, user.email);
@@ -57,7 +59,15 @@ export class AuthService {
         }
 
         const secret = this.config.get('JWT_SECRET');
-        const token = await this.jwt.signAsync(payload, {expiresIn: '15m', secret: secret});
+        const token = await this.jwt.signAsync(payload, {expiresIn: '60m', secret: secret});
         return {access_token: token};
+    }
+
+    login(user)
+    {
+        if(!user) {
+            return 'No user'
+        }
+        return this.signToken(user.id, user.email);
     }
 }

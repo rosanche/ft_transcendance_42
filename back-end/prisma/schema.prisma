@@ -16,7 +16,9 @@ model User {
   updateAt DateTime @updatedAt
 
   email String @unique
-  hash String
+  hash String?
+  pseudo String @default("Anonymous")
+  picture String @default("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT583QoiMnyrlvq2PPzn8IH0uAKHg7mw0uEQT4Msqh4roMkSzlUO4VtnCv-wgkxJ5Lc6NM&usqp=CAU")
 
   firstName String?
   lastName String?
