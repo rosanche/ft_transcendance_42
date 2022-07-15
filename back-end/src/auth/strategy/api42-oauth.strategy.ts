@@ -5,7 +5,7 @@ import { Strategy, VerifyCallback } from "passport-42";
 import { PrismaService } from "src/prisma/prisma.service";
 
 @Injectable()
-export class API42Stategy extends PassportStrategy(Strategy)
+export class API42Strategy extends PassportStrategy(Strategy)
 {
     constructor(config: ConfigService, private prisma: PrismaService)
     {

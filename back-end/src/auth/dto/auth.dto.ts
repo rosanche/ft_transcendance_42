@@ -8,3 +8,9 @@ export class AuthDto {
     @IsNotEmpty()
     password: string;
 }
+
+export class CodeAuthDto {
+    @IsString()
+    @IsNotEmpty()
+    twoFactorAuthenticationCode: string;
+}

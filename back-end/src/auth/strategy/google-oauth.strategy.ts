@@ -6,7 +6,7 @@ import { Strategy, VerifyCallback } from "passport-google-oauth20";
 import { PrismaService } from "src/prisma/prisma.service";
 
 @Injectable()
-export class GoogleStategy extends PassportStrategy(Strategy, 'google')
+export class GoogleStrategy extends PassportStrategy(Strategy, 'google')
 {
     constructor(config: ConfigService, private prisma: PrismaService)
     {
