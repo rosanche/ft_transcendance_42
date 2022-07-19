@@ -1,5 +1,5 @@
 import{ Injectable } from '@nestjs/common';
-import { AuthDto } from 'src/auth/dto';
+import { UserUpdateDto } from 'src/auth/dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
@@ -14,6 +14,7 @@ export class UserService
                     updateAt: true,
                     email: true,
                     pseudo: true,
+                    legend: true,
                     firstName: true,
                     lastName: true,
                     nbr_games: true,
@@ -50,14 +51,26 @@ export class UserService
         return user;
     }
 
-     UserModif(any : any, dto : AuthDto)  {
+    UserModif(users : any, dto : UserUpdateDto)  {
         
-        
+        if (dto.pseudo)
+        users.pseudo = dto.pseudo;
+        if (dto.firstName)
+            users.firstName = dto.firstName;
+        if (dto.lastName)
+        users.lastName = dto.lastName;
+        if (dto.legend)
+        users.legend = dto.legend;
+
+
         const user =  this.Prisma.user.update({
             where: { 
-            id: any.id },
+            id: users.id },
             data:{
-                pseudo: dto.pseudo
+                pseudo: users.pseudo,
+                lastName: users.lastName,
+                firstName: users.firstName,
+                legend: users.legend
             }
         });
 

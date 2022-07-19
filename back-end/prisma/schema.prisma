@@ -22,6 +22,8 @@ model User {
   firstName String?
   lastName String?
 
+  legend String?
+
   nbr_games Int @default(0)
   nbr_wins  Int @default(0)
   nbr_looses  Int @default(0)
