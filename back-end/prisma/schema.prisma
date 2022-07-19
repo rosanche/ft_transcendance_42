@@ -18,9 +18,16 @@ model User {
   email String @unique
   hash String
 
-  pseudo String? @unique
+  pseudo String @unique
   firstName String?
   lastName String?
+
+  nbr_games Int @default(0)
+  nbr_wins  Int @default(0)
+  nbr_looses  Int @default(0)
+  
+  goals_f Int @default(0)
+  goals_a Int @default(0)
 
   bookmarks Bookmark[]
   @@map("users")

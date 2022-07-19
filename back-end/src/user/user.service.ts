@@ -1,4 +1,5 @@
 import{ Injectable } from '@nestjs/common';
+import { AuthDto } from 'src/auth/dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
@@ -15,7 +16,11 @@ export class UserService
                     pseudo: true,
                     firstName: true,
                     lastName: true,
-                
+                    nbr_games: true,
+                    nbr_wins: true,
+                    nbr_looses: true,
+                    goals_f: true,
+                    goals_a: true
         },}); 
         return user;
     }
@@ -44,5 +49,18 @@ export class UserService
         delete user.hash;
         return user;
     }
-}
 
+     UserModif(any : any, dto : AuthDto)  {
+        
+        
+        const user =  this.Prisma.user.update({
+            where: { 
+            id: any.id },
+            data:{
+                pseudo: dto.pseudo
+            }
+        });
+
+        return user;
+    }
+}
