@@ -32,4 +32,6 @@ export class UserUpdateDto {
     lastName: string;
     @IsString()
     legend: string;
+    @IsString()
+    image: string;
 }

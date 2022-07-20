@@ -1,0 +1,10 @@
+export const storage = {
+  storage: diskStorage({
+  destination: './uploads/profileimage',
+  filename: (req, file, cb) => {
+  const filename: string =  path.parse(file.originelname).name.replace(/\s/g,'') + uuidv4();
+  const extension: string = path.parse(file.originelname).ext;
+  cb(null,`${filename}${extension}`)
+  }
+})
+}

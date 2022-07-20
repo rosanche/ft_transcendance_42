@@ -76,4 +76,15 @@ export class UserService
 
         return user;
     }
+    UserUploadedImage(users : any, src : string)
+    {
+        const user = this.Prisma.user.update({
+            where: { 
+                id: users.id },
+                data:{
+                    profileImage: src
+                }
+            })
+        return user;
+    }
 }

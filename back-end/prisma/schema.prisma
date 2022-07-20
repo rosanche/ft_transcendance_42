@@ -21,6 +21,7 @@ model User {
   pseudo String @unique
   firstName String?
   lastName String?
+  profileImage String?
 
   legend String?
 

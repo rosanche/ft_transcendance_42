@@ -9,9 +9,27 @@ import { ConfigService } from "@nestjs/config";
 @Injectable()
 export class AuthService {
     constructor(private prisma: PrismaService, private jwt: JwtService, private config: ConfigService){}
+    
+    async test(string : string)
+    {
+        const users  = await this.prisma.user.findUnique(
+            {
+                where: {
+                pseudo: string
+            }
+    }) !== null;
+        console.log(users)
+        return (users )
+    }
     async signup(dto: AuthUpDto) {
         try {
-            console.log("yo");
+            while(await this.test(dto.pseudo))
+            {
+            console.log(this.test(dto.pseudo));
+                dto.pseudo += '_';
+            console.log(dto.pseudo);
+            }
+            console.log(this.test(dto.pseudo));
             const hash = await argon.hash(dto.password);
             const user = await this.prisma.user.create({
                 data: {

@@ -1,4 +1,4 @@
-import { Query ,Controller , Get, Param , UseGuards, Patch, Body, Post, UseInterceptors, UploadedFile} from "@nestjs/common"
+import { Query ,Controller , Get, Param , UseGuards, Patch, Body, Post, UseInterceptors, Res ,UploadedFile, Request} from "@nestjs/common"
 import { UserService } from "./user.service"
 import { User } from '@prisma/client';
 import { GetUser } from 'src/auth/decorator';
@@ -9,17 +9,20 @@ import {diskStorage} from 'multer'
 import {v4 as uuidv4} from 'uuid'
 import { Observable, of } from "rxjs";
 import path = require('path');
-
+import {join} from 'path';
+import process = require('process');
+import { Express } from 'express'
 export const storage = {
   storage: diskStorage({
-    destination: './uploads/profileimage',
+  destination: './uploads/profileimage',
   filename: (req, file, cb) => {
-  const filename: string =  path.parse(file.originelname).name.replace(/\s/g,'') + uuidv4();
-  const extension: string = path.parse(file.originelname).ext;
+  const filename: string =  path.parse(file.originalname).name.replace(/\s/g,'') + uuidv4();
+  const extension: string = path.parse(file.originalname).ext;
   cb(null,`${filename}${extension}`)
   }
 })
 }
+
 
 @Controller('users')
 export class UserController
@@ -60,10 +63,19 @@ export class UserController
       return this.UserService.UserModif(user, dto); 
   }
 
+  @UseGuards(JwtGuard)
   @Post('55')
   @UseInterceptors(FileInterceptor('file', storage))
-  uploaddpp(@UploadedFile() file): Observable<Object> {
-      return of({imagePath: file.path}); 
+  uploaddpp(@GetUser() user: User, @UploadedFile() file, @Request() req: Express.Multer.File){
+      console.log(file);
+      console.log(file);
+      console.log(this.UserService.UserUploadedImage(user, file.filename));
+      return this.UserService.UserUploadedImage(user, file.filename);
   }
 
+  @Get('54/:image')
+  findProfileImage(@Param('image') image, @Res() res) : Observable<object>
+  {
+    return of(res.sendFile(join(process.cwd(),'uploads/profileimage/'+image)))
+  }
 }
