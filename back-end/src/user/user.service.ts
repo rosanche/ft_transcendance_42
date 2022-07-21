@@ -1,6 +1,7 @@
 import{ Injectable } from '@nestjs/common';
-import { UserUpdateDto } from 'src/auth/dto';
+import { FriendDto, UserUpdateDto } from 'src/auth/dto';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { User } from '@prisma/client';
 
 @Injectable()
 export class UserService
@@ -15,6 +16,7 @@ export class UserService
                     email: true,
                     pseudo: true,
                     legend: true,
+                    profileImage: true,
                     firstName: true,
                     lastName: true,
                     nbr_games: true,
@@ -85,6 +87,21 @@ export class UserService
                     profileImage: src
                 }
             })
+        return user;
+    }
+    async addFriend(user: User, src : FriendDto)
+    {
+        const users = await this.Prisma.user.update(
+            {
+                where:{ id: user.id},
+                data:{}
+            }
+        )
+        return users;
+    }
+
+    async listFriend(user: User)
+    {
         return user;
     }
 }

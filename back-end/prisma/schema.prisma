@@ -11,7 +11,7 @@ datasource db {
 }
 
 model User {
-  id Int @id @default(autoincrement())
+  id Int @id @default(autoincrement()) 
   createdAt DateTime @default(now())
   updateAt DateTime @updatedAt
 
@@ -32,9 +32,13 @@ model User {
   goals_f Int @default(0)
   goals_a Int @default(0)
 
+  suc Int[]?
+
   bookmarks Bookmark[]
   @@map("users")
 }
+
+
 
 model Game {
   id Int @id @default(autoincrement())
@@ -45,7 +49,6 @@ model Game {
   id_1 Int
   score_2 Int @default(0)
   id_2 Int
-
   @@map("game")
 }
 

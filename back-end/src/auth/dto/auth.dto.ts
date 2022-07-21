@@ -1,4 +1,4 @@
-import { IsEmail, IsNotEmpty, IsString, IsEmpty} from "class-validator";
+import { IsEmail, IsNotEmpty, IsString, IsEmpty, IsInt,IsNumberString, IsNumber} from "class-validator";
 
 export class AuthUpDto {
     @IsEmail()
@@ -34,4 +34,10 @@ export class UserUpdateDto {
     legend: string;
     @IsString()
     image: string;
+}
+
+export class FriendDto {
+    @IsNumberString()
+    //@IsInt()
+    id: Number
 }

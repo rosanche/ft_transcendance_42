@@ -3,7 +3,7 @@ import { UserService } from "./user.service"
 import { User } from '@prisma/client';
 import { GetUser } from 'src/auth/decorator';
 import { JwtGuard } from 'src/auth/guard';
-import { UserUpdateDto } from "../auth/dto";
+import { UserUpdateDto, FriendDto } from "../auth/dto";
 import {FileInterceptor} from '@nestjs/platform-express'
 import {diskStorage} from 'multer'
 import {v4 as uuidv4} from 'uuid'
@@ -77,5 +77,18 @@ export class UserController
   findProfileImage(@Param('image') image, @Res() res) : Observable<object>
   {
     return of(res.sendFile(join(process.cwd(),'uploads/profileimage/'+image)))
+  }
+
+  @UseGuards(JwtGuard)
+  @Post('friend/add')
+  addfriend(@GetUser() user: User ,@Body() friend: FriendDto)
+  {
+    return this.UserService.addFriend(user, friend);
+  }
+  @UseGuards(JwtGuard)
+  @Get('friend/list')
+  listfriend(@GetUser() user: User)
+  {
+    return this.UserService.listFriend(user);
   }
 }
