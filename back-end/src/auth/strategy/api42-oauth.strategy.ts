@@ -52,7 +52,7 @@ export class API42Strategy extends PassportStrategy(Strategy)
                 },
             });
             delete newUser.hash;
-            delete user.twoFactorAuthenticationSecret;
+            delete newUser.twoFactorAuthenticationSecret;
             done(null, newUser);
         }   
     }
