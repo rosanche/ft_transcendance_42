@@ -10,12 +10,14 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google')
 {
     constructor(config: ConfigService, private prisma: PrismaService)
     {
+        const url =  `http://localhost:${config.get("NESTJS_PORT")}/auth/google/redirect`
         super({
             clientID : config.get("GOOGLE_ID"),
             clientSecret : config.get("GOOGLE_SECRET"),
-            callbackURL : 'http://localhost:3000/auth/google/redirect',
+            callbackURL : url,
             scope : ['email', 'profile']
         });
+        
     };
 
     async validate(accessToken: string, refreshToken: string,  profile :any, done: VerifyCallback)

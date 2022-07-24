@@ -9,10 +9,11 @@ export class API42Strategy extends PassportStrategy(Strategy)
 {
     constructor(config: ConfigService, private prisma: PrismaService)
     {
+        const url =  `http://localhost:${config.get("NESTJS_PORT")}/auth/42api/redirect`
         super({
             clientID : config.get("42API_ID"),
             clientSecret : config.get("42API_SECRET"),
-            callbackURL : 'http://localhost:3000/auth/42api/redirect',
+            callbackURL : url,
             profileFields: {
                 'username': 'login',
                 'name.familyName': 'last_name',
@@ -34,8 +35,8 @@ export class API42Strategy extends PassportStrategy(Strategy)
         
         if (user){
             console.log("already a user");
-            console.log(user);
             delete user.hash;
+            delete user.twoFactorAuthenticationSecret;
             done(null,user);
             
         }
@@ -51,6 +52,7 @@ export class API42Strategy extends PassportStrategy(Strategy)
                 },
             });
             delete newUser.hash;
+            delete user.twoFactorAuthenticationSecret;
             done(null, newUser);
         }   
     }

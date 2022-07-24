@@ -28,7 +28,7 @@ services:
     env_file:
       - .env
     ports:
-      - 3000:3000
+      - ${NESTJS_PORT}:${NESTJS_PORT}
       - 5555:5555
     networks:
       - transcendence-network
