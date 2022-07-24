@@ -64,12 +64,12 @@ export class AuthService {
         return this.login(user);
     }
 
-    async signToken(payload :Partial<TokenPayload>) : Promise<{access_token: string}>
+    async signToken(payload :Partial<TokenPayload>) : Promise<{access_token: string, isTwoFactorAuthenticationEnabled :boolean}>
     {
         const secret = this.config.get('JWT_SECRET');
         
         const token = await this.jwt.signAsync(payload, {expiresIn: '60m', secret: secret});
-        return {access_token: token};
+        return {access_token: token, isTwoFactorAuthenticationEnabled: payload.isTwoFactorAuthenticationEnabled};
     }
 
     login(user: Partial<User>)
