@@ -86,6 +86,12 @@ export class UserController
     return this.UserService.addFriend(user, friend);
   }
   @UseGuards(JwtGuard)
+  @Post('friend/dem')
+  demfriend(@GetUser() user: User ,@Body() friend: FriendDto)
+  {
+    return this.UserService.demfriend(user, friend);
+  }
+  @UseGuards(JwtGuard)
   @Get('friend/list')
   listfriend(@GetUser() user: User)
   {

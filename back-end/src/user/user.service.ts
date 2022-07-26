@@ -23,8 +23,76 @@ export class UserService
                     nbr_wins: true,
                     nbr_looses: true,
                     goals_f: true,
-                    goals_a: true
-        },}); 
+                    goals_a: true,
+                    acce_freind: {
+                        select:{
+                        id: true,
+                        createdAt: true,
+                        updateAt: true,
+                        email: true,
+                        pseudo: true,
+                        legend: true,
+                        profileImage: true,
+                        firstName: true,
+                        lastName: true,
+                        nbr_games: true,
+                        nbr_wins: true,
+                        nbr_looses: true,
+                        goals_f: true,
+                        goals_a: true,
+                    }},
+                    acce_freindBy: {
+                        select:{
+                        id: true,
+                        createdAt: true,
+                        updateAt: true,
+                        email: true,
+                        pseudo: true,
+                        legend: true,
+                        profileImage: true,
+                        firstName: true,
+                        lastName: true,
+                        nbr_games: true,
+                        nbr_wins: true,
+                        nbr_looses: true,
+                        goals_f: true,
+                        goals_a: true,
+                    }},
+                    dem_freind: {
+                        select:{
+                        id: true,
+                        createdAt: true,
+                        updateAt: true,
+                        email: true,
+                        pseudo: true,
+                        legend: true,
+                        profileImage: true,
+                        firstName: true,
+                        lastName: true,
+                        nbr_games: true,
+                        nbr_wins: true,
+                        nbr_looses: true,
+                        goals_f: true,
+                        goals_a: true,
+                    }},
+                    dem_freindBy: {
+                        select:{
+                        id: true,
+                        createdAt: true,
+                        updateAt: true,
+                        email: true,
+                        pseudo: true,
+                        legend: true,
+                        profileImage: true,
+                        firstName: true,
+                        lastName: true,
+                        nbr_games: true,
+                        nbr_wins: true,
+                        nbr_looses: true,
+                        goals_f: true,
+                        goals_a: true,
+                    }},
+        }}); 
         return user;
     }
 
@@ -89,19 +157,140 @@ export class UserService
             })
         return user;
     }
+
+    async demfriend(user: User, src : FriendDto)
+    {
+        const users_2 = await this.Prisma.user.findFirst({
+            where: {
+            OR:[{
+            id: user.id,
+            acce_freindBy: {
+            some:{
+                    id :  +src.id,
+                }
+            }
+        },
+    {
+        id: +src.id,
+            acce_freindBy: {
+            some:{
+                    id :  user.id,
+                }
+            }
+    },
+    {
+        id: user.id,
+        dem_freindBy: {
+        some:{
+                id :  +src.id,
+            }
+        }
+    },
+    {
+        id: user.id,
+        dem_freindBy: {
+        some:{
+                id :  +src.id,
+            }
+        }
+    }
+
+        ],
+    },})
+    if (users_2 == null)
+    {
+        const users = await this.Prisma.user.update( {where: { 
+            id: +src.id },
+            data:{
+                dem_freindBy: {connect: [ {id: user.id }
+                ]},
+            },
+        })
+        return users; 
+    }
+        return null;  
+    }
+
+
     async addFriend(user: User, src : FriendDto)
     {
-        const users = await this.Prisma.user.update(
-            {
-                where:{ id: user.id},
-                data:{}
+
+        const users_2 = await this.Prisma.user.findFirst({
+            where: {
+            OR:[{
+            id: user.id,
+            acce_freindBy: {
+            some:{
+                    id :  +src.id,
+                }
             }
-        )
-        return users;
+        },
+    {
+        id: +src.id,
+            acce_freindBy: {
+            some:{
+                    id :  user.id,
+                }
+            }
+    }],
+    },})
+    console.log(users_2); 
+    console.log(user);
+    console.log(src);
+
+        if (users_2 == null)
+        {
+        const users = await this.Prisma.user.update( {where: { 
+            id: +src.id },
+            data:{
+                acce_freindBy: {connect: [ {id: user.id }
+                ]},
+                dem_freindBy: {disconnect: [{id: +src.id}]}
+            },
+        })
+        return users_2;
+        }
+        return null;
     }
 
     async listFriend(user: User)
     {
-        return user;
+        const users = await this.Prisma.user.findUnique({where:{id: user.id},
+            select:{acce_freindBy:{
+                select:{
+                    id: true,
+                    createdAt: true,
+                    updateAt: true,
+                    email: true,
+                    pseudo: true,
+                    legend: true,
+                    profileImage: true,
+                    firstName: true,
+                    lastName: true,
+                    nbr_games: true,
+                    nbr_wins: true,
+                    nbr_looses: true,
+                    goals_f: true,
+                    goals_a: true,
+                }},
+                acce_freind:{
+                    select:{
+                        id: true,
+                        createdAt: true,
+                        updateAt: true,
+                        email: true,
+                        pseudo: true,
+                        legend: true,
+                        profileImage: true,
+                        firstName: true,
+                        lastName: true,
+                        nbr_games: true,
+                        nbr_wins: true,
+                        nbr_looses: true,
+                        goals_f: true,
+                        goals_a: true,
+                    }},
+        }});
+        return (users);
     }
 }
