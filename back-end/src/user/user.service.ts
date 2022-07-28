@@ -216,39 +216,31 @@ export class UserService
     {
 
         const users_2 = await this.Prisma.user.findFirst({
-            where: {
-            OR:[{
+            where: 
+            {
             id: user.id,
-            acce_freindBy: {
+            dem_freindBy: {
             some:{
                     id :  +src.id,
                 }
-            }
+            },
         },
-    {
-        id: +src.id,
-            acce_freindBy: {
-            some:{
-                    id :  user.id,
-                }
-            }
-    }],
-    },})
+        })
     console.log(users_2); 
     console.log(user);
     console.log(src);
 
-        if (users_2 == null)
+        if (users_2 != null)
         {
         const users = await this.Prisma.user.update( {where: { 
             id: +src.id },
             data:{
                 acce_freindBy: {connect: [ {id: user.id }
                 ]},
-                dem_freindBy: {disconnect: [{id: +src.id}]}
+                dem_freind: {disconnect: [{id: user.id}]}
             },
         })
-        return users_2;
+        return user;
         }
         return null;
     }

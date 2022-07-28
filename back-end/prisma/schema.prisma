@@ -32,9 +32,6 @@ model User {
   goals_f Int @default(0)
   goals_a Int @default(0)
 
-  teacherId  Int?
-  teacher    User?   @relation("TeacherStudents", fields: [teacherId], references: [id])
-  students   User[]  @relation("TeacherStudents")
   dem_freindBy User[] @relation("dem_freind")
   dem_freind  User[] @relation("dem_freind")
   acce_freindBy User[] @relation("acce_freind")
