@@ -24,11 +24,11 @@ services:
       context: ./back-end
       target: "${NODE_ENV}"
       dockerfile: Dockerfile
-    entrypoint: ["./wait-for-postgres.sh", "npm", "run", "start:${NODE_ENV}"]
+    entrypoint: ["./wait-for-postgres.sh", "yarn", "start:${NODE_ENV}"]
     env_file:
       - .env
     ports:
-      - 3000:3000
+      - ${NESTJS_PORT}:${NESTJS_PORT}
       - 5555:5555
     networks:
       - transcendence-network
@@ -39,6 +39,26 @@ services:
       - /usr/src/app/node_modules
     restart: unless-stopped
 
+  front-end:
+    container_name: "front-end_${NODE_ENV}"
+    image: "front-end_${NODE_ENV}"
+    environment:
+      - NODE_ENV:${NODE_ENV}
+    build:
+      context: ./front-app
+      target: "${NODE_ENV}"
+      dockerfile: Dockerfile
+    entrypoint: ["yarn", "${NODE_ENV}"]
+    env_file:
+      - .env
+    ports:
+      - 3000:3000
+    networks:
+      - transcendence-network
+    volumes:
+      - ./front-app:/usr/src/app
+      - /usr/src/app/node_modules
+    restart: unless-stopped
+
 networks:
   transcendence-network:
-
