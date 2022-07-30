@@ -34,13 +34,19 @@ model User {
 
   dem_freindBy User[] @relation("dem_freind")
   dem_freind  User[] @relation("dem_freind")
+  
   acce_freindBy User[] @relation("acce_freind")
   acce_freind  User[] @relation("acce_freind")
+
+  channel_creat Channel[] @relation("channelcreat")
+  admin_channel Channel[] @relation("channeladmin")
+  User_channel Channel[] @relation("channeluser")
+
+  mypost  Post[] @relation("mypost")
+  
   bookmarks Bookmark[]
   @@map("users")
 }
-
-
 
 model Game {
   id Int @id @default(autoincrement())
@@ -53,6 +59,35 @@ model Game {
   @@map("game")
   score_2 Int @default(0)
 }
+
+model Channel {
+  id Int @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updateAt DateTime @updatedAt
+  createur User[] @relation("channelcreat")
+  
+  name String @unique()
+  hash String?
+  private Boolean
+
+  admin User[] @relation("channeladmin")
+  users User[] @relation("channeluser")
+
+  post Post[] @relation("channelpost")
+  @@map("channel")
+}
+
+model Post {
+  id Int @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updateAt DateTime @updatedAt
+  
+  createur User[] @relation("mypost")
+  dest Channel[] @relation("channelpost")
+  mesage String
+  @@map("post")
+}
+
 
 model Bookmark {
   id Int @id @default(autoincrement())

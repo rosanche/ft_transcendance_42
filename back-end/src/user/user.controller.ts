@@ -78,23 +78,4 @@ export class UserController
   {
     return of(res.sendFile(join(process.cwd(),'uploads/profileimage/'+image)))
   }
-
-  @UseGuards(JwtGuard)
-  @Post('friend/add')
-  addfriend(@GetUser() user: User ,@Body() friend: FriendDto)
-  {
-    return this.UserService.addFriend(user, friend);
-  }
-  @UseGuards(JwtGuard)
-  @Post('friend/dem')
-  demfriend(@GetUser() user: User ,@Body() friend: FriendDto)
-  {
-    return this.UserService.demfriend(user, friend);
-  }
-  @UseGuards(JwtGuard)
-  @Get('friend/list')
-  listfriend(@GetUser() user: User)
-  {
-    return this.UserService.listFriend(user);
-  }
 }
