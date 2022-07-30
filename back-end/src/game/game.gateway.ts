@@ -3,7 +3,11 @@ import { OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit, SubscribeMessa
 import { Server, Socket } from 'socket.io';
 
 
-@WebSocketGateway({namespace: "/game"})
+@WebSocketGateway({
+  cors: {
+    origin: '*',
+  }, namespace: "game"
+})
 export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect{
 
   private gameRoom :string[] = [];
@@ -27,10 +31,15 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     this.logger.log(`Socket ${client.id} disconnect on the server`);
   }
 
-  @SubscribeMessage('message')
+  @SubscribeMessage('id')
+  handleUser(client: Socket, payload: {id : number}){
+    this.logger.log(`Socket ${client.id} connect on the server and real id is ${payload.id}`);
+  };
+
+  @SubscribeMessage('move')
   handleMessage(client: any, payload: any): string {
     return 'Hello world!';
-  }
+  };
 
   sendPosition(game : GameGateway)
   {

@@ -26,11 +26,15 @@ type PongState = {
     bonus : BonusPong [] | null
 }
 
+const socket = socketio('http://localhost:3000/game',{
+    autoConnect: false
+  });
 
 type CanvasProps = React.DetailedHTMLProps<React.CanvasHTMLAttributes<HTMLCanvasElement>, HTMLCanvasElement> ;
 
 const Canvas :  React.FC<CanvasProps> = ({...props}) => {
 
+    const user = {id: 1};
     const canvasRef = useRef<HTMLCanvasElement | null>(null) ;
     const keyRef = useRef<{up : boolean, down : boolean}>({up: false, down: false}) ;
     const paddleHeight = 100;
@@ -48,63 +52,85 @@ const Canvas :  React.FC<CanvasProps> = ({...props}) => {
         score2: 0,
         bonus : null
     });
+    const [isConnected, setIsConnected] = useState(socket.connected);
+    const [lastPong, setLastPong] = useState(null);
 
     //const [update, setUpdate] = useState<boolean>(false);
 
+    const keyDownHandler = (event :KeyboardEvent) => {
+        event.preventDefault();
+        if (event.key == 'ArrowUp')
+        {
+            keyRef.current.up = true;
+            
+        }
+        else if (event.key == 'ArrowDown')
+        {
+            keyRef.current.down = true;
+        }
+        else
+        {return;}
+        const newInfo = {...info};
+        console.log(info);
+        let direction: number = 0;
+        
+        if (keyRef.current.up && !keyRef.current.down)
+        {
+            direction = -1;
+        }
+        else if (!keyRef.current.up && keyRef.current.down)
+        {
+            direction = 1;
+        }
+
+        newInfo.paddle1Y = newInfo.paddle1Y + (direction * 5);
+
+        setInfo(newInfo);
+        //setUpdate(false);
+    };
+
+
+
+    const keyUpHandler = (event :KeyboardEvent) => {
+        event.preventDefault();
+        if (event.key == 'ArrowUp')
+        {
+            keyRef.current.up = false;
+        }
+        else if (event.key == 'ArrowDown')
+        {
+            keyRef.current.down = false;
+        }
+        else {
+            return;
+        }
+        
+        //setUpdate(true);
+    };
     
     useEffect(() => {
-        //const socket = socketio("ws://localhost:3000");
+        
+        socket.connect();
 
-        const keyDownHandler = (event :KeyboardEvent) => {
-            event.preventDefault();
-            if (event.key == 'ArrowUp')
-            {
-                keyRef.current.up = true;
-                
-            }
-            else if (event.key == 'ArrowDown')
-            {
-                keyRef.current.down = true;
-            }
-            else
-            {return;}
-            const newInfo = {...info};
-            console.log(info);
-            let direction: number = 0;
-            
-            if (keyRef.current.up && !keyRef.current.down)
-            {
-                direction = -1;
-            }
-            else if (!keyRef.current.up && keyRef.current.down)
-            {
-                direction = 1;
-            }
-    
-            newInfo.paddle1Y = newInfo.paddle1Y + (direction * 5);
+        socket.on('connect', () => {
+            setIsConnected(true);
+            socket.emit('id', user);
+          });
+      
+          socket.on('disconnect', () => {
+            setIsConnected(false);
+          });
+      
+          socket.on('pong', () => {
+            setLastPong(new Date().toISOString());
+          });
+      
+          socket.on('data', (data :PongState) => {
+            setInfo(data);
+          });
+      
 
-            setInfo(newInfo);
-            //setUpdate(false);
-        };
-    
-    
-    
-        const keyUpHandler = (event :KeyboardEvent) => {
-            event.preventDefault();
-            if (event.key == 'ArrowUp')
-            {
-                keyRef.current.up = false;
-            }
-            else if (event.key == 'ArrowDown')
-            {
-                keyRef.current.down = false;
-            }
-            else {
-                return;
-            }
-            
-            //setUpdate(true);
-        };
+        
         console.log('handler')
         document.addEventListener('keydown', keyDownHandler); 
 
@@ -113,8 +139,12 @@ const Canvas :  React.FC<CanvasProps> = ({...props}) => {
         return () => {
             document.removeEventListener('keydown', keyDownHandler);
             document.removeEventListener('keyup', keyUpHandler);
+            socket.off('connect');
+            socket.off('disconnect');
+            socket.off('pong');
+            socket.off('data');
         };
-    });
+    }, []);
 
     useEffect(() => {
 
