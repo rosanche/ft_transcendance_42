@@ -36,7 +36,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google')
             const newUser = await this.prisma.user.create({
                 data: {
                 email: emails[0].value,
-                picture: photos[0].value,
+                profileImage: photos[0].value,
                 firstName: name.givenName,
                 lastName: name.familyName,
                 pseudo: displayName
