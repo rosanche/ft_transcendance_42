@@ -32,11 +32,11 @@ model User {
   goals_f Int @default(0)
   goals_a Int @default(0)
 
-  dem_freindBy User[] @relation("dem_freind")
-  dem_freind  User[] @relation("dem_freind")
+  dem_friendBy User[] @relation("dem_friend")
+  myDem_friend  User[] @relation("dem_friend")
   
-  acce_freindBy User[] @relation("acce_freind")
-  acce_freind  User[] @relation("acce_freind")
+  friendBy User[] @relation("acce_friend")
+  myfriends  User[] @relation("acce_friend")
 
   channel_creat Channel[] @relation("channelcreat")
   admin_channel Channel[] @relation("channeladmin")

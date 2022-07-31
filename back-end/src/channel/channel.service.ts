@@ -14,7 +14,7 @@ export class ChannelService
     {
         const channel = await this.Prisma.channel.create({
             data: {
-                Name: src.name,
+                name: src.name,
                 private: src.private,
                 createur: {connect: [{id: user.id}]},
                 admin:{ connect:[{id: user.id}]},
@@ -37,7 +37,7 @@ export class ChannelService
             },
             select:{
                 id: true,
-                Name: true,  
+                name: true,  
             },
         })
         return channel;
@@ -57,7 +57,7 @@ export class ChannelService
             },
             select:{
                 id: true,
-                Name: true,  
+                name: true,  
             },
         })
         return channel;
@@ -67,7 +67,7 @@ export class ChannelService
     {
         const channel = await this.Prisma.channel.findFirst({
             where:{ 
-                Name: src.name,
+                name: src.name,
                 private: false,
             }
         })
@@ -94,7 +94,7 @@ export class ChannelService
     {
         const channel = await this.Prisma.channel.findFirst({
             where:{ 
-                Name: src.name,
+                name: src.name,
                 users:{
                         some : {id: user.id},
                 },
@@ -121,7 +121,7 @@ export class ChannelService
     {
         const channel = await this.Prisma.channel.findFirst({
             where: {
-                Name: src.name,
+                name: src.name,
                 OR: [
                     {
                     AND:{

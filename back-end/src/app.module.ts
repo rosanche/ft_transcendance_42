@@ -5,8 +5,12 @@ import { BookmarkModule } from './bookmark/bookmark.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ConfigModule } from '@nestjs/config';
 import { GameModule } from './game/game.module';
+import { ChannelModule } from './channel/channel.module';
+import { FriendModule } from './friend/friend.module';
+
+
 
 @Module({
-  imports: [ConfigModule.forRoot({isGlobal: true}) ,AuthModule, UserModule, BookmarkModule, PrismaModule, GameModule]
+  imports: [ConfigModule.forRoot({isGlobal: true}) ,AuthModule, UserModule, BookmarkModule, PrismaModule, GameModule, ChannelModule, FriendModule]
 })
 export class AppModule {}

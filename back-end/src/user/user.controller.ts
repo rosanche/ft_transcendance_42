@@ -1,4 +1,4 @@
-import { Query ,Controller , Get, Param , UseGuards, Patch, Body, Post, UseInterceptors, Res ,UploadedFile, Request} from "@nestjs/common"
+import { Query ,Controller, Put , Get, Param , UseGuards, Patch, Body, Post, UseInterceptors, Res ,UploadedFile, Request} from "@nestjs/common"
 import { UserService } from "./user.service"
 import { User } from '@prisma/client';
 import { GetUser } from 'src/auth/decorator';
@@ -35,7 +35,7 @@ export class UserController
   }
 
   @Get('id/:id')
-  findid( @Param('id') id ) : any
+  findid(@Param('id') id ) : any
   {
     return this.UserService.findid(id);
   }
@@ -55,8 +55,9 @@ export class UserController
   @UseGuards(JwtGuard)
   @Get('me')
   getMe(@GetUser() user: User) {
-      return user;
+      return this.UserService.myInfo(user);
   }
+
   @UseGuards(JwtGuard)
   @Patch('me/modif')
   UserModif(@GetUser() user: User, @Body() dto: UserUpdateDto) {
@@ -64,7 +65,7 @@ export class UserController
   }
 
   @UseGuards(JwtGuard)
-  @Post('55')
+  @Put('me/uploadPP')
   @UseInterceptors(FileInterceptor('file', storage))
   uploaddpp(@GetUser() user: User, @UploadedFile() file, @Request() req: Express.Multer.File){
       console.log(file);
@@ -73,7 +74,7 @@ export class UserController
       return this.UserService.UserUploadedImage(user, file.filename);
   }
 
-  @Get('54/:image')
+  @Get('me/pp/:image')
   findProfileImage(@Param('image') image, @Res() res) : Observable<object>
   {
     return of(res.sendFile(join(process.cwd(),'uploads/profileimage/'+image)))

@@ -2,7 +2,6 @@ import { IsEmail, IsNotEmpty, IsString, IsInt,IsNumberString, IsBoolean} from "c
 
 export class ChannelDto {
     @IsBoolean()
-    @IsNotEmpty()
     private: boolean;
     @IsString()
     @IsNotEmpty()

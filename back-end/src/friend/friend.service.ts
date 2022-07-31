@@ -15,7 +15,7 @@ export class FriendService
             where: {
             OR:[{
             id: user.id,
-            acce_freindBy: {
+            friendBy: {
             some:{
                     id :  +src.id,
                 }
@@ -23,7 +23,7 @@ export class FriendService
         },
     {
         id: +src.id,
-            acce_freindBy: {
+            friendBy: {
             some:{
                     id :  user.id,
                 }
@@ -31,7 +31,7 @@ export class FriendService
     },
     {
         id: user.id,
-        dem_freindBy: {
+        dem_friendBy: {
         some:{
                 id :  +src.id,
             }
@@ -39,7 +39,7 @@ export class FriendService
     },
     {
         id: user.id,
-        dem_freindBy: {
+        dem_friendBy: {
         some:{
                 id :  +src.id,
             }
@@ -53,7 +53,7 @@ export class FriendService
         const users = await this.Prisma.user.update( {where: { 
             id: +src.id },
             data:{
-                dem_freindBy: {connect: [ {id: user.id }
+                dem_friendBy: {connect: [ {id: user.id }
                 ]},
             },
         })
@@ -70,7 +70,7 @@ export class FriendService
             where: 
             {
             id: user.id,
-            dem_freindBy: {
+            dem_friendBy: {
             some:{
                     id :  +src.id,
                 }
@@ -86,15 +86,15 @@ export class FriendService
         const users = await this.Prisma.user.update( {where: { 
             id: +src.id },
             data:{
-                acce_freindBy: {connect: [ {id: user.id }
+                friendBy: {connect: [ {id: user.id }
                 ]},
-                dem_freind: {disconnect: [{id: user.id}]}
+                myDem_friend: {disconnect: [{id: user.id}]}
             },
         })
         await this.Prisma.user.update( {where: { 
             id: user.id },
             data:{
-                acce_freindBy: {connect: [ {id: +src.id }
+                friendBy: {connect: [ {id: +src.id }
                 ]},
             },
         })
@@ -108,7 +108,7 @@ export class FriendService
             where: 
             {
             id: user.id,
-            dem_freindBy: {
+            dem_friendBy: {
             some:{
                     id :  +src.id,
                 }
@@ -120,7 +120,7 @@ export class FriendService
         const users = await this.Prisma.user.update( {where: { 
             id: +src.id },
             data:{
-                dem_freind: {disconnect: [{id: user.id}]}
+                myDem_friend: {disconnect: [{id: user.id}]}
             },
         })
         return user;
@@ -133,14 +133,14 @@ export class FriendService
         await this.Prisma.user.update( {where: { 
             id: user.id },
             data:{
-                acce_freindBy: {disconnect: [ {id: +src.id }
+                friendBy: {disconnect: [ {id: +src.id }
                 ]},
             },
         })
         await this.Prisma.user.update( {where: { 
             id: user.id },
             data:{
-                acce_freindBy: {disconnect: [ {id: +src.id }
+                friendBy: {disconnect: [ {id: +src.id }
                 ]},
             },
         })
@@ -150,7 +150,7 @@ export class FriendService
     async listFriend(user: User)
     {
         const users = await this.Prisma.user.findUnique({where:{id: user.id},
-            select:{acce_freindBy:{
+            select:{friendBy:{
                 select:{
                     id: true,
                     createdAt: true,
@@ -167,7 +167,7 @@ export class FriendService
                     goals_f: true,
                     goals_a: true,
                 }},
-                acce_freind:{
+                myfriends:{
                     select:{
                         id: true,
                         createdAt: true,
