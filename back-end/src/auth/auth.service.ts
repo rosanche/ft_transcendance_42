@@ -1,6 +1,6 @@
 import { ForbiddenException, Injectable } from "@nestjs/common";
 import { PrismaService } from "src/prisma/prisma.service";
-import { AuthDto } from "./dto";
+import { AuthUpDto,AuthInDto } from "./dto";
 import * as bcrypt from 'bcrypt';
 import {toDataURL} from 'qrcode';
 import { authenticator } from 'otplib';
@@ -23,7 +23,7 @@ export class AuthService {
         return user
     }
 
-    async signup(dto: AuthDto) {
+    async signup(dto: AuthUpDto) {
         try {
             const pass = dto.password;
             const hash = bcrypt.hashSync(pass, 10);
