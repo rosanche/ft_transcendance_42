@@ -76,7 +76,7 @@ export class AuthService {
     login(user: Partial<User>)
     {
         if(!user) {
-            return 'No user'
+            throw new ForbiddenException('Credentials incorrect');
         }
         const payload = {
             email: user.email,

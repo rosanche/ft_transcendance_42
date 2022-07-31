@@ -1,5 +1,6 @@
 import { UnauthorizedException } from "@nestjs/common";
 import { Body, Controller, Get, HttpCode, HttpStatus, Post, Req, Res, UseGuards } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 import { AuthGuard } from "@nestjs/passport";
 import { User } from "@prisma/client";
 import { Request, Response } from "express";
@@ -9,7 +10,7 @@ import { JwtGuard } from "./guard";
 
 @Controller('auth')
 export class AuthController {
-    constructor (private authService: AuthService){}
+    constructor (private authService: AuthService, private config: ConfigService){}
 
     //Classic Authentification
 
@@ -49,11 +50,14 @@ export class AuthController {
 
     @Get('42api/redirect')
     @UseGuards(AuthGuard('42'))
-    async api42AuthRedirect(@Req() req: Request)
+    async api42AuthRedirect(@Req() req: Request, @Res(({ passthrough: true })) res: Response)
     {
         console.log(req.user);
         const user : Partial<User> = req.user;
-        return this.authService.login(user);
+        const access_token = await this.authService.login(user);
+        res.cookie('access_token', access_token.access_token);
+      
+        res.redirect(`http://localhost:3001?2faEnabled=${req.user['isTwoFactorAuthenticationEnabled']}`);
     }
 
     //2FA Auth
