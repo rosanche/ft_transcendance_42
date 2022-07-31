@@ -2,7 +2,7 @@ import { Query ,Controller, Put , Get, Param , UseGuards, Patch, Body, Post, Use
 import { UserService } from "./user.service"
 import { User } from '@prisma/client';
 import { GetUser } from 'src/auth/decorator';
-import { JwtGuard } from 'src/auth/guard';
+import { JwtGuard, Jwt2FAGuard} from 'src/auth/guard';
 import { UserUpdateDto, FriendDto } from "../auth/dto";
 import {FileInterceptor} from '@nestjs/platform-express'
 import {diskStorage} from 'multer'
@@ -23,7 +23,7 @@ export const storage = {
 })
 }
 
-
+@UseGuards(Jwt2FAGuard)
 @Controller('users')
 export class UserController
 {
@@ -52,19 +52,18 @@ export class UserController
     return this.UserService.findpseudo(pseudo);
   }
 
-  @UseGuards(JwtGuard)
+
   @Get('me')
   getMe(@GetUser() user: User) {
       return this.UserService.myInfo(user);
   }
 
-  @UseGuards(JwtGuard)
+
   @Patch('me/modif')
   UserModif(@GetUser() user: User, @Body() dto: UserUpdateDto) {
       return this.UserService.UserModif(user, dto); 
   }
 
-  @UseGuards(JwtGuard)
   @Put('me/uploadPP')
   @UseInterceptors(FileInterceptor('file', storage))
   uploaddpp(@GetUser() user: User, @UploadedFile() file, @Request() req: Express.Multer.File){
