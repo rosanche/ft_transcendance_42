@@ -7,7 +7,7 @@ import { TokenPayload } from "../entities/payload.entity";
 
 
 @Injectable()
-export class JwtStrategy extends PassportStrategy(Strategy)
+export class Jwt2FAStrategy extends PassportStrategy(Strategy, 'jwt-2fa')
 {
     constructor(config: ConfigService, private prisma: PrismaService)
     {
@@ -34,7 +34,13 @@ export class JwtStrategy extends PassportStrategy(Strategy)
                 id: payload.sub
             }
         });
+        console.log(user);
         delete user.hash;
-        return user;
+        if (!user.isTwoFactorAuthenticationEnabled) {
+            return user;
+        }
+        if (payload.isTwoFactorAuthenticated) {
+            return user;
+        }
     }
 };

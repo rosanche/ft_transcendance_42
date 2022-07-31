@@ -229,9 +229,6 @@ export class UserService
         ,
         select:{
             id: true,
-            createdAt: true,
-            updateAt: true,
-            email: true,
             pseudo: true,
             profileImage: true,
             nbr_games: true,
