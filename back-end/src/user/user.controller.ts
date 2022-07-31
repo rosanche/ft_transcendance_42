@@ -2,7 +2,6 @@ import { Query ,Controller, Put , Get, Param , UseGuards, Patch, Body, Post, Use
 import { UserService } from "./user.service"
 import { User } from '@prisma/client';
 import { GetUser } from 'src/auth/decorator';
-<<<<<<< HEAD
 import { JwtGuard } from 'src/auth/guard';
 import { UserUpdateDto, FriendDto } from "../auth/dto";
 import {FileInterceptor} from '@nestjs/platform-express'
@@ -80,17 +79,4 @@ export class UserController
   {
     return of(res.sendFile(join(process.cwd(),'uploads/profileimage/'+image)))
   }
-=======
-import { Jwt2FAGuard } from 'src/auth/guard';
-
-@UseGuards(Jwt2FAGuard)
-@Controller('users')
-export class UserController {
-    @Get('me')
-    getMe(@GetUser() user: User) {
-        delete user.hash;
-        delete user.twoFactorAuthenticationSecret;
-        return user;
-    }
->>>>>>> main
 }

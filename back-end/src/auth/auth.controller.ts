@@ -4,7 +4,7 @@ import { AuthGuard } from "@nestjs/passport";
 import { User } from "@prisma/client";
 import { Request, Response } from "express";
 import { AuthService } from "./auth.service";
-import { AuthDto, CodeAuthDto } from "./dto";
+import { AuthUpDto, CodeAuthDto, AuthInDto} from "./dto";
 import { JwtGuard } from "./guard";
 
 @Controller('auth')
