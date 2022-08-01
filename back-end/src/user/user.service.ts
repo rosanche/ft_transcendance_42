@@ -265,7 +265,7 @@ export class UserService
         }})
             return user;
     }
-    UserUploadedImage(users : any, src : string)
+    UserUploadedImage(users : User, src : string)
     {
         const user = this.Prisma.user.update({
             where: { 
