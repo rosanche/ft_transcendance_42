@@ -1,18 +1,19 @@
 import { Logger } from '@nestjs/common';
 import { OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+import { GameService } from './game.service';
 
 
 @WebSocketGateway({
-  cors: {
-    origin: '*',
-  }, namespace: "game"
+  namespace: "game"
 })
 export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect{
 
+  constructor (private gameService: GameService){}
   private gameRoom :string[] = [];
   private queueGame :string[];
-  private SocketClient :Socket[];
+  private socketClient :Socket[];
+  private mapIdSocket : {client: Socket, id: Number}[] 
 
   @WebSocketServer() server: Server;
 
@@ -32,8 +33,9 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   }
 
   @SubscribeMessage('id')
-  handleUser(client: Socket, payload: {id : number}){
+  handleUserID(client: Socket, payload: {id : number}){
     this.logger.log(`Socket ${client.id} connect on the server and real id is ${payload.id}`);
+    this.mapIdSocket.push({client, id: payload.id})
   };
 
   @SubscribeMessage('move')

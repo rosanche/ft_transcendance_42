@@ -5,9 +5,10 @@ import { BookmarkModule } from './bookmark/bookmark.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ConfigModule } from '@nestjs/config';
 import { GameGateway } from './game/game.gateway';
+import { GameModule } from './game/game.module';
 
 @Module({
-  imports: [ConfigModule.forRoot({isGlobal: true}) ,AuthModule, UserModule, BookmarkModule, PrismaModule],
-  providers: [GameGateway]
+  imports: [ConfigModule.forRoot({isGlobal: true}) ,AuthModule, UserModule, BookmarkModule, PrismaModule, GameModule],
+
 })
 export class AppModule {}
