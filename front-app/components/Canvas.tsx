@@ -34,7 +34,7 @@ type CanvasProps = React.DetailedHTMLProps<React.CanvasHTMLAttributes<HTMLCanvas
 
 const Canvas :  React.FC<CanvasProps> = ({...props}) => {
 
-    const user = {id: 1};
+    const user = {id: 1, name: 'ljulien'};
     const canvasRef = useRef<HTMLCanvasElement | null>(null) ;
     const keyRef = useRef<{up : boolean, down : boolean}>({up: false, down: false}) ;
     const paddleHeight = 100;
@@ -70,8 +70,7 @@ const Canvas :  React.FC<CanvasProps> = ({...props}) => {
         }
         else
         {return;}
-        const newInfo = {...info};
-        console.log(info);
+
         let direction: number = 0;
         
         if (keyRef.current.up && !keyRef.current.down)
@@ -82,10 +81,7 @@ const Canvas :  React.FC<CanvasProps> = ({...props}) => {
         {
             direction = 1;
         }
-
-        newInfo.paddle1Y = newInfo.paddle1Y + (direction * 5);
-
-        setInfo(newInfo);
+        
         //setUpdate(false);
     };
 
