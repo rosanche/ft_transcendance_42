@@ -13,7 +13,7 @@ RUN yarn add glob rimraf
 
 COPY . .
 RUN chmod -R 777 ./node_modules/.prisma  ./node_modules/prisma
-RUN yarn build
+#RUN yarn build
 
 FROM node:lts-alpine as prod
 RUN apk --update add postgresql-client

@@ -48,7 +48,7 @@ model User {
   mypost  Post[] @relation("mypost")
   
   bookmarks Bookmark[]
-  @@map("users")
+  @@map("user")
 }
 
 model Game {
