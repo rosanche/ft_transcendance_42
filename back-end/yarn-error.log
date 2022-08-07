@@ -1,5 +1,5 @@
 Arguments: 
-  /usr/bin/node /usr/share/yarn/bin/yarn.js remove argon
+  /usr/bin/node /usr/bin/yarn add cookie-parser
 
 PATH: 
   /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin
@@ -8,13 +8,13 @@ Yarn version:
   1.22.19
 
 Node version: 
-  16.16.0
+  16.15.1
 
 Platform: 
   linux x64
 
 Trace: 
-  Error: EACCES: permission denied, mkdir '/home/lubuntu/ft_transcendance_42/back-end/node_modules/@ampproject'
+  Error: EACCES: permission denied, unlink '/home/lubuntu/Desktop/game/back-end/node_modules/.yarn-integrity'
 
 npm manifest: 
   {
@@ -44,21 +44,21 @@ npm manifest:
       "test:e2e": "jest --config ./test/jest-e2e.json"
     },
     "dependencies": {
-      "@nestjs/axios": "^0.1.0",
-      "@nestjs/common": "^8.0.0",
+      "@nestjs/common": "^9.0.0",
       "@nestjs/config": "^2.1.0",
       "@nestjs/core": "^8.0.0",
       "@nestjs/jwt": "^8.0.1",
       "@nestjs/passport": "^8.2.2",
       "@nestjs/platform-express": "^8.0.0",
+      "@nestjs/platform-socket.io": "^9.0.5",
+      "@nestjs/websockets": "^9.0.5",
       "@prisma/client": "^3.15.2",
-      "argon2": "^0.28.7",
+      "@types/lodash": "^4.14.182",
+      "argon2": "^0.28.5",
       "bcrypt": "^5.0.1",
       "class-transformer": "^0.5.1",
       "class-validator": "^0.13.2",
-      "cookie-parser": "^1.4.6",
-      "dotenv": "^16.0.1",
-      "http": "^0.0.1-security",
+      "lodash": "^4.17.21",
       "otplib": "^12.0.1",
       "passport": "^0.6.0",
       "passport-42": "^1.2.6",
@@ -69,7 +69,10 @@ npm manifest:
       "qrcode": "^1.5.1",
       "reflect-metadata": "^0.1.13",
       "rimraf": "^3.0.2",
-      "rxjs": "^7.2.0"
+      "rxjs": "^7.2.0",
+      "socket.io": "^4.5.1",
+      "uuid": "^8.3.2",
+      "webpack": "^5.0.0"
     },
     "devDependencies": {
       "@nestjs/cli": "^8.0.0",
@@ -81,12 +84,12 @@ npm manifest:
       "@types/jest": "27.5.0",
       "@types/node": "^16.0.0",
       "@types/oauth": "^0.9.1",
-      "@types/otplib": "^10.0.0",
       "@types/passport-google-oauth20": "^2.0.11",
       "@types/passport-jwt": "^3.0.6",
       "@types/passport-oauth2": "^1.4.11",
       "@types/qrcode": "^1.4.2",
       "@types/supertest": "^2.0.11",
+      "@types/uuid": "^8.3.4",
       "@typescript-eslint/eslint-plugin": "^5.0.0",
       "@typescript-eslint/parser": "^5.0.0",
       "eslint": "^8.0.1",
@@ -98,7 +101,7 @@ npm manifest:
       "source-map-support": "^0.5.20",
       "supertest": "^6.1.3",
       "ts-jest": "28.0.1",
-      "ts-loader": "^9.2.3",
+      "ts-loader": "^9.3.1",
       "ts-node": "^10.0.0",
       "tsconfig-paths": "4.0.0",
       "typescript": "^4.3.5"
@@ -126,4 +129,4 @@ yarn manifest:
   No manifest
 
 Lockfile: 
-  
+  No lockfile
