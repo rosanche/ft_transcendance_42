@@ -139,6 +139,7 @@ const Canvas :  React.FC<CanvasProps> = ({...props}) => {
             socket.off('disconnect');
             socket.off('pong');
             socket.off('data');
+            socket.disconnect();
         };
     }, []);
 
