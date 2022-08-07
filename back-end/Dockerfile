@@ -26,7 +26,7 @@ WORKDIR /usr/src/app
 COPY package*.json ./
 COPY prisma ./prisma/
 
-RUN npm install --production
+RUN yarn install --production
 
 COPY . .
 RUN chmod -R 777 ./node_modules/.prisma  ./node_modules/prisma
