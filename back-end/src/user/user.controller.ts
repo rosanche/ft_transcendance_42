@@ -11,5 +11,6 @@ export class UserController {
         delete user.hash;
         delete user.twoFactorAuthenticationSecret;
         return user;
+        
     }
 }

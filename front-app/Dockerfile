@@ -2,11 +2,9 @@ FROM node:lts-alpine  as dev
 
 WORKDIR /usr/src/app
 COPY package*.json ./
-COPY yarn.lock ./
 
 RUN yarn install
-
-RUN yarn add glob rimraf
+RUN yarn upgrade --latest
 
 COPY . .
 RUN yarn build

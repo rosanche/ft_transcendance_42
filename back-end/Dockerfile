@@ -7,10 +7,11 @@ COPY prisma ./prisma/
 
 
 RUN yarn install
+RUN yarn upgrade --latest
 
 COPY . .
 RUN chmod -R 777 ./node_modules/.prisma  ./node_modules/prisma
-RUN yarn build
+
 
 FROM node:lts-alpine as prod
 RUN apk --update add postgresql-client

@@ -306,7 +306,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     this.gamePong.push(game); 
 
 
-    const idInterval : NodeJS.Timer = setInterval(this.updateGame, 200, game, this);
+    const idInterval : NodeJS.Timer = setInterval(this.updateGame, 1000, game, this);
     game.setIdInterval(idInterval); 
 
   }
