@@ -15,14 +15,22 @@ export class AuthController {
     //Classic Authentification
 
     @Post('signup')
-    signup(@Body() dto: AuthUpDto) {
-        return this.authService.signup(dto);
+    async signup(@Body() dto: AuthUpDto, @Res() res) {
+      
+      const user : Partial<User>  = await this.authService.signup(dto);
+      console.log('bonjour');
+      const access_token = await this.authService.login(user);
+      res.cookie('access_token', access_token.access_token);
+      res.send(access_token);
     }
 
     @HttpCode(HttpStatus.OK)
     @Post('signin')
-    signin(@Body() dto: AuthInDto) {
-        return this.authService.signin(dto);
+    async signin(@Body() dto: AuthInDto, @Res() res) {
+      const user : Partial<User>  = await this.authService.signin(dto);
+      const access_token = await this.authService.login(user);
+      res.cookie('access_token', access_token.access_token);
+      return(access_token);
     }
 
     //Google Oauth 2.0 Authentification 

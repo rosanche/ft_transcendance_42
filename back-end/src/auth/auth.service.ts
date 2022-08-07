@@ -55,7 +55,7 @@ export class AuthService {
             });
             console.log("user");
             console.log(user);
-            return this.login(user);
+            return user;
         }
         catch(error)
         {
@@ -81,7 +81,7 @@ export class AuthService {
         if (!user.hash) throw new ForbiddenException('Wrong authentication method');
         const pwdMatches = bcrypt.compareSync(dto.password, user.hash) // 
         if (!pwdMatches) throw new ForbiddenException('Credentials incorrect');
-        return this.login(user);
+        return user;
     }
 
     async signToken(payload :Partial<TokenPayload>) : Promise<{access_token: string, isTwoFactorAuthenticationEnabled :boolean}>
