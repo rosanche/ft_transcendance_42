@@ -41,3 +41,9 @@ export class FriendDto {
     //@IsInt()
     id: Number
 }
+
+export class CodeAuthDto {
+    @IsString()
+    @IsNotEmpty()
+    twoFactorAuthenticationCode: string;
+}

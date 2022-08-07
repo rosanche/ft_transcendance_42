@@ -1,16 +1,30 @@
 import { ForbiddenException, Injectable } from "@nestjs/common";
 import { PrismaService } from "src/prisma/prisma.service";
 import { AuthInDto, AuthUpDto } from "./dto";
-import * as argon from 'argon2';
+import * as bcrypt from 'bcrypt';
+import {toDataURL} from 'qrcode';
+import { authenticator } from 'otplib';
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime";
 import { JwtService } from "@nestjs/jwt";
 import { ConfigService } from "@nestjs/config";
+import * as argon from 'argon2';
+import { Request, Response } from "express";
+import { User } from "@prisma/client";
+import { TokenPayload } from "./entities/payload.entity";
 
 @Injectable()
 export class AuthService {
     constructor(private prisma: PrismaService, private jwt: JwtService, private config: ConfigService){}
-    
-    async test(string : string)
+
+    exclude<User, Key extends keyof User>(user: User, ...keys: Key[]): Omit<User, Key> 
+    {
+        for (let key of keys) {
+          delete user[key]
+        }
+        return user
+    }
+
+    async test_pseudo(string : string)
     {
         const users  = await this.prisma.user.findUnique(
             {
@@ -21,15 +35,16 @@ export class AuthService {
         console.log(users)
         return (users )
     }
+
     async signup(dto: AuthUpDto) {
         try {
-            while(await this.test(dto.pseudo))
+            while(await this.test_pseudo(dto.pseudo))
             {
-            console.log(this.test(dto.pseudo));
+            console.log(this.test_pseudo(dto.pseudo));
                 dto.pseudo += '_';
             console.log(dto.pseudo);
             }
-            console.log(this.test(dto.pseudo));
+            console.log(this.test_pseudo(dto.pseudo));
             const hash = await argon.hash(dto.password);
             const user = await this.prisma.user.create({
                 data: {
@@ -40,7 +55,7 @@ export class AuthService {
             });
             console.log("user");
             console.log(user);
-            return this.signToken(user.id, user.email);
+            return this.login(user);
         }
         catch(error)
         {
@@ -63,20 +78,96 @@ export class AuthService {
             }
         });
         if (!user) throw new ForbiddenException('Credentials incorrect');
-        const pwdMatches = await argon.verify(user.hash, dto.password);
+        if (!user.hash) throw new ForbiddenException('Wrong authentication method');
+        const pwdMatches = bcrypt.compareSync(dto.password, user.hash) // 
         if (!pwdMatches) throw new ForbiddenException('Credentials incorrect');
-        
-        return this.signToken(user.id, user.email);
+        return this.login(user);
     }
 
-    async signToken(userId: number, email: string) : Promise<{access_token: string}>
+    async signToken(payload :Partial<TokenPayload>) : Promise<{access_token: string, isTwoFactorAuthenticationEnabled :boolean}>
     {
-        const payload = {
-            sub: userId, email
-        }
-
         const secret = this.config.get('JWT_SECRET');
-        const token = await this.jwt.signAsync(payload, {expiresIn: '15m', secret: secret});
-        return {access_token: token};
+        
+        const token = await this.jwt.signAsync(payload, {expiresIn: '60m', secret: secret});
+        return {access_token: token, isTwoFactorAuthenticationEnabled: payload.isTwoFactorAuthenticationEnabled};
     }
+
+    login(user: Partial<User>)
+    {
+        if(!user) {
+            throw new ForbiddenException('Credentials incorrect');
+        }
+        const payload = {
+            email: user.email,
+            sub: user.id,
+            isTwoFactorAuthenticationEnabled: !!user.isTwoFactorAuthenticationEnabled,
+            isTwoFactorAuthenticated: false,
+          };
+        return this.signToken(payload);
+    }
+
+    async setTwoFactorAuthenticationSecret(secret: string, id: number) {
+        await this.prisma.user.update({
+            where: {
+                id: id
+            },
+            data: {
+                twoFactorAuthenticationSecret: secret
+            }
+        });
+    };
+    
+    async turnOnTwoFactorAuthentication(userId: number) {
+        await this.prisma.user.update({
+            where: {
+                id: userId
+            },
+            data: {
+                isTwoFactorAuthenticationEnabled: true
+            }
+        });
+    };
+
+    async loginWith2fa(user: Partial<User>) {
+
+        const payload = {
+            email: user.email,
+            sub: user.id,
+            isTwoFactorAuthenticationEnabled: !!user.isTwoFactorAuthenticationEnabled,
+            isTwoFactorAuthenticated: true,
+          };
+        return await this.signToken(payload);
+    }
+
+    async generateTwoFactorAuthenticationSecret(user: Partial<User>) {
+        const secret = authenticator.generateSecret();
+    
+        const otpAuthUrl = authenticator.keyuri(
+          user.email,
+          'Trancendence',
+          secret,
+        );
+    
+        await this.setTwoFactorAuthenticationSecret(
+          secret,
+          user.id,
+        );
+    
+        return {
+          secret,
+          otpAuthUrl,
+        };
+      }
+
+    async generateQrCodeDataURL(otpAuthUrl: string) {
+        return toDataURL(otpAuthUrl);
+      }
+    
+
+    isTwoFactorAuthenticationCodeValid(twoFactorAuthenticationCode: string, user: Partial<User>) {
+        return authenticator.verify({
+          token: twoFactorAuthenticationCode,
+          secret: user.twoFactorAuthenticationSecret
+        });
+      }
 }
