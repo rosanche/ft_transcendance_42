@@ -3,15 +3,17 @@ RUN apk --update add postgresql-client
 
 WORKDIR /usr/src/app
 COPY package*.json ./
+#COPY yarn.lock ./
 COPY prisma ./prisma/
 
-RUN npm install
 
-RUN npm install glob rimraf
+RUN yarn install
+
+RUN yarn add glob rimraf
 
 COPY . .
 RUN chmod -R 777 ./node_modules/.prisma  ./node_modules/prisma
-RUN npm run build
+#RUN yarn build
 
 FROM node:lts-alpine as prod
 RUN apk --update add postgresql-client
@@ -24,10 +26,10 @@ WORKDIR /usr/src/app
 COPY package*.json ./
 COPY prisma ./prisma/
 
-RUN npm install --production
+RUN yarn install --production
 
 COPY . .
 RUN chmod -R 777 ./node_modules/.prisma  ./node_modules/prisma
 COPY --from=dev /usr/src/app/dist ./dist
-
+RUN npx prisma migrate dev --name 'transcendance'
 CMD ["node", "dist/main"]
