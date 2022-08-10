@@ -7,10 +7,9 @@ import { ConfigModule } from '@nestjs/config';
 import { GameModule } from './game/game.module';
 import { ChannelModule } from './channel/channel.module';
 import { FriendModule } from './friend/friend.module';
-import { ChatModule } from './chat/chat.module';
 
 
 @Module({
-  imports: [ConfigModule.forRoot({isGlobal: true}) ,AuthModule, UserModule, BookmarkModule, PrismaModule, GameModule, ChannelModule, FriendModule, ChatModule]
+  imports: [ConfigModule.forRoot({isGlobal: true}) ,AuthModule, UserModule, BookmarkModule, PrismaModule, GameModule, ChannelModule, FriendModule]
 })
 export class AppModule {}
