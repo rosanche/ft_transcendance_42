@@ -17,11 +17,12 @@ model User {
 
   email String @unique
   hash String?
+  pseudo String @default(uuid())
+  picture String @default("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT583QoiMnyrlvq2PPzn8IH0uAKHg7mw0uEQT4Msqh4roMkSzlUO4VtnCv-wgkxJ5Lc6NM&usqp=CAU")
   
   isTwoFactorAuthenticationEnabled Boolean @default(false)
   twoFactorAuthenticationSecret String? 
 
-  pseudo String @unique
   firstName String?
   lastName String?
   profileImage String?

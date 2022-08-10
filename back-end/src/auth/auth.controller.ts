@@ -120,4 +120,4 @@ export class AuthController {
 
         return this.authService.loginWith2fa(request.user);
     }
-}   
+}
