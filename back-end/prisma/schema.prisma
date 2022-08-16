@@ -17,11 +17,11 @@ model User {
 
   email String @unique
   hash String?
+  pseudo String @unique
   
   isTwoFactorAuthenticationEnabled Boolean @default(false)
   twoFactorAuthenticationSecret String? 
 
-  pseudo String @unique
   firstName String?
   lastName String?
   profileImage String?
