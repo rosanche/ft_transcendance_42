@@ -42,7 +42,7 @@ const Canvas :  React.FC<CanvasProps> = ({...props}) => {
     const ballSize = 15;
     const name1 = "player1";
     const name2 = "player2";
-
+    const [direction,setDirection] = useState<number>(0);
     const [info, setInfo] = useState<PongState>({
         paddle1Y : (Number(props.height) - paddleHeight) / 2,
         paddle2Y : (Number(props.height) - paddleHeight) / 2,
@@ -55,7 +55,6 @@ const Canvas :  React.FC<CanvasProps> = ({...props}) => {
     const [isConnected, setIsConnected] = useState(socket.connected);
     const [lastPong, setLastPong] = useState(null);
 
-    //const [update, setUpdate] = useState<boolean>(false);
 
     const keyDownHandler = (event :KeyboardEvent) => {
         event.preventDefault();
@@ -71,15 +70,20 @@ const Canvas :  React.FC<CanvasProps> = ({...props}) => {
         else
         {return;}
 
-        let direction: number = 0;
+        let newDirection: number = 0;
         
         if (keyRef.current.up && !keyRef.current.down)
         {
-            direction = -1;
+            newDirection = -1;
         }
         else if (!keyRef.current.up && keyRef.current.down)
         {
-            direction = 1;
+            newDirection = 1;
+        }
+        console.log({newDirection, direction});
+        if (newDirection != direction)
+        {
+            setDirection(newDirection);
         }
         
         //setUpdate(false);
@@ -100,9 +104,25 @@ const Canvas :  React.FC<CanvasProps> = ({...props}) => {
         else {
             return;
         }
+        let newDirection: number = 0;
         
+        if (keyRef.current.up && !keyRef.current.down)
+        {
+            newDirection = -1;
+        }
+        else if (!keyRef.current.up && keyRef.current.down)
+        {
+            newDirection = 1;
+        }
+        console.log({newDirection, direction});
+        setDirection(newDirection);
+     
         //setUpdate(true);
     };
+
+    useEffect(() => {
+        socket.emit('move', {move: direction, id: user.id});
+    }, [direction])
     
     useEffect(() => {
         
@@ -125,7 +145,19 @@ const Canvas :  React.FC<CanvasProps> = ({...props}) => {
             setInfo(data);
           });
       
+        return () => {
+            socket.off('connect');
+            socket.off('disconnect');
+            socket.off('pong');
+            socket.off('data');
+            socket.disconnect();
+        };
+    }, []);
 
+
+    useEffect(() => {
+        
+        
         
         console.log('handler')
         document.addEventListener('keydown', keyDownHandler); 
@@ -135,19 +167,38 @@ const Canvas :  React.FC<CanvasProps> = ({...props}) => {
         return () => {
             document.removeEventListener('keydown', keyDownHandler);
             document.removeEventListener('keyup', keyUpHandler);
-            socket.off('connect');
-            socket.off('disconnect');
-            socket.off('pong');
-            socket.off('data');
-            socket.disconnect();
         };
     }, []);
 
-    useEffect(() => {
 
+    useEffect(() => {
+        let windowWidth :number;
+        let windowHeight :number;
+        if (typeof window != "undefined")
+        {
+            windowWidth = window.innerWidth;
+            windowHeight = window.innerHeight;
+        }
+        else
+        {
+            windowWidth = Number(props.width);
+            windowHeight = Number(props.height);
+        }
+        console.log(windowWidth);
+        console.log(windowHeight);
+        let scaleWindow : number;
+        if (windowHeight * (16 / 9) > windowWidth)
+        {
+            scaleWindow = windowWidth / Number(props.width) ;
+        }
+        else
+        {
+            scaleWindow = windowHeight / Number(props.height)  ;
+        }
         const drawPong = (ctx: CanvasRenderingContext2D, props : CanvasProps, info : PongState) => {
-        
-            console.log("draw")
+            ctx.restore();
+            ctx.save();
+            ctx.scale(scaleWindow, scaleWindow)
             ctx.fillStyle ="black";
             ctx.fillRect(0,0,Number(props.width),Number(props.height));
     
@@ -171,14 +222,13 @@ const Canvas :  React.FC<CanvasProps> = ({...props}) => {
         if (!canvas){
             return;
         }
-        console.log('yes');
         const ctx = canvas.getContext("2d");
         drawPong(ctx, props, info);
         
         return () => {
             ctx.clearRect(0,0, Number(props.width), Number(props.height));
         };
-    });
+    }, [info]);
 
     
     

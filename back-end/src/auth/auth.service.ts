@@ -9,7 +9,10 @@ import { JwtService } from "@nestjs/jwt";
 import { ConfigService } from "@nestjs/config";
 import { Request, Response } from "express";
 import { User } from "@prisma/client";
+import { parse } from "cookie"
 import { TokenPayload } from "./entities/payload.entity";
+import { Socket } from "socket.io";
+import { WsException } from "@nestjs/websockets";
 
 @Injectable()
 export class AuthService {
@@ -62,6 +65,33 @@ export class AuthService {
         const pwdMatches = bcrypt.compareSync(dto.password, user.hash) // 
         if (!pwdMatches) throw new ForbiddenException('Credentials incorrect');
         return this.login(user);
+    }
+
+    async getUserFromSocket(socket: Socket) {
+        const cookie = socket.handshake.headers.cookie;
+        if (!cookie)
+        {
+            throw new WsException('cookie missing');
+        }
+        const { access_token: access_token } = parse(cookie);
+        if (!access_token)
+        {
+            throw new WsException('Authentication cookie missing');
+        }
+    
+        const payload: TokenPayload = this.jwt.verify(access_token, {
+            secret: this.config.get('JWT_SECRET')
+          });
+        const user = await this.prisma.user.findUnique({
+                where: {
+                    id: payload.sub
+                }
+        });      
+        if (!user) {
+          throw new WsException('Invalid credentials.');
+        }
+        return user;
+        
     }
 
     async signToken(payload :Partial<TokenPayload>) : Promise<{access_token: string, isTwoFactorAuthenticationEnabled :boolean}>
