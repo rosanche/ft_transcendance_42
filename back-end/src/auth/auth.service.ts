@@ -1,16 +1,17 @@
 import { ForbiddenException, Injectable } from "@nestjs/common";
 import { PrismaService } from "src/prisma/prisma.service";
-import { AuthDto } from "./dto";
+import { AuthInDto, AuthUpDto } from "./dto";
 import * as bcrypt from 'bcrypt';
 import {toDataURL} from 'qrcode';
 import { authenticator } from 'otplib';
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime";
 import { JwtService } from "@nestjs/jwt";
 import { ConfigService } from "@nestjs/config";
-import { Request, Response } from "express";
+import * as argon from 'argon2';
 import { User } from "@prisma/client";
-import { parse } from "cookie"
 import { TokenPayload } from "./entities/payload.entity";
+import { Request, Response } from "express";
+import { parse } from "cookie"
 import { Socket } from "socket.io";
 import { WsException } from "@nestjs/websockets";
 
@@ -26,19 +27,71 @@ export class AuthService {
         return user
     }
 
-    async signup(dto: AuthDto) {
+
+    async getUserFromSocket(socket: Socket) {
+        const cookie : string = socket.handshake.headers.cookie || "" ;
+        if (!cookie)
+        {
+            //throw new WsException('cookie missing');
+            return null;
+        }
+        const { access_token: access_token } = parse(cookie);
+        if (!access_token)
+        {
+            //throw new WsException('Authentication cookie missing');
+            return null;
+        }
+    
+        const payload: TokenPayload = this.jwt.verify(access_token, {
+            secret: this.config.get('JWT_SECRET')
+          });
+        const user = await this.prisma.user.findUnique({
+                where: {
+                    id: payload.sub
+                }
+        });      
+        if (!user) {
+          //throw new WsException('Invalid credentials.');
+          return null;
+        }
+        return user;
+
+
+    }
+
+    async test_pseudo(string : string)
+    {
+        const users  = await this.prisma.user.findUnique(
+            {
+                where: {
+                pseudo: string
+            }
+    }) !== null;
+        console.log(users)
+        return (users )
+    }
+
+
+    async signup(dto: AuthUpDto) {
         try {
-            const pass = dto.password;
-            const hash = bcrypt.hashSync(pass, 10);
+            while(await this.test_pseudo(dto.pseudo))
+            {
+            console.log(this.test_pseudo(dto.pseudo));
+                dto.pseudo += '_';
+            console.log(dto.pseudo);
+            }
+            console.log(this.test_pseudo(dto.pseudo));
+            const hash = await bcrypt.hash(dto.password, 3);
             const user = await this.prisma.user.create({
                 data: {
                 email: dto.email,
+                pseudo: dto.pseudo,
                 hash
                 },
             });
             console.log("user");
             console.log(user);
-            return this.login(user);
+            return user;
         }
         catch(error)
         {
@@ -54,44 +107,24 @@ export class AuthService {
         }
     }
     
-    async signin(dto: AuthDto) {
+    async signin(dto: AuthInDto) {
         const user = await this.prisma.user.findUnique({
             where: {
                 email: dto.email
             }
         });
+        console.log(user);
+        console.log('compare');
         if (!user) throw new ForbiddenException('Credentials incorrect');
         if (!user.hash) throw new ForbiddenException('Wrong authentication method');
-        const pwdMatches = bcrypt.compareSync(dto.password, user.hash) // 
-        if (!pwdMatches) throw new ForbiddenException('Credentials incorrect');
-        return this.login(user);
-    }
-
-    async getUserFromSocket(socket: Socket) {
-        const cookie = socket.handshake.headers.cookie;
-        if (!cookie)
-        {
-            throw new WsException('cookie missing');
-        }
-        const { access_token: access_token } = parse(cookie);
-        if (!access_token)
-        {
-            throw new WsException('Authentication cookie missing');
-        }
-    
-        const payload: TokenPayload = this.jwt.verify(access_token, {
-            secret: this.config.get('JWT_SECRET')
-          });
-        const user = await this.prisma.user.findUnique({
-                where: {
-                    id: payload.sub
-                }
-        });      
-        if (!user) {
-          throw new WsException('Invalid credentials.');
-        }
+            const isVerify =await bcrypt.compare(dto.password, user.hash);
+            console.log('compare after');
+            if (isVerify){
+                return user;
+            } else {
+              throw new ForbiddenException('Wrong Password');
+            }
         return user;
-        
     }
 
     async signToken(payload :Partial<TokenPayload>) : Promise<{access_token: string, isTwoFactorAuthenticationEnabled :boolean}>
@@ -99,6 +132,7 @@ export class AuthService {
         const secret = this.config.get('JWT_SECRET');
         
         const token = await this.jwt.signAsync(payload, {expiresIn: '60m', secret: secret});
+        console.log(token);
         return {access_token: token, isTwoFactorAuthenticationEnabled: payload.isTwoFactorAuthenticationEnabled};
     }
 
@@ -113,6 +147,7 @@ export class AuthService {
             isTwoFactorAuthenticationEnabled: !!user.isTwoFactorAuthenticationEnabled,
             isTwoFactorAuthenticated: false,
           };
+          console.log(payload);
         return this.signToken(payload);
     }
 

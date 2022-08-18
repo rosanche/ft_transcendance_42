@@ -32,14 +32,14 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   afterInit(server: Server)
   {
-    setInterval(this.sendInfo, 100000, this);
+    //setInterval(this.sendInfo, 100000, this);
 
 
   }
 
   async handleConnection(@ConnectedSocket() client: Socket, ...args: any[]) {
     const user = await this.authService.getUserFromSocket(client);
-    this.logger.log(`Socket ${client.id} connect on the server`);
+    this.logger.log(`Socket ${client.id} connect on the server with pseudo ${user.pseudo}`);
   }
 
   handleDisconnect(@ConnectedSocket() client: Socket) {

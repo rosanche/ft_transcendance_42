@@ -4,10 +4,8 @@ WORKDIR /usr/src/app
 COPY package*.json ./
 
 RUN yarn install
-RUN yarn upgrade --latest
 
 COPY . .
-RUN yarn build
 
 FROM node:lts-alpine as prod
 

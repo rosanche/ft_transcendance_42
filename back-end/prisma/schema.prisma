@@ -11,35 +11,81 @@ datasource db {
 }
 
 model User {
-  id Int @id @default(autoincrement())
+  id Int @id @default(autoincrement()) 
   createdAt DateTime @default(now())
   updateAt DateTime @updatedAt
 
   email String @unique
   hash String?
-  pseudo String @default(uuid())
-  picture String @default("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT583QoiMnyrlvq2PPzn8IH0uAKHg7mw0uEQT4Msqh4roMkSzlUO4VtnCv-wgkxJ5Lc6NM&usqp=CAU")
+  pseudo String @unique
   
   isTwoFactorAuthenticationEnabled Boolean @default(false)
   twoFactorAuthenticationSecret String? 
 
   firstName String?
   lastName String?
+  profileImage String?
 
-  bookmarks Bookmark[]
-  @@map("users")
+  legend String?
+
+  nbr_games Int @default(0)
+  nbr_wins  Int @default(0)
+  nbr_looses  Int @default(0)
+  
+  goals_f Int @default(0)
+  goals_a Int @default(0)
+
+  dem_friendBy User[] @relation("dem_friend")
+  myDem_friend  User[] @relation("dem_friend")
+  
+  friendBy User[] @relation("acce_friend")
+  myfriends  User[] @relation("acce_friend")
+
+  channel_creat Channel[] @relation("channelcreat")
+  admin_channel Channel[] @relation("channeladmin")
+  User_channel Channel[] @relation("channeluser")
+
+  mypost  Post[] @relation("mypost")
+  
+  @@map("user")
 }
 
-model Bookmark {
+model Game {
   id Int @id @default(autoincrement())
   createdAt DateTime @default(now())
   updateAt DateTime @updatedAt
-  link String
-  title String
-  description String?
 
-  userId  Int
-  user    User @relation(fields: [userId], references: [id])
+  score_1 Int @default(0)
+  id_1 Int
+  id_2 Int
+  @@map("game")
+  score_2 Int @default(0)
+}
 
-  @@map("bookmarks")
+model Channel {
+  id Int @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updateAt DateTime @updatedAt
+  createur User[] @relation("channelcreat")
+  
+  name String @unique()
+  hash String?
+  private Boolean
+
+  admin User[] @relation("channeladmin")
+  users User[] @relation("channeluser")
+
+  post Post[] @relation("channelpost")
+  @@map("channel")
+}
+
+model Post {
+  id Int @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updateAt DateTime @updatedAt
+  
+  createur User[] @relation("mypost")
+  dest Channel[] @relation("channelpost")
+  mesage String
+  @@map("post")
 }
