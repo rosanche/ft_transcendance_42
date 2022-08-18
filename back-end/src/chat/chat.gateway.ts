@@ -26,27 +26,27 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         this.logger.log(`Method not implmented. ${client.id}`);
      }
 
-     async handleConnection(client: Socket, ... args: any[])
+     async handleConnection(client: Socket, @Res() res, ... args: any[])
      {
         const user = await this.authService.getUserFromSocket(client);
         if (user)
         {
             this.logger.log(`Socket ${client.id} connect on the server with pseudo ${user.pseudo}`);
         }
+        else
+        {
+            client.disconnect();
+        }
      }
-
+ 
 
     @SubscribeMessage('msgToServer')
       async handelMessage(client: Socket, text: string)  {
        // client.emit('msgToClient, text')
-        const user :  User = await this.Prisma.user.findUnique(
-        {
-            where:{
-                id: 1,
-            },
-        }
-       )
-       console.log("yo");
+       const user = await this.authService.getUserFromSocket(client);
+       if (user)
+       {
+       console.log("yoa");
        this.wss.emit('msgToClient', user.pseudo + " : "+ text);
        await this.Prisma.post.create({data:{
             createur: {connect: [{id: user.id}]},
@@ -54,5 +54,5 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
        },})
         //return {event: 'msgToClient', data:  text};
     }
-
+    }
 }
