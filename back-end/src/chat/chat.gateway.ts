@@ -25,6 +25,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         this.logger.log(`Method not implmented. ${client.id}`);
      }
 
+
      handleConnection(client: Socket, ... args: any[])
      {
         this.logger.log(`Method not implemented. ${client.id}`);
@@ -39,7 +40,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
             where:{
                 id: 1,
             },
-        }
+        } 
        )
        console.log("yo");
        this.wss.emit('msgToClient', user.pseudo + " : "+ text);

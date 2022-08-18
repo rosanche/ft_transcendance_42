@@ -29,7 +29,7 @@ export class AuthService {
         const users  = await this.prisma.user.findUnique(
             {
                 where: {
-                pseudo: string
+                pseudo: string,
             }
     }) !== null;
         console.log(users)
