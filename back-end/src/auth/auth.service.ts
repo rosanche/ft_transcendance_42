@@ -7,7 +7,6 @@ import { authenticator } from 'otplib';
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime";
 import { JwtService } from "@nestjs/jwt";
 import { ConfigService } from "@nestjs/config";
-import * as argon from 'argon2';
 import { User } from "@prisma/client";
 import { TokenPayload } from "./entities/payload.entity";
 import { Request, Response } from "express";

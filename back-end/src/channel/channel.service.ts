@@ -4,6 +4,7 @@ import { PrismaService } from 'src/prisma/prisma.service'
 import { User } from '@prisma/client';
 import { Channel } from '@prisma/client';
 import { ChannelDto, InviteDto } from 'src/dto/channel.dto';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class ChannelService
@@ -12,16 +13,32 @@ export class ChannelService
 
     async createchannel(user: User, src : ChannelDto)
     {
-        const channel = await this.Prisma.channel.create({
+            if (src.password)
+            {
+            const hash : string = await bcrypt.hash(src.password, 3);
+            const channel = await this.Prisma.channel.create({
             data: {
                 name: src.name,
-                private: src.private,
-                createur: {connect: [{id: user.id}]},
+                private: (src.private == 1),
+                createurId: user.id,
+                admin:{ connect:[{id: user.id}]},
+                users:{ connect:[{id: user.id}]},
+                hash
+            },
+        })
+            return channel;
+        }
+        
+            const channel = await this.Prisma.channel.create({
+            data: {
+                name: src.name,
+                private: (src.private == 1),
+                createurId: user.id,
                 admin:{ connect:[{id: user.id}]},
                 users:{ connect:[{id: user.id}]},
             },
-        })
-        return channel;
+            })
+            return channel;
     }
 
     async mychannels(user: User)

@@ -2,7 +2,7 @@ import { Query ,Controller , Get, Param , UseGuards, Patch, Body, Post, UseInter
 import { ChannelService } from "./channel.service"
 import { User } from '@prisma/client';
 import { GetUser } from 'src/auth/decorator';
-import { JwtGuard } from 'src/auth/guard';
+import { Jwt2FAGuard } from 'src/auth/guard';
 import { ChannelDto, InviteDto } from "../dto";
 import {FileInterceptor} from '@nestjs/platform-express'
 import {diskStorage} from 'multer'
@@ -13,26 +13,24 @@ import {join} from 'path';
 import process = require('process');
 import { Express } from 'express'
 
+@UseGuards(Jwt2FAGuard)
 @Controller('channel')
 export class ChannelController
 {
     constructor(private  ChannelService: ChannelService){}
 
-    @UseGuards(JwtGuard)
     @Post('creat')
     create(@GetUser() user: User, @Body() dto: ChannelDto)
     { 
         return this.ChannelService.createchannel(user, dto);
     }
 
-    @UseGuards(JwtGuard)
     @Get('mychanels')
     mychanels(@GetUser() user: User)
     {
         return this.ChannelService.mychannels(user);
     }
 
-    @UseGuards(JwtGuard)
     @Get('list')
     listchannel(@GetUser() user: User)
     {
@@ -45,14 +43,12 @@ export class ChannelController
         return this.ChannelService.joinchannel(user, dto);
     }
 
-    @UseGuards(JwtGuard)
     @Post('quit')
     quitchannel(@GetUser() user: User, @Body() dto: ChannelDto)
     {
         return this.ChannelService.quitchannel(user, dto)
     }
     
-    @UseGuards(JwtGuard)
     @Post('invite')
     invitechannel(@GetUser() user: User, @Body() dto: InviteDto)
     {

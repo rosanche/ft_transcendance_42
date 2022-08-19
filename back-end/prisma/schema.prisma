@@ -66,7 +66,8 @@ model Channel {
   id Int @id @default(autoincrement())
   createdAt DateTime @default(now())
   updateAt DateTime @updatedAt
-  createur User[] @relation("channelcreat")
+  createur User @relation("channelcreat", fields: [createurId], references: [id])
+  createurId Int
   
   name String @unique()
   hash String?
@@ -84,8 +85,10 @@ model Post {
   createdAt DateTime @default(now())
   updateAt DateTime @updatedAt
   
-  createur User[] @relation("mypost")
-  dest Channel[] @relation("channelpost")
+  createur User? @relation("mypost",fields: [userId], references: [id])
+  userId Int?
+  dest Channel? @relation("channelpost", fields: [destById], references: [id])
+  destById Int?
   mesage String
   @@map("post")
 }
