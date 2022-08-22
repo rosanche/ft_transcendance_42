@@ -47,6 +47,8 @@
             el: '#v-app',
             data: {
                 username: '',
+                mp: '',
+                userid: 0,
                 text: '',
                 messages: {
                     general: [],
@@ -64,7 +66,7 @@
             },
             methods: {
                 sendChatMessage() {
-                        this.socket.chat.to("general").emit('chatToServer', { sender: this.username, room: this.activeRoom, message: this.text });
+                        this.socket.chat.emit('chatToServer', { sender: this.username, room: this.activeRoom, message: this.text });
                         this.text = "";
                 },
                 receiveChatMessage(msg) {
@@ -94,6 +96,7 @@
                 });
                 this.socket.chat.on('connect', () => {
                     this.toggleRoomMembership();
+                    userid = socket.id
                 });
                 this.socket.chat.on('joinedRoom', (room) => {
                     this.rooms[room] = true;

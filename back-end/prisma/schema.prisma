@@ -44,6 +44,7 @@ model User {
   channel_creat Channel[] @relation("channelcreat")
   admin_channel Channel[] @relation("channeladmin")
   User_channel Channel[] @relation("channeluser")
+  mp Mp[] @relation("mpuser")
 
   mypost  Post[] @relation("mypost")
   
@@ -80,6 +81,16 @@ model Channel {
   @@map("channel")
 }
 
+model Mp {
+  id Int @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updateAt DateTime @updatedAt
+  user User[] @relation("mpuser")
+  
+  post Post[] @relation("mppost")
+  @@map("mp")
+}
+
 model Post {
   id Int @id @default(autoincrement())
   createdAt DateTime @default(now())
@@ -88,7 +99,9 @@ model Post {
   createur User? @relation("mypost",fields: [userId], references: [id])
   userId Int?
   dest Channel? @relation("channelpost", fields: [destById], references: [id])
+  mp Mp? @relation("mppost", fields: [mpId], references: [id])
   destById Int?
+  mpId Int?
   mesage String
   @@map("post")
 }

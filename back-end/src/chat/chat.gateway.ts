@@ -6,38 +6,6 @@ import { User } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { AuthService } from "src/auth/auth.service";
 
-/*
-@WebSocketGateway({ namespace: '/chat' })
-export class ChatGateway implements OnGatewayInit {
-
-  @WebSocketServer() wss: Server;
-
-  private logger: Logger = new Logger('ChatGateway');
-
-  afterInit(server: any) {
-    this.logger.log('Initialized!');
-  }
-
-  @SubscribeMessage('chatToServer')
-  handleMessage(client: Socket, message: { sender: string, room: string, message: string }) {
-    this.wss.to(message.room).emit('chatToClient', message);
-  }
-
-  @SubscribeMessage('joinRoom')
-  handleRoomJoin(client: Socket, room: string ) {
-    client.join(room);
-    client.emit('joinedRoom', room);
-  }
-
-  @SubscribeMessage('leaveRoom')
-handleRoomLeave(client: Socket, room: string ) {
-    client.leave(room);
-    client.emit('leftRoom', room);
-  }
-
-}
-*/
-
 
 @WebSocketGateway({ namespace: '/chat' })
 export class ChatGateway implements OnGatewayInit {
@@ -46,7 +14,7 @@ export class ChatGateway implements OnGatewayInit {
     @WebSocketServer() wss: Server;
 
     private logger : Logger = new Logger('ChatGateway');
-    private cli : any[]
+   private iddd : Map<Number, string> = new Map();
 
     
         afterInit(server : any)
@@ -54,24 +22,23 @@ export class ChatGateway implements OnGatewayInit {
             this.logger.log('initilized!');
         }
 
-     handleDisconnect(client: Socket)
+    async  handleDisconnect(client: Socket)
      {
         this.logger.log(`Method not implmented. ${client.id}`);
+        const user = await this.authService.getUserFromSocket(client);
+        if (user)
+            this.iddd.delete(user.id);
      }
 
      async handleConnection(client: Socket, @Res() res, ... args: any[])
      {
         const user = await this.authService.getUserFromSocket(client);
-        console.log(client);
-        console.log("\n\n\n\nlallalal\n\n\n");
-        console.log(this.wss);
-        console.log("\n\n\n\nlallalal\n\n\n");
-        console.log(this.wss[1]);
         if (user)
         {
-
             this.logger.log(`Socket ${client.id} connect on the server with pseudo ${user.pseudo}`);
-            this.cli[0] = client.id;
+            this.iddd[user.id] = client.id;
+          
+            //   this.cli[0] = client.id;
             if (user.id%2 == 0)
             {
                 client.join("general");
