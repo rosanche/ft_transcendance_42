@@ -46,7 +46,7 @@ export class ChatGateway implements OnGatewayInit {
     @WebSocketServer() wss: Server;
 
     private logger : Logger = new Logger('ChatGateway');
-
+    private cli : any[];
 
     
         afterInit(server : any)
@@ -59,32 +59,35 @@ export class ChatGateway implements OnGatewayInit {
         this.logger.log(`Method not implmented. ${client.id}`);
      }
 
-     /*async handleConnection(client: Socket, @Res() res, ... args: any[])
+     async handleConnection(client: Socket, @Res() res, ... args: any[])
      {
         const user = await this.authService.getUserFromSocket(client);
         console.log("ok");
         if (user)
         {
+            this.cli[user.pseudo] = client.id;
             this.logger.log(`Socket ${client.id} connect on the server with pseudo ${user.pseudo}`);
-           // client.join("typescript");
-            //client.emit('joinedRoom', "typescript")
+            if (user.id%2 == 0)
+            {
+                client.join("general");
+                console.log("AAAAAAAAAAAAAAAAAAAAAA")
+            }
         }
         else
         {
+            client.to("typescrsipt").emit('joinedRoom', "typescript")
             client.disconnect();
         }
      }
-*/
+
      @SubscribeMessage('joinRoom')
      async handleRoomJoin(client: Socket, room: string)
      {
-
-        console.log(room);
-        if ('nestjs' == room)
+        if ('dm' == room)
         {
             const user = await this.authService.getUserFromSocket(client);
             const channel = await this.Prisma.channel.findFirst({where:{
-                name: "nestjs",
+                name: "dm",
                 private: false,
                 NOT:{ 
                 users:{
@@ -105,13 +108,13 @@ export class ChatGateway implements OnGatewayInit {
                             id: user.id}}
                         }
                 });
-                client.join(room);
+               
                 client.emit('joinedRoom', room)
             }
         }
         else
         {
-        client.join(room);
+        
         client.emit('joinedRoom', room)
         }
      }
@@ -120,7 +123,7 @@ export class ChatGateway implements OnGatewayInit {
       async handleRoomLeave(client: Socket, room: string)
      {
         console.log("oui");
-        if('nestjs' == room)
+        if('dm' == room)
         {
             const user = await this.authService.getUserFromSocket(client);
             const channelup = await this.Prisma.channel.update({where:{
@@ -144,7 +147,7 @@ export class ChatGateway implements OnGatewayInit {
         const user = await this.authService.getUserFromSocket(client);
       message.sender = user.pseudo;
        this.wss.to(message.room).emit('chatToClient', message );
-       if (message.room == "nestjs")
+       if (message.room == "dm")
        {
         const cha = await this.Prisma.channel.findUnique({
             where:{
