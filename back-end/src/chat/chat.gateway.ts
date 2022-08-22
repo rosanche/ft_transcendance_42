@@ -46,7 +46,7 @@ export class ChatGateway implements OnGatewayInit {
     @WebSocketServer() wss: Server;
 
     private logger : Logger = new Logger('ChatGateway');
-    private cli : any[];
+    private cli : any[]
 
     
         afterInit(server : any)
@@ -62,11 +62,16 @@ export class ChatGateway implements OnGatewayInit {
      async handleConnection(client: Socket, @Res() res, ... args: any[])
      {
         const user = await this.authService.getUserFromSocket(client);
-        console.log("ok");
+        console.log(client);
+        console.log("\n\n\n\nlallalal\n\n\n");
+        console.log(this.wss);
+        console.log("\n\n\n\nlallalal\n\n\n");
+        console.log(this.wss[1]);
         if (user)
         {
-            this.cli[user.pseudo] = client.id;
+
             this.logger.log(`Socket ${client.id} connect on the server with pseudo ${user.pseudo}`);
+            this.cli[0] = client.id;
             if (user.id%2 == 0)
             {
                 client.join("general");
