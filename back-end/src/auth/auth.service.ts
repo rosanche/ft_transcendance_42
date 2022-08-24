@@ -40,10 +40,11 @@ export class AuthService {
             //throw new WsException('Authentication cookie missing');
             return null;
         }
-    
+        console.log(cookie);
         const payload: TokenPayload = this.jwt.verify(access_token, {
             secret: this.config.get('JWT_SECRET')
           });
+          
         const user = await this.prisma.user.findUnique({
                 where: {
                     id: payload.sub

@@ -38,12 +38,8 @@ export class ChatGateway implements OnGatewayInit {
             this.logger.log(`Socket ${client.id} connect on the server with pseudo ${user.pseudo}`);
             this.iddd[user.id] = client.id;
           
-            //   this.cli[0] = client.id;
-            if (user.id%2 == 0)
-            {
                 client.join("general");
-                console.log("AAAAAAAAAAAAAAAAAAAAAA")
-            }
+                client.to("general").emit('joinedRoom', "typescript")
         }
         else
         {
@@ -52,43 +48,48 @@ export class ChatGateway implements OnGatewayInit {
         }
      }
 
+    async mpcha(user: User,client: Socket, room: string)
+    {
+
+        const channel =   await this.Prisma.mp.findFirst({where:{
+            AND:{ 
+            user:{
+                some:{
+                    id: user.id,}}
+                },
+                user:{
+                    some:{
+                        id: 1}}
+                    }
+        }
+        )
+        if (channel)
+            return channel;
+        return   await this.Prisma.mp.create({
+            data :{
+                user:{
+                    connect:[{
+                        id: user.id,},
+                    {id: 1}],
+                    }
+                    }
+        })
+
+    }
+
      @SubscribeMessage('joinRoom')
      async handleRoomJoin(client: Socket, room: string)
      {
+        const user = await this.authService.getUserFromSocket(client);
+        if (user == null)
+            return ;
         if ('dm' == room)
         {
-            const user = await this.authService.getUserFromSocket(client);
-            const channel = await this.Prisma.channel.findFirst({where:{
-                name: "dm",
-                private: false,
-                NOT:{ 
-                users:{
-                    some:{
-                        id: user.id}}
-                    } 
-            }}
-            )
-            console.log(channel);
-            if (channel)
-            {
-                const channelup = await this.Prisma.channel.update({where:{
-                    id: channel.id
-                },
-                    data:{
-                    users:{
-                        connect:{
-                            id: user.id}}
-                        }
-                });
-               
-                client.emit('joinedRoom', room)
-            }
+                const channelup = await this.mpcha(user ,client, room);
+                    client.emit('joinedRoom', room);
         }
         else
-        {
-        
-        client.emit('joinedRoom', room)
-        }
+            client.emit('joinedRoom', room);
      }
 
      @SubscribeMessage('leaveRoom')
@@ -107,7 +108,6 @@ export class ChatGateway implements OnGatewayInit {
                         id: user.id}}
                     }
             });
-            
             
         }
         client.join(room);
