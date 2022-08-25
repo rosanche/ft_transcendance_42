@@ -6,8 +6,9 @@ import * as _ from "lodash"
 import {v4 as uuidv4} from "uuid"
 import {GamePong} from "./GamePong"
 import { AuthService } from 'src/auth/auth.service';
+import { User } from "@prisma/client";
 
-var timetick = 15
+var timetick = 17
 
 @WebSocketGateway({
   namespace: "game",
@@ -18,11 +19,10 @@ var timetick = 15
 })
 export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect{
 
-  constructor (private readonly gameService: GameService, private readonly authService: AuthService){}
+  constructor (private gameService: GameService, private authService: AuthService){}
   
-  private queueGame :GamePong[];
-  private socketClient :Socket[];
-  private mapIdSocket : {client: Socket, id: number}[] = [];
+  private queueGame :GamePong[] = [];
+  private mapIdSocket = new Map<string, number>();
   private gamePongs = new Map<string, GamePong>();
   
 
@@ -37,37 +37,52 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   }
 
-  async handleConnection(@ConnectedSocket() client: Socket, ...args: any[]) {
+  async handleConnection(client: Socket, ...args: any[]) {
+    console.log(client.handshake);
     const user = await this.authService.getUserFromSocket(client);
-    this.logger.log(`Socket ${client.id} connect on the server with pseudo ${user.pseudo}`);
+    if (user)
+    {
+      this.logger.log(`Socket ${client.id} connect on the server with pseudo ${user.pseudo}`);
+      this.handleUserID(client, user);
+    }
+    else
+    {
+      console.log("erreur")
+    }
   }
 
-  handleDisconnect(@ConnectedSocket() client: Socket) {
+  handleDisconnect(client: Socket) {
     this.logger.log(`Socket ${client.id} disconnect on the server`);
-    
+    this.mapIdSocket.delete(client.id);
     //_.remove(this.mapIdSocket, (n) => { return n.client.id == client.id;});
 
   }
 
-  @SubscribeMessage('id')
-  handleUserID(client: Socket, payload: {id : number, name: string}){
-    this.logger.log(`Socket ${client.id} connect on the server and real id is ${payload.id}`);
+  handleUserID(client: Socket, user: User){
+    this.logger.log(`Socket ${client.id} connect on the server and real id is ${user.id}`);
+    this.mapIdSocket.set(client.id, user.id);
     this.gamePongs.forEach((game) => {
-      if (game.id1 == payload.id || game.id2 == payload.id){
+      if (game.id1 == user.id || game.id2 == user.id){
         this.stopGame(game);
-        game.id1 = 0;
-        game.id2 = 0;
       }
       
-    } )
-    _.remove(this.mapIdSocket, (n) => { return n.id == payload.id;});
-    this.mapIdSocket.push({client, id: payload.id});
-    this.startGame(payload.id, payload.name, 0, "player2");
+    } );
+    if (this.queueGame.length != 0)
+    {
+      this.queueGame[0].addNewPlayer(user.pseudo, user.id);
+      this.queueGame.splice(0,1);
+      console.log(this.queueGame.length);
+    }
+    else
+    {
+      this.startGame(user.id, user.pseudo);
+    }
   };
 
   @SubscribeMessage('move')
-  handleMessage(client: Socket, payload: {move: number, id: number}): void {
-    let id = payload.id;
+  handleMessage(client: Socket, payload: {move: number}): void {
+
+    let id = this.mapIdSocket.get(client.id);
     let game: GamePong;
     this.gamePongs.forEach((n : GamePong) => { if(n.id1 == id || n.id2 == id ) {game = n; }});
     if(!game)
@@ -98,16 +113,12 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   }
 
 
-  startGame(id1: number, user1: string, id2: number, user2: string )
+  startGame(id1: number, user1: string)
   {
     this.logger.log(`a game start`);
     const roomID = this.createGame(user1, id1);
     const game = this.gamePongs.get(roomID);
-    game.id2 = id2;
-    game.name2 = user2;
-
-
-
+    this.queueGame.push(game);
 
 
     const idInterval : NodeJS.Timer = setInterval(this.updateGame, timetick, game, this);
@@ -117,7 +128,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   createGame(username: string, id: number) : string {
     const roomID = uuidv4();
-    this.gamePongs.set(roomID, new GamePong(roomID, username, id));
+    this.gamePongs.set(roomID, new GamePong(roomID, username, id, true));
     return roomID;
   }
 

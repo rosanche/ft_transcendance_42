@@ -25,15 +25,20 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
      {
         this.logger.log(`Method not implmented. ${client.id}`);
      }
+     
 
      async handleConnection(client: Socket, ... args: any[])
      {
+        console.log(client.handshake);
         const user = await this.authService.getUserFromSocket(client);
         if (user)
         {
+            console.log(user);
             this.logger.log(`Socket ${client.id} connect on the server with pseudo ${user.pseudo}`);
         }
      }
+
+
 
 
     @SubscribeMessage('msgToServer')

@@ -29,31 +29,38 @@ export class AuthService {
 
 
     async getUserFromSocket(socket: Socket) {
-        const cookie : string = socket.handshake.headers.cookie || "" ;
+        const cookie : string = socket.handshake.headers.cookie || socket.handshake.auth.token ||  "" ;
         if (!cookie)
         {
             //throw new WsException('cookie missing');
             return null;
         }
-        const { access_token: access_token } = parse(cookie);
+
+        const { access_token: access_token } = (socket.handshake.headers.cookie) ? parse(cookie) : {access_token: cookie};
+
         if (!access_token)
         {
             //throw new WsException('Authentication cookie missing');
             return null;
         }
-    
-        const payload: TokenPayload = this.jwt.verify(access_token, {
-            secret: this.config.get('JWT_SECRET')
-          });
-        const user = await this.prisma.user.findUnique({
+        var payload: TokenPayload | null = null;
+        var user : User | null = null;
+        try{
+            payload = this.jwt.verify(access_token, {
+                secret: this.config.get('JWT_SECRET')
+            });
+            user = await this.prisma.user.findUnique({
                 where: {
                     id: payload.sub
                 }
-        });      
-        if (!user) {
-          //throw new WsException('Invalid credentials.');
-          return null;
+            });  
         }
+        catch (error)
+        {
+            console.log("l'erreur");
+            console.log(error);
+        }
+           
         return user;
 
 

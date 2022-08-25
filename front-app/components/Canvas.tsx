@@ -22,19 +22,23 @@ type PongState = {
     ballX: number,
     ballY: number,
     score1: number,
-    score2: number
-    bonus : BonusPong [] | null
+    score2: number,
+    bonus : BonusPong [] | null,
+    name1: string,
+    name2: string
 }
 
 const socket = socketio('http://localhost:3000/game',{
-    autoConnect: false
+    autoConnect: false,
+    auth: {
+        token: "abcd"
+      }
   });
 
 type CanvasProps = React.DetailedHTMLProps<React.CanvasHTMLAttributes<HTMLCanvasElement>, HTMLCanvasElement> ;
 
 const Canvas :  React.FC<CanvasProps> = ({...props}) => {
 
-    const user = {id: 1, name: 'ljulien'};
     const canvasRef = useRef<HTMLCanvasElement | null>(null) ;
     const keyRef = useRef<{up : boolean, down : boolean}>({up: false, down: false}) ;
     const paddleHeight = 100;
@@ -50,6 +54,8 @@ const Canvas :  React.FC<CanvasProps> = ({...props}) => {
         ballY: Number(props.height) /2,
         score1: 0,
         score2: 0,
+        name1: "",
+        name2: "",
         bonus : null
     });
     const [isConnected, setIsConnected] = useState(socket.connected);
@@ -121,16 +127,13 @@ const Canvas :  React.FC<CanvasProps> = ({...props}) => {
     };
 
     useEffect(() => {
-        socket.emit('move', {move: direction, id: user.id});
+        socket.emit('move', {move: direction});
     }, [direction])
     
     useEffect(() => {
-        
-        socket.connect();
 
         socket.on('connect', () => {
             setIsConnected(true);
-            socket.emit('id', user);
           });
       
           socket.on('disconnect', () => {
@@ -144,16 +147,32 @@ const Canvas :  React.FC<CanvasProps> = ({...props}) => {
           socket.on('data', (data :PongState) => {
             setInfo(data);
           });
+
+        //   socket.on('user', (user : {name: string, id: }))
       
         return () => {
             socket.off('connect');
             socket.off('disconnect');
             socket.off('pong');
             socket.off('data');
-            socket.disconnect();
         };
     }, []);
 
+
+    useEffect(() => {
+        
+        if (typeof document != "undefined")
+        {
+            const cookieValue = document.cookie.split('; ').find((row) => row.startsWith('access_token'))?.split('=')[1];
+            console.log(cookieValue);
+            socket.auth.token = cookieValue;
+            socket.connect();
+        }
+
+        return () => {
+            socket.disconnect();
+        };
+    },[]);
 
     useEffect(() => {
         
@@ -184,8 +203,8 @@ const Canvas :  React.FC<CanvasProps> = ({...props}) => {
             windowWidth = Number(props.width);
             windowHeight = Number(props.height);
         }
-        console.log(windowWidth);
-        console.log(windowHeight);
+        // console.log(windowWidth);
+        // console.log(windowHeight);
         let scaleWindow : number;
         if (windowHeight * (16 / 9) > windowWidth)
         {
@@ -209,8 +228,9 @@ const Canvas :  React.FC<CanvasProps> = ({...props}) => {
             ctx.arc(info.ballX, info.ballY, ballSize, 0, Math.PI * 2, true);
             ctx.fill();
 
-            const score1 = name1 + ": " + info.score1;
-            const score2 = name2 + ": " + info.score2;
+            const score1 = info.name1 + ": " + info.score1;
+            const score2 = info.name2 + ": " + info.score2;
+
 
             ctx.font ="48px serif"
             ctx.textAlign = "center";
