@@ -78,10 +78,13 @@
                     if (this.isMemberOfActiveRoom) {
                         this.socket.chat.emit('leaveRoom', this.activeRoom);
                     } else {
-                        this.socket.chat.emit('joinRoom', this.activeRoom);
-                    }
+                        if(this.activeRoom != "dm")
+                            this.socket.chat.emit('joinRoom', this.activeRoom);
+                        else
+                            this.socket.chat.emit("joindm", "other") 
+                        }
                 }
-            },
+            }, 
             computed: {
                 isMemberOfActiveRoom() {
                     return this.rooms[this.activeRoom];

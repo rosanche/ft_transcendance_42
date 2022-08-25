@@ -15,6 +15,8 @@ export class ChatGateway implements OnGatewayInit {
 
     private logger : Logger = new Logger('ChatGateway');
    private iddd : Map<Number, string> = new Map();
+   private mp : Number[];
+   private idchar 
 
     
         afterInit(server : any)
@@ -48,21 +50,17 @@ export class ChatGateway implements OnGatewayInit {
         }
      }
 
-    async mpcha(user: User,client: Socket, room: string)
+    async mpcha(user: User,client: Socket, user2: User)
     {
 
         const channel =   await this.Prisma.mp.findFirst({where:{
-            AND:{ 
-            user:{
-                some:{
-                    id: user.id,}}
-                },
-                user:{
-                    some:{
-                        id: 1}}
-                    }
+               OR:[ {userId1: user.id,
+                        userId2: user2.id},
+                    {
+                    userId1: user2.id,
+                    userId2: user.id}],
         }
-        )
+        });
         if (channel)
             return channel;
         return   await this.Prisma.mp.create({
@@ -70,26 +68,39 @@ export class ChatGateway implements OnGatewayInit {
                 user:{
                     connect:[{
                         id: user.id,},
-                    {id: 1}],
-                    }
+                    {id: user2.id }],
+                    },
+                    userId1: user.id,
+                    userId2:  user2.id
                     }
         })
-
     }
+
+    @SubscribeMessage('joindm')
+     async handleRoomdm(client: Socket, name: string)
+     {
+        const user = await this.authService.getUserFromSocket(client);
+        const user2 = await this.Prisma.user.findUnique({
+            where:{
+                pseudo: name,
+            },
+        });
+
+        if (user == null)
+            return ;
+        const channelup = await this.mpcha(user ,client, user2);
+        this.mp[0] = channelup.userId1;
+        this.mp[1] = channelup.userId2;
+        client.emit('joinedRoom', 'dm');
+     }
+
 
      @SubscribeMessage('joinRoom')
      async handleRoomJoin(client: Socket, room: string)
      {
         const user = await this.authService.getUserFromSocket(client);
-        if (user == null)
-            return ;
-        if ('dm' == room)
-        {
-                const channelup = await this.mpcha(user ,client, room);
-                    client.emit('joinedRoom', room);
-        }
-        else
-            client.emit('joinedRoom', room);
+        client.join(room);
+        client.emit('joinedRoom', room);
      }
 
      @SubscribeMessage('leaveRoom')
@@ -103,7 +114,7 @@ export class ChatGateway implements OnGatewayInit {
                 name: room
             },
                 data:{
-                users:{
+                users:{ 
                     disconnect:{
                         id: user.id}}
                     }
@@ -118,7 +129,13 @@ export class ChatGateway implements OnGatewayInit {
       async handleMessage(client: Socket, message: { sender: string, room: string, message: string }) {
         const user = await this.authService.getUserFromSocket(client);
       message.sender = user.pseudo;
-       this.wss.to(message.room).emit('chatToClient', message );
+      if (message.room != "dm")
+            this.wss.to(message.room).emit('chatToClient', message );
+       else
+       {
+            this.wss.to(this.iddd[+this.mp[0]]).emit('chatToClient', message );
+            this.wss.to(this.iddd[+this.mp[1]]).emit('chatToClient', message );
+       }
        if (message.room == "dm")
        {
         const cha = await this.Prisma.channel.findUnique({

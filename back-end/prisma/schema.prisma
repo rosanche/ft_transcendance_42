@@ -86,7 +86,8 @@ model Mp {
   createdAt DateTime @default(now())
   updateAt DateTime @updatedAt
   user User[] @relation("mpuser")
-  
+  userId1 Int 
+  userId2 Int
   post Post[] @relation("mppost")
   @@map("mp")
 }
