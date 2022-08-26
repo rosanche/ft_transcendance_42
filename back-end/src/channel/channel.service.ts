@@ -133,6 +133,41 @@ export class ChannelService
         }
        return null;
     }
+    async blockedchannel(user : User, src : InviteDto)
+    {
+        const channel = await this.Prisma.channel.findFirst(
+            {where :
+            { 
+                AND: [
+                {
+                    name: src.name,
+                },
+                {
+                    admin:{
+                        some: {id: user.id}
+                    },
+                },
+                {
+                    users:{ 
+                    some: {pseudo : src.pseudo}
+                        },
+                },
+            ]
+            },
+        })
+        console.log(channel);
+        return await this.Prisma.channel.update({
+            where :
+            {
+                id : channel.id,
+            },
+            data:{
+                blocked:{
+                    connect:[{pseudo: user.pseudo}]
+                },
+            }
+        })
+    }
 
     async invitechannel(user: User, src : InviteDto)
     {

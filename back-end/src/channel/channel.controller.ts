@@ -54,5 +54,17 @@ export class ChannelController
     {
         return this.ChannelService.invitechannel(user, dto);
     }
-    
+
+    @Post('Blocked')
+    blockedchannel(@GetUser() user: User, @Body() dto: InviteDto)
+    {
+        return this.ChannelService.blockedchannel(user, dto);
+
+    }
+
+   /* @Post('Mute')
+    mutechannel(@GetUser() user: User, @Body() dto: InviteDto)
+    {
+
+    }*/
 }

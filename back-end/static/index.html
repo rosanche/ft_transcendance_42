@@ -47,6 +47,7 @@
             el: '#v-app',
             data: {
                 username: '',
+                friend: '',
                 mp: '',
                 text: '',
                 messages: {
@@ -79,9 +80,13 @@
                         this.socket.chat.emit('leaveRoom', this.activeRoom);
                     } else {
                         if(this.activeRoom != "dm")
+                        {
+                            
                             this.socket.chat.emit('joinRoom', this.activeRoom);
+                        }
                         else
-                            this.socket.chat.emit("joindm", "other") 
+                            this.friend = prompt('entre pseudo friend:');
+                            this.socket.chat.emit("joindm", this.friend) 
                         }
                 }
             }, 

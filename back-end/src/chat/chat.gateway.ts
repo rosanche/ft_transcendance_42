@@ -71,7 +71,8 @@ export class ChatGateway implements OnGatewayInit {
                     {id: user2.id }],
                     },
                     userId1: user.id,
-                    userId2:  user2.id
+                    userId2:  user2.id,
+                    blocked: false,
                     }
         })
     }
@@ -92,6 +93,7 @@ export class ChatGateway implements OnGatewayInit {
         this.mp[0] = channelup.userId1;
         this.mp[1] = channelup.userId2;
         client.emit('joinedRoom', 'dm');
+        this.wss.to(this.iddd[user2.id]).emit('joinedRoom', 'dm');
      }
 
 
@@ -99,7 +101,8 @@ export class ChatGateway implements OnGatewayInit {
      async handleRoomJoin(client: Socket, room: string)
      {
         const user = await this.authService.getUserFromSocket(client);
-        client.join(room);
+        if(room != 'dm')
+            client.join(room);
         client.emit('joinedRoom', room);
      }
 
