@@ -5,7 +5,7 @@ import { GameService } from './game.service';
 import * as _ from "lodash"
 import {v4 as uuidv4} from "uuid"
 import {GamePong} from "./GamePong"
-import { AuthService } from 'src/auth/auth.service';
+import { AuthService } from '../auth/auth.service';
 import { User } from "@prisma/client";
 
 var timetick = 17

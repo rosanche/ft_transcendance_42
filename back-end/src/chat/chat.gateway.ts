@@ -1,10 +1,10 @@
 import {  Logger, Query ,Controller , Get, Param , UseGuards, Patch, Body, Post, UseInterceptors, Res ,UploadedFile, Request} from "@nestjs/common";
 import {SubscribeMessage ,WebSocketGateway, OnGatewayInit, WsResponse,OnGatewayConnection,OnGatewayDisconnect, WebSocketServer} from "@nestjs/websockets";
 import { Socket, Server } from "socket.io";
-import { Jwt2FAGuard } from 'src/auth/guard';
+import { Jwt2FAGuard } from '../auth/guard';
 import { User } from '@prisma/client';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { AuthService } from "src/auth/auth.service";
+import { PrismaService } from '../prisma/prisma.service';
+import { AuthService } from "../auth/auth.service";
 
 @WebSocketGateway()
 export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {

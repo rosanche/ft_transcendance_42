@@ -8,6 +8,7 @@ import { GameModule } from './game/game.module';
 import { FriendModule } from './friend/friend.module';
 import { ChatModule } from './chat/chat.module';
 
+
 @Module({
   imports: [ConfigModule.forRoot({isGlobal: true}) ,AuthModule, UserModule, BookmarkModule, PrismaModule, GameModule, FriendModule, ChatModule]
 })
