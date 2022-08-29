@@ -13,8 +13,12 @@ type BonusPong =
 {
     x : number,
     y : number,
-    type: string
+    type: string,
+    date: number,
+    owner: null | number
 }
+
+const typeBonus = ["PaddleSize", "PaddleSpeed", "BallSpeed"];
 
 type PongState = {
     paddle1Y : number,
@@ -27,6 +31,11 @@ type PongState = {
     name1: string,
     name2: string
 }
+
+const bonusSize = 17;
+const paddleHeight = 100;
+const paddleWidth = 10;
+const ballSize = 15;
 
 const socket = socketio('http://localhost:3000/game',{
     autoConnect: false,
@@ -41,9 +50,7 @@ const Canvas :  React.FC<CanvasProps> = ({...props}) => {
 
     const canvasRef = useRef<HTMLCanvasElement | null>(null) ;
     const keyRef = useRef<{up : boolean, down : boolean}>({up: false, down: false}) ;
-    const paddleHeight = 100;
-    const paddleWidth = 10;
-    const ballSize = 15;
+    
     const name1 = "player1";
     const name2 = "player2";
     const [direction,setDirection] = useState<number>(0);
@@ -56,7 +63,7 @@ const Canvas :  React.FC<CanvasProps> = ({...props}) => {
         score2: 0,
         name1: "",
         name2: "",
-        bonus : null
+        bonus : []
     });
     const [isConnected, setIsConnected] = useState(socket.connected);
     const [lastPong, setLastPong] = useState(null);
@@ -227,6 +234,31 @@ const Canvas :  React.FC<CanvasProps> = ({...props}) => {
             ctx.beginPath();
             ctx.arc(info.ballX, info.ballY, ballSize, 0, Math.PI * 2, true);
             ctx.fill();
+            if(info.bonus.length)
+            {
+                info.bonus.forEach(element => { 
+                    if (element.owner == null)
+                    {
+                        switch (element.type)
+                        {
+                        case typeBonus[0]:
+                            ctx.fillStyle ="red";
+                            break;
+                        case typeBonus[1]:
+                            ctx.fillStyle ="green";
+                            break;
+                        case typeBonus[2]:
+                            ctx.fillStyle ="blue";
+                            break;
+                        };
+                        ctx.beginPath();
+                        ctx.arc(element.x, element.y, bonusSize, 0, Math.PI * 2, true);
+                        ctx.fill();
+                        ctx.fillStyle ="white";
+                    }
+
+                });
+            }   
 
             const score1 = info.name1 + ": " + info.score1;
             const score2 = info.name2 + ": " + info.score2;

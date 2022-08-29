@@ -23,7 +23,7 @@ type PongInfo = {
 }
 
 const typeBonus = ["PaddleSize", "PaddleSpeed", "BallSpeed"];
-const bonusSize = 10;
+const bonusSize = 17;
 const ballSize = 15;
 const freqBonus = 8000;
 
@@ -242,6 +242,7 @@ export class GamePong {
       [newX, newY] = [this.xMax/2,this.yMax/2] 
       this.angleBall = 0;
       this.ballSpeed = 10;
+      this.lastTouch = 0;
     }
     else if(newX + this.ballSize < 0)
     {
@@ -251,17 +252,18 @@ export class GamePong {
       this.angleBall = Math.PI;
       this.ballSpeed = 10;
       this.lastTouch = 0;
+      
     }
     else if(newY + this.ballSize > this.yMax)
     {
       newY  = (2 * this.yMax) - (newY + (2 * this.ballSize));
       this.angleBall = -this.angleBall;
-      this.lastTouch = 0;
     }
     else if(newY - this.ballSize < 0)
     {
       newY = - (newY - (2 * this.ballSize));
       this.angleBall = -this.angleBall;
+      
     }
     return [newX,newY];
   }
