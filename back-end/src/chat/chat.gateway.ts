@@ -1,10 +1,10 @@
 import {  Logger, Query ,Controller , Get, Param , UseGuards, Patch, Body, Post, UseInterceptors, Res ,UploadedFile, Request} from "@nestjs/common";
 import {SubscribeMessage ,WebSocketGateway, OnGatewayInit, WsResponse,OnGatewayConnection,OnGatewayDisconnect, WebSocketServer} from "@nestjs/websockets";
 import { Socket, Server } from "socket.io";
-import { Jwt2FAGuard } from 'src/auth/guard';
+import { Jwt2FAGuard } from '../auth/guard';
 import { User } from '@prisma/client';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { AuthService } from "src/auth/auth.service";
+import { PrismaService } from '../prisma/prisma.service';
+import { AuthService } from "../auth/auth.service";
 
 
 @WebSocketGateway({ namespace: '/chat' })
@@ -127,6 +127,48 @@ export class ChatGateway implements OnGatewayInit {
         client.join(room);
         client.emit('leftRoom', room)
      }
+
+     @SubscribeMessage('blocked')
+      async blockeduser(client: Socket, src: { pseudo: string, room: string, type: string,  time : number, description : string})
+     {
+        const user = await this.authService.getUserFromSocket(client);
+        if (user)
+        return "";
+        const cha = await this.Prisma.channel.findFirst({
+            where:
+            {
+                name: src.room,
+                users : {
+                    some : 
+                        {
+                    pseudo : src.pseudo,
+                    }
+                },
+                admin : {
+                    some :
+                        {
+                    id : user.id,
+                    }
+                }
+            },
+        })
+        if (cha)
+        {
+            if (src.type !== "ban")
+                src.type = "mute";
+            const ban = await this.Prisma.ban.create({
+                data:
+                {
+                    timeBan: src.time,
+                    finshban: Date.now() + 60000 * src.time,
+                    mute_ban: src.type,
+                    active: true,
+                    iduser: 1,
+                }
+            })  
+
+        }
+    }
   
      @SubscribeMessage('chatToServer')
       async handleMessage(client: Socket, message: { sender: string, room: string, message: string }) {

@@ -1,8 +1,8 @@
 import { Query ,Controller , Get, Param , UseGuards, Patch, Body, Post, UseInterceptors, Res ,UploadedFile, Request} from "@nestjs/common"
 import { ChannelService } from "./channel.service"
 import { User } from '@prisma/client';
-import { GetUser } from 'src/auth/decorator';
-import { Jwt2FAGuard } from 'src/auth/guard';
+import { GetUser } from '../auth/decorator';
+import { Jwt2FAGuard } from '../auth/guard';
 import { ChannelDto, InviteDto } from "../dto";
 import {FileInterceptor} from '@nestjs/platform-express'
 import {diskStorage} from 'multer'

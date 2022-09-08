@@ -1,8 +1,8 @@
 import { Controller, Get, Post, Body, UseGuards} from '@nestjs/common';
 import { GameService } from './game.service';
 import { gameDto } from "./dto";
-import { GetUser } from 'src/auth/decorator';
-import { JwtGuard } from 'src/auth/guard';
+import { GetUser } from '../auth/decorator';
+import { JwtGuard } from '../auth/guard';
 import { User } from '@prisma/client';
 
 @Controller('game')

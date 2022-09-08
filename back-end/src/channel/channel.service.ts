@@ -1,9 +1,9 @@
 import{ Injectable } from '@nestjs/common';
-import { FriendDto, UserUpdateDto } from 'src/auth/dto';
-import { PrismaService } from 'src/prisma/prisma.service'
+import { FriendDto, UserUpdateDto } from '../auth/dto';
+import { PrismaService } from '../prisma/prisma.service'
 import { User } from '@prisma/client';
 import { Channel } from '@prisma/client';
-import { ChannelDto, InviteDto } from 'src/dto/channel.dto';
+import { ChannelDto, InviteDto } from '../dto/channel.dto';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -133,6 +133,7 @@ export class ChannelService
         }
        return null;
     }
+    
     async blockedchannel(user : User, src : InviteDto)
     {
         const channel = await this.Prisma.channel.findFirst(

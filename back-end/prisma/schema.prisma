@@ -77,7 +77,23 @@ model Channel {
   users User[] @relation("channeluser")
   blocked User[] @relation("channelblocked")
   post Post[] @relation("channelpost")
+  bans Ban[] @relation("channelban")
   @@map("channel")
+}
+
+
+ model Ban {
+  id Int @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  timeBan   Int  ?
+  finshban  Int ? 
+  mute_ban   String
+  active    Boolean
+  description  String ?
+  Channel Channel[] @relation("channelban")
+  iduser Int
+
+    @@map("ban")
 }
 
 model Mp {
