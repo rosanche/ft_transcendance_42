@@ -1,6 +1,7 @@
 
 import React, {useCallback, useEffect, useRef, useState} from 'react';
-import socketio from 'socket.io-client'
+import socketio from 'socket.io-client';
+
 
 type PongProps = {
     player1 : string,
@@ -50,7 +51,9 @@ const Canvas :  React.FC<CanvasProps> = ({...props}) => {
 
     const canvasRef = useRef<HTMLCanvasElement | null>(null) ;
     const keyRef = useRef<{up : boolean, down : boolean}>({up: false, down: false}) ;
-    
+    const scaleRef = useRef<Number>(1);
+    let windowWidth :number = props.width;
+    let windowHeight :number = props.height;
     const name1 = "player1";
     const name2 = "player2";
     const [direction,setDirection] = useState<number>(0);
@@ -66,6 +69,7 @@ const Canvas :  React.FC<CanvasProps> = ({...props}) => {
         bonus : []
     });
     const [isConnected, setIsConnected] = useState(socket.connected);
+    const [isGame, setIsGame] = useState(false);
     const [lastPong, setLastPong] = useState(null);
 
 
@@ -155,6 +159,13 @@ const Canvas :  React.FC<CanvasProps> = ({...props}) => {
             setInfo(data);
           });
 
+          socket.on('gameStart', () => {
+            setIsGame(true);
+          });
+          socket.on('gameEnd', () => {
+            setIsGame(false);
+          });
+
         //   socket.on('user', (user : {name: string, id: }))
       
         return () => {
@@ -198,33 +209,26 @@ const Canvas :  React.FC<CanvasProps> = ({...props}) => {
 
 
     useEffect(() => {
-        let windowWidth :number;
-        let windowHeight :number;
+
         if (typeof window != "undefined")
         {
             windowWidth = window.innerWidth;
             windowHeight = window.innerHeight;
-        }
-        else
-        {
-            windowWidth = Number(props.width);
-            windowHeight = Number(props.height);
+            if (windowHeight * (16 / 9) > windowWidth)
+            {
+                scaleRef.current = windowWidth / Number(props.width) ;
+            }
+            else
+            {
+                scaleRef.current = windowHeight / Number(props.height)  ;
+            }
         }
         // console.log(windowWidth);
         // console.log(windowHeight);
-        let scaleWindow : number;
-        if (windowHeight * (16 / 9) > windowWidth)
-        {
-            scaleWindow = windowWidth / Number(props.width) ;
-        }
-        else
-        {
-            scaleWindow = windowHeight / Number(props.height)  ;
-        }
         const drawPong = (ctx: CanvasRenderingContext2D, props : CanvasProps, info : PongState) => {
             ctx.restore();
             ctx.save();
-            ctx.scale(scaleWindow, scaleWindow)
+            //ctx.scale(scaleWindow, scaleWindow)
             ctx.fillStyle ="black";
             ctx.fillRect(0,0,Number(props.width),Number(props.height));
     
@@ -241,15 +245,19 @@ const Canvas :  React.FC<CanvasProps> = ({...props}) => {
                     {
                         switch (element.type)
                         {
-                        case typeBonus[0]:
-                            ctx.fillStyle ="red";
-                            break;
-                        case typeBonus[1]:
-                            ctx.fillStyle ="green";
-                            break;
-                        case typeBonus[2]:
-                            ctx.fillStyle ="blue";
-                            break;
+                            case typeBonus[0]:
+                                ctx.fillStyle ="blue";
+                                break;
+                            case typeBonus[1]:
+                                ctx.fillStyle ="yellow";
+                                break;
+                            case typeBonus[2]:
+                                ctx.fillStyle ="red";
+                                break;
+                            default:
+                                ctx.fillStyle ="orange";
+                                break;
+                        
                         };
                         ctx.beginPath();
                         ctx.arc(element.x, element.y, bonusSize, 0, Math.PI * 2, true);
@@ -283,11 +291,20 @@ const Canvas :  React.FC<CanvasProps> = ({...props}) => {
     }, [info]);
 
     
+    if(isGame)
+    {
+    return (
+            <canvas class="canvasStyle" width={1600} height={900} ref={canvasRef}/> 
+            );
     
+    }
+    else
+    {
+        return (
+            <canvas class="canvasStyle" width={1600} height={900} ref={canvasRef}/> 
+            );
+    }
 
-    return <canvas width={props.width} height={props.height} ref={canvasRef}/> ;
-}
-
-
+};
 
 export default Canvas

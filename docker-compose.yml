@@ -47,7 +47,7 @@ services:
       context: ./front-app
       target: "${NODE_ENV}"
       dockerfile: Dockerfile
-    entrypoint: ["yarn", "${NODE_ENV}", "-p", "3001"]
+    entrypoint: ["yarn", "dev", "-p", "3001"]
     env_file:
       - .env
     ports:

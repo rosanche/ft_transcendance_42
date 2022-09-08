@@ -1,0 +1,21 @@
+.canvasStyle{
+  position: absolute;
+  top: 5%;
+  left: 5%;
+  bottom: 5%;
+  right: 5%;
+  width: 90%;
+  height: 90%;
+  
+}
+
+
+.container {
+
+    aspect-ratio: 16/9;
+    position: relative; /* If you want text inside of it */
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+
+}

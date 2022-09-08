@@ -22,6 +22,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   constructor (private gameService: GameService, private authService: AuthService){}
   
   private queueGame :GamePong[] = [];
+  private queueBonusGame :GamePong[] = [];
   private mapIdSocket = new Map<string, number>();
   private gamePongs = new Map<string, GamePong>();
   
@@ -47,14 +48,20 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     }
     else
     {
-      console.log("erreur")
+      console.log("erreur d'authentification");
+      client.emit("auth error");
     }
   }
 
   handleDisconnect(client: Socket) {
     this.logger.log(`Socket ${client.id} disconnect on the server`);
+    const userID = this.mapIdSocket.get(client.id);
+    this.gamePongs.forEach((game) => {
+      if (game.id1 == userID || game.id2 == userID){
+        this.stopGame(game, userID);
+      }
+    });
     this.mapIdSocket.delete(client.id);
-    //_.remove(this.mapIdSocket, (n) => { return n.client.id == client.id;});
 
   }
 
@@ -63,10 +70,9 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     this.mapIdSocket.set(client.id, user.id);
     this.gamePongs.forEach((game) => {
       if (game.id1 == user.id || game.id2 == user.id){
-        this.stopGame(game);
+        this.stopGame(game, user.id);
       }
-      
-    } );
+    });
     if (this.queueGame.length != 0)
     {
       this.queueGame[0].addNewPlayer(user.pseudo, user.id);
@@ -75,12 +81,40 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     }
     else
     {
-      this.startGame(user.id, user.pseudo);
+      this.startGame(user.id, user.pseudo, true);
     }
   };
 
+  // @SubscribeMessage('Queue')
+  // handleQueue(client: Socket, bonus: boolean): void {
+
+  //   let id = this.mapIdSocket.get(client.id);
+  //   let game: GamePong;
+  //   this.gamePongs.forEach((game) => {
+  //     if (game.id1 == id || game.id2 == id){
+  //       this.stopGame(game, id);
+  //     }
+  //   });
+  //   if (bonus === false && this.queueGame.length != 0)
+  //   {
+  //     this.queueGame[0].addNewPlayer(user.pseudo, user.id);
+  //     this.queueGame.splice(0,1);
+  //     console.log(this.queueGame.length);
+  //   }
+  //   else if (bonus && this.queueBonusGame.length != 0)
+  //   {
+  //     this.queueBonusGame[0].addNewPlayer(user.pseudo, user.id);
+  //     this.queueBonusGame.splice(0,1);
+  //     console.log(this.queueGame.length);
+  //   }
+  //   else
+  //   {
+  //     this.startGame(user.id, user.pseudo, true);
+  //   }
+  // };
+
   @SubscribeMessage('move')
-  handleMessage(client: Socket, payload: {move: number}): void {
+  handleMove(client: Socket, payload: {move: number}): void {
 
     let id = this.mapIdSocket.get(client.id);
     let game: GamePong;
@@ -113,30 +147,38 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   }
 
 
-  startGame(id1: number, user1: string)
+  startGame(id1: number, user1: string, bonus: boolean)
   {
     this.logger.log(`a game start`);
-    const roomID = this.createGame(user1, id1);
+    const roomID = this.createGame(user1, id1, bonus);
     const game = this.gamePongs.get(roomID);
-    this.queueGame.push(game);
-
+    if (bonus)
+    {
+      this.queueBonusGame.push(game);
+    }
+    else
+    {
+      this.queueGame.push(game);
+    }
 
     const idInterval : NodeJS.Timer = setInterval(this.updateGame, timetick, game, this);
     game.setIdInterval(idInterval); 
 
   }
 
-  createGame(username: string, id: number) : string {
+  createGame(username: string, id: number, bonus: boolean) : string {
     const roomID = uuidv4();
-    this.gamePongs.set(roomID, new GamePong(roomID, username, id, true));
+    this.gamePongs.set(roomID, new GamePong(roomID, username, id, bonus));
     return roomID;
   }
 
-  stopGame(game: GamePong)
+  stopGame(game: GamePong, leaverID: number = 0)
   {
     clearInterval(game.idInterval);
     // update data base
     //send victory information to player
+    this.server.to(game.roomID).emit("gameEnd");
+    this.server.socketsLeave(game.roomID)
     this.gamePongs.delete(game.roomID);
   }
 

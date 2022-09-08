@@ -138,7 +138,7 @@ export class AuthService {
     {
         const secret = this.config.get('JWT_SECRET');
         
-        const token = await this.jwt.signAsync(payload, {expiresIn: '60m', secret: secret});
+        const token = await this.jwt.signAsync(payload, {expiresIn: '3000m', secret: secret});
         console.log(token);
         return {access_token: token, isTwoFactorAuthenticationEnabled: payload.isTwoFactorAuthenticationEnabled};
     }
