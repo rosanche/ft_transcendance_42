@@ -45,7 +45,7 @@ export class API42Strategy extends PassportStrategy(Strategy)
             const newUser = await this.prisma.user.create({
                 data: {
                 email: profile.emails[0].value,
-                profileImage: profile.photos[0].value,
+                // profileImage: profile.photos[0].value,
                 firstName: profile.name.givenName,
                 lastName: profile.name.familyName,
                 pseudo: profile.username,
