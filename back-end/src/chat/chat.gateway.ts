@@ -1,5 +1,5 @@
 import {  Logger, Query ,Controller , Get, Param , UseGuards, Patch, Body, Post, UseInterceptors, Res ,UploadedFile, Request} from "@nestjs/common";
-import {SubscribeMessage ,WebSocketGateway, OnGatewayInit, WsResponse,OnGatewayConnection,OnGatewayDisconnect, WebSocketServer} from "@nestjs/websockets";
+import {ConnectedSocket , SubscribeMessage ,WebSocketGateway, OnGatewayInit, WsResponse,OnGatewayConnection,OnGatewayDisconnect, WebSocketServer} from "@nestjs/websockets";
 import { Socket, Server } from "socket.io";
 import { Jwt2FAGuard } from '../auth/guard';
 import { User } from '@prisma/client';
@@ -16,12 +16,14 @@ export class ChatGateway implements OnGatewayInit {
     private logger : Logger = new Logger('ChatGateway');
    private iddd : Map<Number, string> = new Map();
    private mp : Number[];
-   private idchar 
+   private banactive  : Map<Map<boolean,Number>, string>;
+   private muteactive : Map<Map<boolean,Number>, string>;
 
     
         afterInit(server : any)
         {
             this.logger.log('initilized!');
+            console.log("AAAAAA")
         }
 
     async  handleDisconnect(client: Socket)
@@ -32,14 +34,16 @@ export class ChatGateway implements OnGatewayInit {
             this.iddd.delete(user.id);
      }
 
-     async handleConnection(client: Socket, @Res() res, ... args: any[])
+     async handleConnection( client: Socket, @Res() res, ... args: any[])
      {
         const user = await this.authService.getUserFromSocket(client);
+        console.log(user)
+        //console.log(client)
         if (user)
         {
             this.logger.log(`Socket ${client.id} connect on the server with pseudo ${user.pseudo}`);
             this.iddd[user.id] = client.id;
-          
+           console.log("AAssssAAAA")
                 client.join("general");
                 client.to("general").emit('joinedRoom', "typescript")
         }
@@ -166,8 +170,54 @@ export class ChatGateway implements OnGatewayInit {
                     iduser: 1,
                 }
             })  
-
+            this.wss.to(this.iddd[src.pseudo]).emit('chatTo' + src.type, src)
         }
+    }
+
+    async noban(id : number,  message: { sender: string, room: string, message: string })
+    {
+             const ban = await this.Prisma.ban.findMany(
+            {
+                where:
+                {
+                    active: true,
+                    Channel: {
+                        some :
+                        {
+                        name: message.room,
+                            }
+                         },
+                    id: id,
+                }
+            })
+            this.banactive[id][ message.room] = false;
+            this.muteactive[id][ message.room] = false;
+            for (let i : number = 0; ban[i]; i++)
+            {
+                if (ban[i].finshban < Date.now())
+                {
+                await this.Prisma.ban.update(
+                    {
+                        where :
+                        {
+                        id: ban[i].id
+                        },
+                        data :
+                        {
+                            active: false,
+                        }
+                    }
+                )
+                }
+                else
+                {
+                    if (ban[i].mute_ban == "ban")
+                        this.banactive[id][message.room] = true;
+                    else
+                        this.muteactive[id][message.room] = true;
+                }
+            }
+            return (this.banactive[id][ message.room] || this.muteactive[id][ message.room] )
     }
   
      @SubscribeMessage('chatToServer')
@@ -175,8 +225,25 @@ export class ChatGateway implements OnGatewayInit {
         const user = await this.authService.getUserFromSocket(client);
       message.sender = user.pseudo;
       if (message.room != "dm")
-            this.wss.to(message.room).emit('chatToClient', message );
-       else
+      {
+        const ban = await this.Prisma.ban.findMany(
+            {
+                where:
+                {
+                    active: true,
+                    Channel: {
+                        some :
+                        {
+                        name: message.room
+                            }
+                         },
+                    id: user.id,
+                }
+            })
+            if (!(this.banactive[user.id][message.room] || this.muteactive[user.id][message.room]) || await this.noban(user.id, message) )
+            this.wss.to(message.room).emit('chatToClient', message ); 
+      }
+      else
        {
             this.wss.to(this.iddd[+this.mp[0]]).emit('chatToClient', message );
             this.wss.to(this.iddd[+this.mp[1]]).emit('chatToClient', message );

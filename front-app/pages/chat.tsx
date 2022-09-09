@@ -1,9 +1,7 @@
 import React, {useState, useRef} from 'react';
 import socketio  from 'socket.io-client'
 
-const socket = socketio('http://localhost:3000/chat',{
-    autoConnect: false
-  });
+const socket = socketio('http://localhost:3000/chat');
 
   type Form  = {
         text : String,
