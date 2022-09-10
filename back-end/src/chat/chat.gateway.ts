@@ -14,11 +14,10 @@ export class ChatGateway implements OnGatewayInit {
     @WebSocketServer() wss: Server;
 
     private logger : Logger = new Logger('ChatGateway');
-   private iddd : Map<Number, string> = new Map();
-   private mp : Number[];
+   private iddd : Map<Number, Number[]> = new Map();
    private banactive  : Map<Map<boolean,Number>, string>;
    private muteactive : Map<Map<boolean,Number>, string>;
-
+    private mp : Number[];
     
         afterInit(server : any)
         {
@@ -37,13 +36,12 @@ export class ChatGateway implements OnGatewayInit {
      async handleConnection( client: Socket, @Res() res, ... args: any[])
      {
         const user = await this.authService.getUserFromSocket(client);
-        console.log(user)
-        //console.log(client)
+       // console.log(user);
+        //console.log("SSSSSSSSSSSSSSSSSSSSSSSSSSS")
         if (user)
         {
             this.logger.log(`Socket ${client.id} connect on the server with pseudo ${user.pseudo}`);
             this.iddd[user.id] = client.id;
-           console.log("AAssssAAAA")
                 client.join("general");
                 client.to("general").emit('joinedRoom', "typescript")
         }
@@ -91,7 +89,7 @@ export class ChatGateway implements OnGatewayInit {
             },
         });
 
-        if (user == null)
+        if (user === null || user2 === null)
             return ;
         const channelup = await this.mpcha(user ,client, user2);
         this.mp[0] = channelup.userId1;
@@ -200,7 +198,7 @@ export class ChatGateway implements OnGatewayInit {
                     {
                         where :
                         {
-                        id: ban[i].id
+                            id: ban[i].id
                         },
                         data :
                         {
@@ -217,12 +215,13 @@ export class ChatGateway implements OnGatewayInit {
                         this.muteactive[id][message.room] = true;
                 }
             }
-            return (this.banactive[id][ message.room] || this.muteactive[id][ message.room] )
+            return !(this.banactive[id][ message.room] || this.muteactive[id][ message.room])
     }
   
      @SubscribeMessage('chatToServer')
       async handleMessage(client: Socket, message: { sender: string, room: string, message: string }) {
         const user = await this.authService.getUserFromSocket(client);
+        console.log("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
       message.sender = user.pseudo;
       if (message.room != "dm")
       {
@@ -240,13 +239,13 @@ export class ChatGateway implements OnGatewayInit {
                     id: user.id,
                 }
             })
-            if (!(this.banactive[user.id][message.room] || this.muteactive[user.id][message.room]) || await this.noban(user.id, message) )
-            this.wss.to(message.room).emit('chatToClient', message ); 
+            if (!(this.banactive[user.id][message.room] || this.muteactive[user.id][message.room]) || await this.noban(user.id, message))
+                this.wss.to(message.room).emit('chatToClient', message ); 
       }
       else
-       {
-            this.wss.to(this.iddd[+this.mp[0]]).emit('chatToClient', message );
-            this.wss.to(this.iddd[+this.mp[1]]).emit('chatToClient', message );
+        {
+            this.wss.to(this.iddd[+this.mp[0]][0]).emit('chatToClient', message );
+            this.wss.to(this.iddd[+this.mp[1]][0]).emit('chatToClient', message );
        }
        if (message.room == "dm")
        {
