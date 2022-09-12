@@ -6,6 +6,11 @@ import { Channel } from '@prisma/client';
 import { ChannelDto, InviteDto } from '../dto/channel.dto';
 import * as bcrypt from 'bcrypt';
 
+export class Perso
+{
+
+}
+
 @Injectable()
 export class ChannelService
 {

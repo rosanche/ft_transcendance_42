@@ -2,7 +2,7 @@ import {  Logger, Query ,Controller , Get, Param , UseGuards, Patch, Body, Post,
 import {ConnectedSocket , SubscribeMessage ,WebSocketGateway, OnGatewayInit, WsResponse,OnGatewayConnection,OnGatewayDisconnect, WebSocketServer} from "@nestjs/websockets";
 import { Socket, Server } from "socket.io";
 import { Jwt2FAGuard } from '../auth/guard';
-import { User } from '@prisma/client';
+import { User, Channel } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuthService } from "../auth/auth.service";
 
@@ -15,13 +15,87 @@ export class ChatGateway implements OnGatewayInit {
 
     private logger : Logger = new Logger('ChatGateway');
    private iddd : Map<Number, Number[]> = new Map();
-   private banactive  : Map<Map<boolean,Number>, string>;
-   private muteactive : Map<Map<boolean,Number>, string>;
-    private mp : Number[];
-    
-        afterInit(server : any)
+   private banactive  = new  Map<string , Map<Number, Boolean> >();
+   private muteactive = new Map<string, Map<Number, Boolean> >();
+    private mp  = new Map<string, Number[]>;
+
+        async ban_or_not(cha : string, id: number)
+        {
+            const ban = await this.Prisma.ban.findMany(
+                {
+                    where:
+                    {
+                        active: true,
+                        Channel: {
+                            some :
+                            {
+                            name: cha,
+                                }
+                             },
+                        id: id,
+                    }
+                })
+                this.banactive.get(cha).set(id ,false);
+                this.muteactive.get(cha).set(id ,false);
+                if (ban)
+                    return  true;
+                for (let i : number = 0; ban[i]; i++)
+                {
+                    if (ban[i].finshban < Date.now())
+                    {
+                    await this.Prisma.ban.update(
+                        {
+                            where :
+                            {
+                                id: ban[i].id
+                            },
+                            data :
+                            {
+                                active: false,
+                            }
+                        }
+                    )
+                    }
+                    else
+                    {
+                        if (ban[i].mute_ban == "ban")
+                        this.banactive.get(cha).set(id ,true);
+                        else
+                        this.muteactive.get(cha).set(id ,true);
+                    }
+                }
+                return !(this.banactive.get(cha).get(id) || this.muteactive.get(cha).get(id));
+        }
+
+        async afterInit(server : any)
         {
             this.logger.log('initilized!');
+            const cha  = await this.Prisma.channel.findMany({select:{
+                id: true,
+                name: true,
+                users:{
+                    select:
+                    {
+                    id: true,
+                    pseudo: true,
+                    }
+                },
+
+            }});
+            console.log(cha);
+            for (let i :number = 0; cha[i]; i++)
+            {
+                const a = new Map<number, Boolean>()
+                await this.banactive.set(cha[i].name, new Map<Number, Boolean>());
+                await this.muteactive.set(cha[i].name, new Map<Number, Boolean>());
+                for (let n :number = 0; cha[i].users[n]; n++)
+                {
+                    await this.banactive.get(cha[i].name).set(cha[i].users[n].id, false)
+                    console.log(this.banactive.get(cha[i].name).get(cha[i].users[n].id));
+                    this.ban_or_not(cha[i].name, cha[i].users[n].id)
+                }
+                console.log(`${cha[i].name} ha oui d'accord c'est toi`);
+            }
             console.log("AAAAAA")
         }
 
@@ -172,59 +246,43 @@ export class ChatGateway implements OnGatewayInit {
         }
     }
 
-    async noban(id : number,  message: { sender: string, room: string, message: string })
+    
+    @SubscribeMessage('mpToServer')
+    async handleMessageMp(client: Socket, message: { sender: string, pseudo: String, message: string })
     {
-             const ban = await this.Prisma.ban.findMany(
+        const user = await this.authService.getUserFromSocket(client);
+        message.sender = user.pseudo;
+        const user2 = await this.Prisma.user.findFirst(
             {
-                where:
-                {
-                    active: true,
-                    Channel: {
-                        some :
-                        {
-                        name: message.room,
-                            }
-                         },
-                    id: id,
-                }
-            })
-            this.banactive[id][ message.room] = false;
-            this.muteactive[id][ message.room] = false;
-            for (let i : number = 0; ban[i]; i++)
-            {
-                if (ban[i].finshban < Date.now())
-                {
-                await this.Prisma.ban.update(
-                    {
-                        where :
-                        {
-                            id: ban[i].id
-                        },
-                        data :
-                        {
-                            active: false,
+                where : {
+                    pseudo: message.sender,
+                NOT:{
+                    OR : [{
+                blocked:{
+                        some:{
+                            id: user.id,     
                         }
-                    }
-                )
-                }
-                else
+                }},
                 {
-                    if (ban[i].mute_ban == "ban")
-                        this.banactive[id][message.room] = true;
-                    else
-                        this.muteactive[id][message.room] = true;
+                myblocked:{
+                    some:{
+                        id: user.id,     
+                    }
                 }
-            }
-            return !(this.banactive[id][ message.room] || this.muteactive[id][ message.room])
+                }]
+                }
+            }});
+        if (user2)
+        {
+            this.wss.to(this.iddd[+this.mp[0]][0]).emit('chatToClient', message );
+            this.wss.to(this.iddd[+this.mp[1]][0]).emit('chatToClient', message );
+        }
     }
-  
-     @SubscribeMessage('chatToServer')
+
+     @SubscribeMessage('channelToServer')
       async handleMessage(client: Socket, message: { sender: string, room: string, message: string }) {
         const user = await this.authService.getUserFromSocket(client);
-        console.log("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
       message.sender = user.pseudo;
-      if (message.room != "dm")
-      {
         const ban = await this.Prisma.ban.findMany(
             {
                 where:
@@ -239,16 +297,8 @@ export class ChatGateway implements OnGatewayInit {
                     id: user.id,
                 }
             })
-            if (!(this.banactive[user.id][message.room] || this.muteactive[user.id][message.room]) || await this.noban(user.id, message))
+            if (!(this.banactive.get(message.room).get(user.id) || this.muteactive.get(message.room).get(user.id)) || await this.ban_or_not(message.room, user.id))
                 this.wss.to(message.room).emit('chatToClient', message ); 
-      }
-      else
-        {
-            this.wss.to(this.iddd[+this.mp[0]][0]).emit('chatToClient', message );
-            this.wss.to(this.iddd[+this.mp[1]][0]).emit('chatToClient', message );
-       }
-       if (message.room == "dm")
-       {
         const cha = await this.Prisma.channel.findUnique({
             where:{
                 name : message.room,
@@ -259,7 +309,6 @@ export class ChatGateway implements OnGatewayInit {
         userId: user.id,
         destById: cha.id
         },})
-    }
      }
 
      @SubscribeMessage('TEST')

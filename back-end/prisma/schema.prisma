@@ -41,12 +41,15 @@ model User {
   friendBy User[] @relation("acce_friend")
   myfriends  User[] @relation("acce_friend")
 
+  blocked User[] @relation("blocked")
+  myblocked User[] @relation("blocked")
+
   channel_creat Channel[] @relation("channelcreat")
   admin_channel Channel[] @relation("channeladmin")
   User_channel Channel[] @relation("channeluser")
   blocked_channel Channel[] @relation("channelblocked")
-  mp Mp[] @relation("mpuser")
 
+  mp Mp[] @relation("mpuser")
   mypost  Post[] @relation("mypost")
   
   @@map("user")
