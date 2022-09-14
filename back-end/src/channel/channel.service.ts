@@ -6,10 +6,6 @@ import { Channel } from '@prisma/client';
 import { ChannelDto, InviteDto } from '../dto/channel.dto';
 import * as bcrypt from 'bcrypt';
 
-export class Perso
-{
-
-}
 
 @Injectable()
 export class ChannelService
@@ -25,7 +21,7 @@ export class ChannelService
             data: {
                 name: src.name,
                 private: (src.private == 1),
-                createurId: user.id,
+                createurID: user.id,
                 admin:{ connect:[{id: user.id}]},
                 users:{ connect:[{id: user.id}]},
                 hash
@@ -38,7 +34,7 @@ export class ChannelService
             data: {
                 name: src.name,
                 private: (src.private == 1),
-                createurId: user.id,
+                createurID: user.id,
                 admin:{ connect:[{id: user.id}]},
                 users:{ connect:[{id: user.id}]},
             },

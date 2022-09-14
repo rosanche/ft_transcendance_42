@@ -69,8 +69,8 @@ model Game {
 
 model Channel {
   id Int @id @default(autoincrement())
-  createur User @relation("channelcreat", fields: [createurId], references: [id])
-  createurId Int
+  createur User @relation("channelcreat", fields: [createurID], references: [id])
+  createurID Int
   
   name String @unique()
   hash String?
@@ -89,8 +89,8 @@ model Channel {
   id Int @id @default(autoincrement())
   createdAt DateTime @default(now())
   timeBan   Int  ?
-  finshban  Int ? 
-  mute_ban   String
+  finshBan  Int ? 
+  muteBan   String
   active    Boolean
   description  String ?
   Channel Channel[] @relation("channelban")
@@ -105,8 +105,8 @@ model Mp {
   updateAt DateTime @updatedAt
   blocked Boolean
   user User[] @relation("mpuser")
-  userId1 Int 
-  userId2 Int
+  userID1 Int 
+  userID2 Int
   post Post[] @relation("mppost")
   @@map("mp")
 }
@@ -116,12 +116,12 @@ model Post {
   createdAt DateTime @default(now())
   updateAt DateTime @updatedAt
   
-  createur User? @relation("mypost",fields: [userId], references: [id])
-  userId Int?
-  dest Channel? @relation("channelpost", fields: [destById], references: [id])
-  mp Mp? @relation("mppost", fields: [mpId], references: [id])
-  destById Int?
-  mpId Int?
-  mesage String
+  createur User? @relation("mypost",fields: [userID], references: [id])
+  userID Int?
+  dest Channel? @relation("channelpost", fields: [destByID], references: [id])
+  mp Mp? @relation("mppost", fields: [mpID], references: [id])
+  destByID Int?
+  mpID Int?
+  message String
   @@map("post")
 }
