@@ -10,7 +10,7 @@ export default function Game()  {
     
 
     return (
-        <div class="container">
+        <div className="container">
             {<Canvas width={1600} height={900}/>}
         </div>
     );

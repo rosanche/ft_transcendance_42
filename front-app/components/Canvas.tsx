@@ -1,6 +1,7 @@
 
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import socketio from 'socket.io-client';
+import { useRouter } from "next/router";
 
 
 type PongProps = {
@@ -49,13 +50,12 @@ type CanvasProps = React.DetailedHTMLProps<React.CanvasHTMLAttributes<HTMLCanvas
 
 const Canvas :  React.FC<CanvasProps> = ({...props}) => {
 
+    const router = useRouter();
     const canvasRef = useRef<HTMLCanvasElement | null>(null) ;
     const keyRef = useRef<{up : boolean, down : boolean}>({up: false, down: false}) ;
     const scaleRef = useRef<Number>(1);
     let windowWidth :number = props.width;
     let windowHeight :number = props.height;
-    const name1 = "player1";
-    const name2 = "player2";
     const [direction,setDirection] = useState<number>(0);
     const [info, setInfo] = useState<PongState>({
         paddle1Y : (Number(props.height) - paddleHeight) / 2,
@@ -145,34 +145,41 @@ const Canvas :  React.FC<CanvasProps> = ({...props}) => {
 
         socket.on('connect', () => {
             setIsConnected(true);
-          });
-      
-          socket.on('disconnect', () => {
-            setIsConnected(false);
-          });
-      
-          socket.on('pong', () => {
-            setLastPong(new Date().toISOString());
-          });
-      
-          socket.on('data', (data :PongState) => {
-            setInfo(data);
-          });
+        });
 
-          socket.on('gameStart', () => {
-            setIsGame(true);
-          });
-          socket.on('gameEnd', () => {
-            setIsGame(false);
-          });
+        socket.on('auth error', () => {
+            router.replace("http://localhost:3001/connection")
+        });
+    
+        socket.on('disconnect', () => {
+          setIsConnected(false);
+        });
+    
+        socket.on('pong', () => {
+          setLastPong(new Date().toISOString());
+        });
+    
+        socket.on('data', (data :PongState) => {
+            //console.log(data);
+            setInfo(data);
+        });
+        socket.on('game start', () => {
+          setIsGame(true);
+        });
+        socket.on('game end', () => {
+          setIsGame(false);
+        });
 
         //   socket.on('user', (user : {name: string, id: }))
       
         return () => {
             socket.off('connect');
+            socket.off('auth error');
             socket.off('disconnect');
             socket.off('pong');
             socket.off('data');
+            socket.off('game start');
+            socket.off('game end');
         };
     }, []);
 
