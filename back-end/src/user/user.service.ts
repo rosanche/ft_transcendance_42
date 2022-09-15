@@ -54,6 +54,7 @@ export class UserService
                 profileImage: true,
                 nbr_games: true,
                 nbr_wins: true,
+                pseudo: true,
                 nbr_looses: true,
                 goals_f: true,
                 goals_a: true,

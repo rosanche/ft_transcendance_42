@@ -229,10 +229,13 @@ const Canvas :  React.FC<CanvasProps> = ({...props}) => {
             ctx.restore();
             ctx.save();
             //ctx.scale(scaleWindow, scaleWindow)
+           
             ctx.fillStyle ="black";
+            ctx.globalAlpha = 0;
             ctx.fillRect(0,0,Number(props.width),Number(props.height));
-    
+            
             ctx.fillStyle ="white";
+            ctx.globalAlpha = 1;
             ctx.fillRect(40,info.paddle1Y,paddleWidth,paddleHeight);
             ctx.fillRect(Number(props.width) - (40 + paddleWidth),info.paddle2Y,paddleWidth,paddleHeight);
             ctx.beginPath();
@@ -286,7 +289,7 @@ const Canvas :  React.FC<CanvasProps> = ({...props}) => {
         drawPong(ctx, props, info);
         
         return () => {
-            ctx.clearRect(0,0, Number(props.width), Number(props.height));
+            //ctx.clearRect(0,0, Number(props.width), Number(props.height));
         };
     }, [info]);
 
