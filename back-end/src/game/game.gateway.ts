@@ -65,7 +65,15 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     this.mapIdSocket.set(client.id, user.id);
     this.gamePongs.forEach((game) => {
       if (game.id1 == user.id || game.id2 == user.id){
-        client.emit("game start");
+        if (game.idInterval === null)
+        {
+          client.emit("wait game");
+        }
+        else 
+        {
+          client.emit("game start");
+        }
+        client.join(game.roomID);
       }
     });
     // if (this.queueGame.length != 0)
@@ -87,12 +95,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     const user = await this.userService.findid(id);
     console.log(user);
     let game: GamePong;
-    this.gamePongs.forEach((game) => {
-      if (game.id1 == id || game.id2 == id){
-        client.join(game.roomID);
-        client.emit("game start");
-      }
-    });
+    
     if (bonus === false && this.queueGame.length != 0)
     {
       this.queueGame[0].addNewPlayer(user.pseudo, user.id);

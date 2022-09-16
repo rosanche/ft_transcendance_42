@@ -60,6 +60,7 @@ export class GamePong {
   id2 : number;
   startTime: null | number;
   lastTouch: number;
+  spectators: number[];
 
 
   constructor(roomId: string, name1: string, id1: number, isBonus: boolean){
@@ -74,6 +75,7 @@ export class GamePong {
     this.angleBall = 0;
     this.roomID = roomId;
     this.idInterval = null;
+    this.spectators= [];
     this.info ={
      paddle1Y : (yMax - paddleHeight) / 2,
      paddle2Y : (yMax - paddleHeight) / 2,

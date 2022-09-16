@@ -9,6 +9,6 @@ done
 >&2 echo "Postgres is up"
 
 npx prisma generate
-npx prisma migrate dev
+npx prisma migrate deploy
 yarn build
 exec "$@"

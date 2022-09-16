@@ -165,8 +165,13 @@ const Canvas :  React.FC<CanvasProps> = ({...props}) => {
             //console.log(data);
             setInfo(data);
         });
+        socket.on('wait game', () => {
+            setIsWaiting(true);
+            setIsGame(false);
+          });
         socket.on('game start', () => {
           setIsGame(true);
+          setIsWaiting(false);
         });
         socket.on('game end', () => {
           setIsGame(false);
