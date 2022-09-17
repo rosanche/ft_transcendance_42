@@ -30,7 +30,7 @@ const ballSize = 15;
 const baseBallSpeed = 20;
 
 const typeBonus = ["PaddleSize", "PaddleSpeed", "BallSpeed"];
-const bonusSize = 17;
+const bonusSize = 25;
 const freqBonus = 8000;
 
 const paddleHeight = 100;
@@ -101,6 +101,8 @@ export class GamePong {
     this.info.name2 = name;
     this.id2 = id;
   }
+
+  
 
   changeDirection(direction1: number, direction2: number)
   {

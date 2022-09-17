@@ -35,7 +35,7 @@ type PongState = {
     name2: string
 }
 
-const bonusSize = 17;
+const bonusSize = 25;
 const paddleHeight = 100;
 const paddleWidth = 10;
 const ballSize = 15;
@@ -237,6 +237,22 @@ const Canvas :  React.FC<CanvasProps> = ({...props}) => {
                 scaleRef.current = windowHeight / Number(props.height)  ;
             }
         }
+        let H1 = paddleHeight;
+        let H2 = paddleHeight;
+        for (let el of info.bonus)
+        {
+            if (el.type === typeBonus[0])
+            {
+                if (el.owner === 1)
+                {
+                    H1 *=2;
+                }
+                else if (el.owner === 2)
+                {
+                    H2 *=2;
+                }
+            }
+        }
         // console.log(windowWidth);
         // console.log(windowHeight);
         const drawPong = (ctx: CanvasRenderingContext2D, props : CanvasProps, info : PongState) => {
@@ -251,8 +267,8 @@ const Canvas :  React.FC<CanvasProps> = ({...props}) => {
             {
                 ctx.fillRect(800 - 5,i,10,50);
             }
-            ctx.fillRect(40,info.paddle1Y,paddleWidth,paddleHeight);
-            ctx.fillRect(Number(props.width) - (40 + paddleWidth),info.paddle2Y,paddleWidth,paddleHeight);
+            ctx.fillRect(40,info.paddle1Y,paddleWidth,H1);
+            ctx.fillRect(Number(props.width) - (40 + paddleWidth),info.paddle2Y,paddleWidth,H1);
             ctx.beginPath();
             ctx.arc(info.ballX, info.ballY, ballSize, 0, Math.PI * 2, true);
             ctx.fill();
@@ -288,10 +304,10 @@ const Canvas :  React.FC<CanvasProps> = ({...props}) => {
 
             const score1 = "" + info.score1;
             const score2 = "" + info.score2;
-            ctx.font ="120px Gentium"
+            ctx.font ="120px DM Sans"
             ctx.textAlign = "center";
             ctx.fillText(score1, Number(props.width)/4, 150);
-            ctx.fillText(score2, 3 * (Number(props.width)/4) + 20, 150);
+            ctx.fillText(score2, 3 * (Number(props.width)/4), 150);
         }
 
         const canvas = canvasRef.current;

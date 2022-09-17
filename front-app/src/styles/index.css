@@ -23,13 +23,6 @@ h6 {
   @apply font-default;
 }
 
-@import url('https://fonts.googleapis.com/css2?family=Play&display=swap');
-
-@font-face {
-  font-family: Gentium;
-  src: url(http://example.com/fonts/Gentium.woff);
-}
-
 button {
   @apply focus:outline-none;
 }
