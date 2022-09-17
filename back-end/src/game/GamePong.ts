@@ -27,7 +27,7 @@ const xMax = 1600;
 const yMax = 900;
 
 const ballSize = 15;
-const baseBallSpeed = 10;
+const baseBallSpeed = 20;
 
 const typeBonus = ["PaddleSize", "PaddleSpeed", "BallSpeed"];
 const bonusSize = 17;
@@ -132,6 +132,8 @@ export class GamePong {
       }
     }
     
+    this.handleBonus();
+
     this.updatePaddle();
     [newX,newY] = this.limitCollision();
 
@@ -143,24 +145,18 @@ export class GamePong {
     if (newX + ballSize >= this.paddleX1 && newX - ballSize <= this.paddleX1 + paddleWidth 
       && newY + ballSize >= this.info.paddle1Y && newY - ballSize <= this.info.paddle1Y + paddleHeight)
     {
-      if(this.paddleCollision(this.paddleX1, this.info.paddle1Y))
+      if(this.paddleCollision(this.paddleX1, this.info.paddle1Y, paddleHeight)) // a modifier
       {
-        if (this.lastTouch === 0)
-        {
-          this.ballSpeed = 20;
-        }
+        this.ballSpeed = this.isBonusActive(typeBonus[2], 1) ? baseBallSpeed * 1.5 : baseBallSpeed;
         this.lastTouch = 1;
       }
     }
     else if((newY + ballSize > this.info.paddle2Y) && (newY - ballSize < this.info.paddle2Y + paddleHeight) 
       && (newX + ballSize > this.paddleX2) && (newX - ballSize < this.paddleX2 + paddleWidth))
     {
-      if(this.paddleCollision(this.paddleX2, this.info.paddle2Y))
+      if(this.paddleCollision(this.paddleX2, this.info.paddle2Y, paddleHeight)) // a modifier
       {
-        if (this.lastTouch === 0)
-        {
-          this.ballSpeed = 20;
-        }
+        this.ballSpeed = this.isBonusActive(typeBonus[2], 2) ? baseBallSpeed * 1.5 : baseBallSpeed;
         this.lastTouch = 2;
       }
     }
@@ -184,14 +180,6 @@ export class GamePong {
         {
           if (time - el.date > freqBonus * 1,5)
           {
-            switch(el.type){
-              case typeBonus[0]:
-                break;
-              case typeBonus[1]:
-                break;
-              case typeBonus[2]:
-                break;
-            }
             deleteBonus.push(i);
           }
         }
@@ -208,35 +196,35 @@ export class GamePong {
     return (this.info);
   }
 
-  private paddleCollision(paddleX: number, paddleY: number) :number {
+  private paddleCollision(paddleX: number, paddleY: number, paddleH: number) :number {
     var paddle = {x: paddleX ,y: paddleY};
 
-      if (this.info.ballY >= paddle.y && this.info.ballY <= paddle.y + paddleHeight)
+      if (this.info.ballY >= paddle.y && this.info.ballY <= paddle.y + paddleH)
       {
         if (Math.abs(this.info.ballX - (paddle.x + paddleWidth / 2)) <=  ballSize + paddleWidth / 2)
         {
-          this.angleBall = Math.atan2(this.info.ballY - (paddle.y + paddleHeight/ 2), this.info.ballX - (paddle.x + paddleWidth/ 2));
+          this.angleBall = Math.atan2(this.info.ballY - (paddle.y + paddleH/ 2), this.info.ballX - (paddle.x + paddleWidth/ 2));
           return(1);
         }
       }
       else if (this.info.ballX >= paddle.x && this.info.ballX <= paddle.x + paddleWidth)
       {
-        if (Math.abs(this.info.ballY - (paddle.y + paddleHeight / 2)) <=  ballSize + paddleHeight / 2)
+        if (Math.abs(this.info.ballY - (paddle.y + paddleH / 2)) <=  ballSize + paddleH / 2)
         {
-          this.angleBall = Math.atan2(this.info.ballX - (paddle.y + paddleHeight/ 2), this.info.ballX - (paddle.x + paddleWidth/ 2));
+          this.angleBall = Math.atan2(this.info.ballX - (paddle.y + paddleH/ 2), this.info.ballX - (paddle.x + paddleWidth/ 2));
           return(1);
         }
       }
       var v: {x: number,y :number}[] = [];
       v[0] =  paddle;
       v[1] = {x: paddle.x + paddleWidth, y: paddle.y};
-      v[2] = {x: paddle.x, y: paddle.y + paddleHeight};
-      v[3] = {x: paddle.x + paddleWidth, y: paddle.y + paddleHeight};
+      v[2] = {x: paddle.x, y: paddle.y + paddleH};
+      v[3] = {x: paddle.x + paddleWidth, y: paddle.y + paddleH};
       for (const p of v)
       {
         if((Math.pow(p.x - this.info.ballX,2) + Math.pow(p.y - this.info.ballY,2) <= Math.pow(ballSize,2)))
         {
-          this.angleBall = Math.atan2(this.info.ballY - (paddle.y + paddleHeight/ 2), this.info.ballX - (paddle.x + paddleWidth/ 2));
+          this.angleBall = Math.atan2(this.info.ballY - (paddle.y + paddleH/ 2), this.info.ballX - (paddle.x + paddleWidth/ 2));
           return(1);
         }
       }
@@ -252,8 +240,9 @@ export class GamePong {
       this.info.score1++;
       [newX, newY] = [xMax/2,yMax/2] 
       this.angleBall = 0;
-      this.ballSpeed = baseBallSpeed;
+      this.ballSpeed = baseBallSpeed * 0.6;
       this.lastTouch = 0;
+      this.info.bonus = [];
     }
     else if(newX + ballSize < 0)
     {
@@ -261,8 +250,9 @@ export class GamePong {
       newY = - (newY - (2 * ballSize));
       [newX, newY] = [xMax/2,yMax/2] 
       this.angleBall = Math.PI;
-      this.ballSpeed = baseBallSpeed;
+      this.ballSpeed = baseBallSpeed * 0.6
       this.lastTouch = 0;
+      this.info.bonus = [];
       
     }
     else if(newY + ballSize > yMax)
@@ -320,5 +310,33 @@ export class GamePong {
     const owner = null;
     const date = Date.now()
     return {x, y, type, date, owner};
+  }
+
+  private handleBonus()
+  {
+    let bonus : BonusPong = this.newBonus();
+    if (this.isBonusActive(typeBonus[1],1) === false)
+    {
+      
+      bonus.owner = 1;
+      bonus.type = typeBonus[1];
+      this.info.bonus.push(bonus)
+    }
+    this.paddleHeight1 = this.isBonusActive(typeBonus[0],1) ? paddleHeight * 2 : paddleHeight;
+    this.paddleHeight2 = this.isBonusActive(typeBonus[0],2) ? paddleHeight * 2 : paddleHeight;
+    this.paddleSpeed1 = this.isBonusActive(typeBonus[1],1) ? paddleSpeed * 2 : paddleSpeed;
+    this.paddleSpeed2 = this.isBonusActive(typeBonus[1],2) ? paddleSpeed * 2 : paddleSpeed;
+  }
+
+  private isBonusActive(type: string, player: number) :boolean
+  {
+
+    for (const el of this.info.bonus) {
+      if (el.type == type && el.owner == player)
+      {
+        return true;
+      }   
+    }
+    return false;
   }
 };

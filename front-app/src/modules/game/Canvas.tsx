@@ -242,12 +242,15 @@ const Canvas :  React.FC<CanvasProps> = ({...props}) => {
         const drawPong = (ctx: CanvasRenderingContext2D, props : CanvasProps, info : PongState) => {
             ctx.restore();
             ctx.save();
-            //ctx.scale(scaleWindow, scaleWindow)
             ctx.globalAlpha = 1;
             ctx.fillRect(0,0,Number(props.width),Number(props.height));
     
             ctx.fillStyle ="white";
             ctx.globalAlpha = 1;
+            for (let i = 25; i < 900 ; i+=100)
+            {
+                ctx.fillRect(800 - 5,i,10,50);
+            }
             ctx.fillRect(40,info.paddle1Y,paddleWidth,paddleHeight);
             ctx.fillRect(Number(props.width) - (40 + paddleWidth),info.paddle2Y,paddleWidth,paddleHeight);
             ctx.beginPath();
@@ -283,14 +286,12 @@ const Canvas :  React.FC<CanvasProps> = ({...props}) => {
                 });
             }   
 
-            const score1 = info.name1 + ": " + info.score1;
-            const score2 = info.name2 + ": " + info.score2;
-
-
-            ctx.font ="48px serif"
+            const score1 = "" + info.score1;
+            const score2 = "" + info.score2;
+            ctx.font ="120px Gentium"
             ctx.textAlign = "center";
-            ctx.fillText(score1, Number(props.width)/4, 100);
-            ctx.fillText(score2, 3 * Number(props.width)/4, 100);
+            ctx.fillText(score1, Number(props.width)/4, 150);
+            ctx.fillText(score2, 3 * (Number(props.width)/4) + 20, 150);
         }
 
         const canvas = canvasRef.current;
@@ -309,7 +310,24 @@ const Canvas :  React.FC<CanvasProps> = ({...props}) => {
     if(isGame)
     {
         return(
+
+            <>
+                <div className=" grid grid-cols-2 mb-5 content-center" >
+                <div className="justify-self-center">
+                    <span className="text-white text-4xl font-default font-bold justify-self-center">
+                        {info.name1}
+                    </span>
+                </div>
+                
+                <div className="justify-self-center">
+                    <span className="text-white text-4xl font-default font-bold justify-self-center">
+                        {info.name2}
+                    </span>
+                </div>
+                </div>
+                
                 <canvas className="aspect-video w-full" width={1600} height={900} ref={canvasRef}/> 
+            </>
         );
     
     }
