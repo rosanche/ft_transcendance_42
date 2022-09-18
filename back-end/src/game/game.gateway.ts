@@ -39,18 +39,21 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   }
 
-  async handleConnection(client: Socket, ...args: any[]) {
+  async handleConnection(client: Socket, ...args: any[]){
     console.log(client.handshake);
     const user = await this.authService.getUserFromSocket(client);
     if (user)
     {
       this.logger.log(`Socket ${client.id} connect on the server with pseudo ${user.pseudo}`);
       this.handleUserID(client, user);
+      
+      client.emit("user info", {id: user.id, pseudo: user.pseudo});
     }
     else
     {
       console.log("erreur d'authentification");
       client.emit("auth error");
+      client.disconnect();
     }
   }
 

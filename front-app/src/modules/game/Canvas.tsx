@@ -53,6 +53,7 @@ const Canvas :  React.FC<CanvasProps> = ({...props}) => {
 
     const router = useRouter();
     const canvasRef = useRef<HTMLCanvasElement | null>(null) ;
+    const queryRef =  useRef<string | null>(null) ;
     const keyRef = useRef<{up : boolean, down : boolean}>({up: false, down: false}) ;
     const scaleRef = useRef<Number>(1);
     let windowWidth :number = props.width;
@@ -149,8 +150,12 @@ const Canvas :  React.FC<CanvasProps> = ({...props}) => {
             setIsConnected(true);
         });
 
+        socket.on('user info', (user : {id: number, pseudo: string}) => {
+            console.log(user);
+        });
+
         socket.on('auth error', () => {
-            router.replace("http://localhost:3001/connexion")
+            router.push("/connexion")
         });
     
         socket.on('disconnect', () => {
@@ -181,11 +186,13 @@ const Canvas :  React.FC<CanvasProps> = ({...props}) => {
       
         return () => {
             socket.off('connect');
+            socket.off('user info');
             socket.off('auth error');
             socket.off('disconnect');
             socket.off('pong');
             socket.off('data');
             socket.off('game start');
+            socket.off('wait game');
             socket.off('game end');
         };
     }, []);
@@ -198,7 +205,9 @@ const Canvas :  React.FC<CanvasProps> = ({...props}) => {
             const cookieValue = document.cookie.split('; ').find((row) => row.startsWith('access_token'))?.split('=')[1];
             console.log(cookieValue);
             socket.auth.token = cookieValue;
+            console.log(router.query)
             socket.connect();
+
         }
 
         return () => {
@@ -241,13 +250,13 @@ const Canvas :  React.FC<CanvasProps> = ({...props}) => {
         let H2 = paddleHeight;
         for (let el of info.bonus)
         {
-            if (el.type === typeBonus[0])
+            if (el.type == typeBonus[0])
             {
-                if (el.owner === 1)
+                if (el.owner == 1)
                 {
                     H1 *=2;
                 }
-                else if (el.owner === 2)
+                else if (el.owner == 2)
                 {
                     H2 *=2;
                 }

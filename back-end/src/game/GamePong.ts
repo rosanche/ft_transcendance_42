@@ -145,18 +145,18 @@ export class GamePong {
     
 
     if (newX + ballSize >= this.paddleX1 && newX - ballSize <= this.paddleX1 + paddleWidth 
-      && newY + ballSize >= this.info.paddle1Y && newY - ballSize <= this.info.paddle1Y + paddleHeight)
+      && newY + ballSize >= this.info.paddle1Y && newY - ballSize <= this.info.paddle1Y + this.paddleHeight1)
     {
-      if(this.paddleCollision(this.paddleX1, this.info.paddle1Y, paddleHeight)) // a modifier
+      if(this.paddleCollision(this.paddleX1, this.info.paddle1Y, this.paddleHeight1)) // a modifier
       {
         this.ballSpeed = this.isBonusActive(typeBonus[2], 1) ? baseBallSpeed * 1.5 : baseBallSpeed;
         this.lastTouch = 1;
       }
     }
-    else if((newY + ballSize > this.info.paddle2Y) && (newY - ballSize < this.info.paddle2Y + paddleHeight) 
+    else if((newY + ballSize > this.info.paddle2Y) && (newY - ballSize < this.info.paddle2Y + this.paddleHeight2) 
       && (newX + ballSize > this.paddleX2) && (newX - ballSize < this.paddleX2 + paddleWidth))
     {
-      if(this.paddleCollision(this.paddleX2, this.info.paddle2Y, paddleHeight)) // a modifier
+      if(this.paddleCollision(this.paddleX2, this.info.paddle2Y, this.paddleHeight2)) // a modifier
       {
         this.ballSpeed = this.isBonusActive(typeBonus[2], 2) ? baseBallSpeed * 1.5 : baseBallSpeed;
         this.lastTouch = 2;
@@ -281,9 +281,9 @@ export class GamePong {
     {
       this.info.paddle1Y = 0;
     }
-    else if (newPaddle1Y + paddleHeight > yMax)
+    else if (newPaddle1Y + this.paddleHeight1 > yMax)
     {
-      this.info.paddle1Y = yMax - paddleHeight;
+      this.info.paddle1Y = yMax - this.paddleHeight1;
     }
     else
     {
@@ -294,9 +294,9 @@ export class GamePong {
     {
       this.info.paddle2Y = 0;
     }
-    else if (newPaddle2Y + paddleHeight > yMax)
+    else if (newPaddle2Y + this.paddleHeight2 > yMax)
     {
-      this.info.paddle2Y = yMax - paddleHeight;
+      this.info.paddle2Y = yMax - this.paddleHeight2;
     }
     else
     {
@@ -317,7 +317,7 @@ export class GamePong {
   private handleBonus()
   {
     let bonus : BonusPong = this.newBonus();
-    if (this.isBonusActive(typeBonus[1],1) === false)
+    if (this.isBonusActive(typeBonus[0],1) === false)
     {
       
       bonus.owner = 1;
