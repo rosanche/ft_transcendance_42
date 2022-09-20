@@ -348,11 +348,10 @@ export class ChatGateway implements OnGatewayInit {
                 }
             });
             const block =  await this.Prisma.user.findUnique({
-                where:{
+                where: {
                     id: user.id,
                 },
-                select:
-                {
+                select: {
                     blocked: {
                         select: {
                             pseudo : true,
@@ -362,7 +361,7 @@ export class ChatGateway implements OnGatewayInit {
             });
             this.wss.to(message.room).emit('chatToClient', message, block); 
         }
-     }
+    }
 
     @SubscribeMessage('msgToServer')
     async handelMessage(client: Socket, text: string) {
