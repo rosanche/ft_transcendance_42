@@ -63,7 +63,7 @@ export class GamePong {
   spectators: number[];
 
 
-  constructor(roomId: string, name1: string, id1: number, isBonus: boolean){
+  constructor(roomId: string, isBonus: boolean){
 
     this.paddleX1 = 40;
     this.paddleX2 = xMax - (this.paddleX1 + paddleWidth);
@@ -84,22 +84,31 @@ export class GamePong {
      score1: 0,
      score2: 0,
      bonus : [],
-     name1,
-     name2: "player 2" 
+     name1: "",
+     name2: "" 
    }
     this.move1  = 0;
     this.move2  = 0;
-    this.id1 = id1;
-    this.id2 = -1 ;
+    this.id1 = -1;
+    this.id2 = -1;
     this.isBonus = isBonus;
     this.startTime = null;
     this.lastTouch = 0;
   }
 
-  addNewPlayer(name: string, id: number)
+  addPlayer(name: string, id: number)
   {
-    this.info.name2 = name;
-    this.id2 = id;
+    if (this.id1 === -1)
+    {
+      this.info.name1 = name;
+      this.id1 = id;
+    }
+    else if(this.id2 === -1)
+    {
+      this.info.name2 = name;
+      this.id2 = id;
+    }
+    
   }
 
   

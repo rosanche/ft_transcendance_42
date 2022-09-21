@@ -155,7 +155,7 @@ const Canvas :  React.FC<CanvasProps> = ({...props}) => {
         });
 
         socket.on('auth error', () => {
-            router.push("/connexion")
+            router.replace("/connexion")
         });
     
         socket.on('disconnect', () => {

@@ -1,4 +1,4 @@
-import{ Injectable } from '@nestjs/common';
+import { Injectable} from "@nestjs/common";
 import { FriendDto, UserUpdateDto } from 'src/auth/dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { User } from '@prisma/client';

@@ -1,4 +1,5 @@
-import { Logger } from '@nestjs/common';
+
+import { Injectable, forwardRef, Logger, Inject } from "@nestjs/common";
 import { ConnectedSocket, OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { GameService } from './game.service';
@@ -8,6 +9,7 @@ import {GamePong} from "./GamePong"
 import { AuthService } from '../auth/auth.service';
 import { User } from "@prisma/client";
 import { UserService } from '../user/user.service';
+import { PrismaService } from '../prisma/prisma.service';
 
 var timetick = 17
 
@@ -18,14 +20,17 @@ var timetick = 17
   }
   
 })
+@Injectable()
 export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect{
 
-  constructor (private gameService: GameService, private authService: AuthService, private userService: UserService){}
+  constructor (private authService: AuthService, @Inject(forwardRef(() => UserService)) private userService: UserService,  private prisma: PrismaService){}
   
-  private queueGame :GamePong[] = [];
-  private queueBonusGame :GamePong[] = [];
+  
+  private queue : {id: number, pseudo: string}[] = [];
+  private queueBonus : {id: number, pseudo: string}[] = [];
   private mapIdSocket = new Map<string, number>();
   private gamePongs = new Map<string, GamePong>();
+  private players = new Set<number>();
   
 
   @WebSocketServer() server: Server;
@@ -46,7 +51,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     {
       this.logger.log(`Socket ${client.id} connect on the server with pseudo ${user.pseudo}`);
       this.handleUserID(client, user);
-      
+      this.mapIdSocket.set(client.id, user.id);
       client.emit("user info", {id: user.id, pseudo: user.pseudo});
     }
     else
@@ -59,23 +64,19 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   handleDisconnect(client: Socket) {
     this.logger.log(`Socket ${client.id} disconnect on the server`);
+    this.queue = this.queue.filter(e => e.id != this.mapIdSocket.get(client.id));
+    this.queueBonus = this.queueBonus.filter(e => e.id != this.mapIdSocket.get(client.id));
     this.mapIdSocket.delete(client.id);
+    
 
   }
 
   handleUserID(client: Socket, user: User){
     this.logger.log(`Socket ${client.id} connect on the server and real id is ${user.id}`);
-    this.mapIdSocket.set(client.id, user.id);
     this.gamePongs.forEach((game) => {
       if (game.id1 == user.id || game.id2 == user.id){
         if (game.idInterval === null)
-        {
-          client.emit("wait game");
-        }
-        else 
-        {
-          client.emit("game start");
-        }
+        client.emit("game start");
         client.join(game.roomID);
       }
     });
@@ -95,38 +96,41 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   async handleQueue(client: Socket, bonus: boolean){
 
     let id = this.mapIdSocket.get(client.id);
+    let game: GamePong;
+    let players: {id: number, pseudo: string}[] = [];
     const user = await this.userService.findid(id);
     console.log(user);
-    let game: GamePong;
-    
-    if (bonus === false && this.queueGame.length != 0)
+    if (bonus)
     {
-      this.queueGame[0].addNewPlayer(user.pseudo, user.id);
-      game = this.queueGame.splice(0,1)[0];
-      client.join(game.roomID);
-      this.startGame(game);
-      console.log(this.queueGame.length);
-    }
-    else if (bonus && this.queueBonusGame.length != 0)
-    {
-      this.queueBonusGame[0].addNewPlayer(user.pseudo, user.id);
-      game = this.queueBonusGame.splice(0,1)[0];
-      client.join(game.roomID);
-      this.startGame(game);
-      console.log(this.queueBonusGame.length);
+      this.queueBonus.push({id: user.id, pseudo: user.pseudo});
+      if (this.queueBonus.length >= 2)
+      {
+        players = this.queueBonus.splice(2,0);
+        game = this.createGame(true);
+      }
     }
     else
     {
-      game = this.createGame(user.pseudo, user.id, bonus);
-      if (bonus)
+      this.queue.push({id: user.id, pseudo: user.pseudo});
+      if (this.queue.length >= 2)
       {
-        this.queueBonusGame.push(game);
+        players = this.queue.splice(2,0);
+        game = this.createGame(false);
       }
-      else
-      {
-        this.queueGame.push(game);
-      }
-      client.join(game.roomID);
+    }
+    if(game)
+    {
+      const sockets = await this.server.fetchSockets();
+      sockets.forEach(s => {
+        const id = this.mapIdSocket.get(s.id)
+        if (id == players[0].id || id == players[1].id)
+        {
+          s.join(game.roomID);
+        }
+      });
+      game.addPlayer(players[0].pseudo, players[0].id);
+      game.addPlayer(players[1].pseudo, players[1].id);
+      this.startGame(game);
     }
   };
 
@@ -163,6 +167,12 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     }
   }
 
+  getPlayingUser() : Set<number>
+  {
+    console.log(this.players)
+    return this.players;
+  }
+
 
   startGame(game :GamePong)
   {
@@ -170,13 +180,15 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     
     const idInterval : NodeJS.Timer = setInterval(this.updateGame, timetick, game, this);
     game.setIdInterval(idInterval);
+    this.players.add(game.id1);
+    this.players.add(game.id2);
     this.server.to(game.roomID).emit("game start");
 
   }
 
-  createGame(username: string, id: number, bonus: boolean) {
+  createGame(bonus: boolean) {
     const roomID = uuidv4();
-    const game = new GamePong(roomID, username, id, bonus)
+    const game = new GamePong(roomID, bonus)
     this.gamePongs.set(roomID, game);
     return game;
   }
@@ -186,6 +198,8 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     clearInterval(game.idInterval);
     // update data base
     //send victory information to player
+    this.players.delete(game.id1);
+    this.players.delete(game.id2);
     this.server.to(game.roomID).emit("game end");
     this.server.socketsLeave(game.roomID)
     this.gamePongs.delete(game.roomID);
@@ -204,6 +218,6 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       gateway.stopGame(game);
     }
   }
-}
+};
 
 

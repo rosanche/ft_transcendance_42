@@ -1,4 +1,4 @@
-import { Query ,Controller, Put , Get, Param , UseGuards, Patch, Body, Post, UseInterceptors, Res ,UploadedFile, Request} from "@nestjs/common"
+import { Query ,Controller, Put , Get, Param , UseGuards, Patch, Body, Post, UseInterceptors, Res ,UploadedFile, Request, forwardRef, Inject} from "@nestjs/common"
 import { UserService } from "./user.service"
 import { User } from '@prisma/client';
 import { GetUser } from '../auth/decorator';
@@ -12,6 +12,7 @@ import path = require('path');
 import {join} from 'path';
 import process = require('process');
 import { Express } from 'express'
+import { GameGateway } from "src/game/game.gateway";
 export const storage = {
   storage: diskStorage({
   destination: './uploads/profileimage',
@@ -27,7 +28,7 @@ export const storage = {
 @Controller('users')
 export class UserController
 {
-  constructor(private  UserService: UserService){}
+  constructor(private  UserService: UserService, @Inject(forwardRef(() => GameGateway)) private gameGateway: GameGateway){}
   @Get('all')
   findAll() : Promise<any[]>
   {
@@ -76,5 +77,12 @@ export class UserController
   findProfileImage(@Param('image') image, @Res() res) : Observable<object>
   {
     return of(res.sendFile(join(process.cwd(),'uploads/profileimage/'+image)))
+  }
+
+  @Get('playingUser')
+  getPlayingUser() : Set<number>
+  {
+      console.log(this.gameGateway.getPlayingUser());
+      return this.gameGateway.getPlayingUser();
   }
 }
