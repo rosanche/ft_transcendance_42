@@ -17,9 +17,8 @@ export const ModalHeaderButton = ({
     <>
       {type !== 'none' && (
         <button
-          className="absolute left-2 top-2 md:left-4 md:top-4"
+          className="absolute left-2 top-2 md:left-4 md:top-4 text-white"
           onClick={type === 'back' ? onBack : onClose}
-          data-testid="modal-header-button"
         >
           {getIcon(iconVariant)}
         </button>

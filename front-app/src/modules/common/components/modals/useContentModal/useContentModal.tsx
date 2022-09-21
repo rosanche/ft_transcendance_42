@@ -1,4 +1,4 @@
-import { Modal, ModalProps } from 'modules/common/components/_ui/Modal/Modal'
+import { Modal, ModalProps } from 'modules/common/components/modals/Modal/Modal'
 import React, { DependencyList } from 'react'
 import { useModal } from 'react-modal-hook'
 

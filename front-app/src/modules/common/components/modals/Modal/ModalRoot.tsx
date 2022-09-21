@@ -21,7 +21,7 @@ export const ModalRoot: React.FC<ModalRootProps> = ({
           className
         ),
         afterOpen:
-          'absolute inset-x-4 m-auto max-h-modal overflow-auto rounded-3xl bg-white shadow-md outline-none sm:inset-auto sm:max-w-max',
+          'absolute inset-x-4 m-auto max-h-modal overflow-auto rounded-3xl bg-gray-dark shadow-md outline-none sm:inset-auto sm:max-w-max',
         beforeClose: '',
       }}
       overlayClassName={{

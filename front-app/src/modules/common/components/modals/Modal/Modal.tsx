@@ -1,6 +1,6 @@
 import clsx from 'clsx'
+import { HideModalContextProvider } from 'modules/common/context/HideModalContext'
 import React from 'react'
-import { HideModalContextProvider } from '../../contexts/HideModalContext'
 import { ModalBody } from './ModalBody'
 import { ModalFooter } from './ModalFooter'
 import { ModalHeaderButton, ModalHeaderButtonProps } from './ModalHeaderButton'
@@ -52,10 +52,9 @@ export const Modal = ({
         shouldCloseOnOverlayClick={shouldCloseOnOverlayClick}
       >
         <div
-          className={clsx(
-            'z-10 w-full flex-row',
-            headerTitle && 'border-b border-info-100'
-          )}
+          className=
+            'z-10 w-full flex-row'
+          
         >
           <ModalHeaderButton
             onBack={onBack}
@@ -64,7 +63,7 @@ export const Modal = ({
             iconVariant={headerIconButtonVariant}
           />
           {headerTitle && (
-            <span className="my-4 mx-10 inline-block font-headings text-sm font-bold text-info-600">
+            <span className="my-4 mx-10 inline-block font-headings text-sm font-bold text-white">
               {headerTitle}
             </span>
           )}
