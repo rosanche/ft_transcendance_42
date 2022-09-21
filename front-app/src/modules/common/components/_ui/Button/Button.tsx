@@ -7,12 +7,12 @@ import React, {
   useMemo,
 } from "react";
 import { Spinner } from "../Spinner/Spinner";
-import { Icon42Logo } from "../../_icons/icons";
 
 export const BUTTON_VARIANTS = [
   "contained",
   "outline",
   "link",
+  'icon',
   "none",
 ] as const;
 export const BUTTON_COLORS = ["active"] as const;

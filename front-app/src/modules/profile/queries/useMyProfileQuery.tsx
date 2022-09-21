@@ -18,12 +18,6 @@ export const useMyProfileQuery = (
   return useQuery<MyProfile, Error>(
     [enumProfileQueryKeys.MY_PROFILE],
     async () => {
-      // const token = await getFreshToken(getFreshTokenOptions)
-
-      // if (!token?.access_token) {
-      //   throw new Error('useMyProfileQuery: Token is missing')
-      // }
-
       return fetchMyProfile(accessToken);
     },
     queryOptions

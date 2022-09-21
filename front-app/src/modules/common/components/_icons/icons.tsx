@@ -1,5 +1,6 @@
 import IconCross from "./cross";
 import Icon42Logo from "./42_logo";
 import IconGame from "./game";
+import IconMessage from "./message"
 
-export { IconCross, Icon42Logo, IconGame };
+export { IconCross, Icon42Logo, IconGame, IconMessage };
