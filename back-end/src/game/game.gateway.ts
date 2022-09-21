@@ -26,8 +26,8 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   constructor (private authService: AuthService, @Inject(forwardRef(() => UserService)) private userService: UserService,  private prisma: PrismaService){}
   
   
-  private queue : {id: number, pseudo: string}[] = [];
-  private queueBonus : {id: number, pseudo: string}[] = [];
+  private queue : {id: string, pseudo: string}[] = [];
+  private queueBonus : {id: string, pseudo: string}[] = [];
   private mapIdSocket = new Map<string, number>();
   private gamePongs = new Map<string, GamePong>();
   private players = new Set<number>();
@@ -102,7 +102,11 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     console.log(user);
     if (bonus)
     {
-      this.queueBonus.push({id: user.id, pseudo: user.pseudo});
+      if (this.queueBonus.find(e => this.mapIdSocket.get(e.id) == id))
+      {
+        return;
+      }
+      this.queueBonus.push({id: user.id, pseudo: user.pseudo})
       if (this.queueBonus.length >= 2)
       {
         players = this.queueBonus.splice(2,0);
@@ -111,6 +115,10 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     }
     else
     {
+      if (this.queue.find(e => this.mapIdSocket.get(e.id) == id))
+      {
+        return;
+      }
       this.queue.push({id: user.id, pseudo: user.pseudo});
       if (this.queue.length >= 2)
       {
@@ -120,14 +128,8 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     }
     if(game)
     {
-      const sockets = await this.server.fetchSockets();
-      sockets.forEach(s => {
-        const id = this.mapIdSocket.get(s.id)
-        if (id == players[0].id || id == players[1].id)
-        {
-          s.join(game.roomID);
-        }
-      });
+      const socket1 = await this.server.in(theSocketId).fetchSockets();
+      const socket2 = await this.server.in(theSocketId).fetchSockets();
       game.addPlayer(players[0].pseudo, players[0].id);
       game.addPlayer(players[1].pseudo, players[1].id);
       this.startGame(game);
