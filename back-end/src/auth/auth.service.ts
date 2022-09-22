@@ -7,6 +7,7 @@ import { authenticator } from 'otplib';
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime";
 import { JwtService } from "@nestjs/jwt";
 import { ConfigService } from "@nestjs/config";
+import * as argon from 'argon2';
 import { User } from "@prisma/client";
 import { TokenPayload } from "./entities/payload.entity";
 import { Request, Response } from "express";
@@ -28,32 +29,38 @@ export class AuthService {
 
 
     async getUserFromSocket(socket: Socket) {
-        const cookie : string = socket.handshake.headers.cookie || "" ;
+        const cookie : string = socket.handshake.headers.cookie || socket.handshake.auth.token ||  "" ;
         if (!cookie)
         {
             //throw new WsException('cookie missing');
             return null;
         }
-        const { access_token: access_token } = parse(cookie);
+
+        const { access_token: access_token } = (socket.handshake.headers.cookie) ? parse(cookie) : {access_token: cookie};
+
         if (!access_token)
         {
             //throw new WsException('Authentication cookie missing');
             return null;
         }
-        console.log(cookie);
-        const payload: TokenPayload = this.jwt.verify(access_token, {
-            secret: this.config.get('JWT_SECRET')
-          });
-          
-        const user = await this.prisma.user.findUnique({
+        var payload: TokenPayload | null = null;
+        var user : User | null = null;
+        try{
+            payload = this.jwt.verify(access_token, {
+                secret: this.config.get('JWT_SECRET')
+            });
+            user = await this.prisma.user.findUnique({
                 where: {
                     id: payload.sub
                 }
-        });      
-        if (!user) {
-          //throw new WsException('Invalid credentials.');
-          return null;
+            });  
         }
+        catch (error)
+        {
+            console.log("l'erreur");
+            console.log(error);
+        }
+           
         return user;
 
 
@@ -70,6 +77,7 @@ export class AuthService {
         console.log(users)
         return (users )
     }
+
 
     async signup(dto: AuthUpDto) {
         try {
@@ -130,7 +138,7 @@ export class AuthService {
     {
         const secret = this.config.get('JWT_SECRET');
         
-        const token = await this.jwt.signAsync(payload, {expiresIn: '60m', secret: secret});
+        const token = await this.jwt.signAsync(payload, {expiresIn: '3000m', secret: secret});
         console.log(token);
         return {access_token: token, isTwoFactorAuthenticationEnabled: payload.isTwoFactorAuthenticationEnabled};
     }

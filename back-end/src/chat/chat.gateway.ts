@@ -6,6 +6,11 @@ import { User, Channel } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuthService } from "../auth/auth.service";
 
+type Form  = {
+    channel : string,
+    pseudo : string,
+    texte : String,
+};
 
 @WebSocketGateway({ namespace: '/chat' })
 export class ChatGateway implements OnGatewayInit {
@@ -33,6 +38,8 @@ export class ChatGateway implements OnGatewayInit {
                 id: id,
             }
         });
+        if(cha)
+            return;
         this.banactive.get(cha).set(id ,false);
         this.muteactive.get(cha).set(id ,false);
         if (!ban)
@@ -103,18 +110,19 @@ export class ChatGateway implements OnGatewayInit {
             this.iddd.delete(user.id);
     }
 
-    async handleConnection( client: Socket, @Res() res, ... args: any[]) {
+    async handleConnection( client: Socket, ... args: any[]) {
         const user = await this.authService.getUserFromSocket(client);
+        console.log(`connection: ${user}`);
         if (user) {
             this.logger.log(`Socket ${client.id} connect on the server with pseudo ${user.pseudo}`);
             this.iddd[user.id] = client.id;
             client.join("general");
             client.to("general").emit('joinedRoom', "typescript")
         }
-        else {
+      /*  else {
             client.to("typescrsipt").emit('joinedRoom', "typescript")
             client.disconnect();
-        }
+        }*/
      }
 
     async mpcha(user: User,client: Socket, user2: User) {
@@ -318,20 +326,23 @@ export class ChatGateway implements OnGatewayInit {
     }
 
     @SubscribeMessage('channelToServer')
-    async handleMessage(client: Socket, message: { sender: string, room: string, message: string }) {
+    async handleMessage(client: Socket, message: Form) {
         const user = await this.authService.getUserFromSocket(client);
-        message.sender = user.pseudo;
+        console.log(`bonjour le monde ${user.pseudo}`);
+        this.wss.emit('chatToClient', {channel: message.channel, pseudo: user.pseudo, texte: message.texte }); 
+        return;
         const ban = await this.Prisma.ban.findMany({
             where: {
                 active: true,
                 Channel: {
                     some: {
-                        name: message.room
+                        name: message.channel
                     }
                 },
                 id: user.id,
             }
         });
+        /*
         if (!(this.banactive.get(message.room).get(user.id) || this.muteactive.get(message.room).get(user.id)) 
             || await this.ban_or_not(message.room, user.id)) {
             
@@ -361,6 +372,7 @@ export class ChatGateway implements OnGatewayInit {
             });
             this.wss.to(message.room).emit('chatToClient', message, block); 
         }
+        */
     }
 
     @SubscribeMessage('msgToServer')
