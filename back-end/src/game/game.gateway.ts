@@ -13,6 +13,14 @@ import { PrismaService } from '../prisma/prisma.service';
 
 var timetick = 17
 
+
+interface Queue {
+  sock : Socket,
+  id: number,
+  pseudo: string
+}
+
+
 @WebSocketGateway({
   namespace: "game",
   cors: {
@@ -26,8 +34,8 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   constructor (private authService: AuthService, @Inject(forwardRef(() => UserService)) private userService: UserService,  private prisma: PrismaService){}
   
   
-  private queue : {id: string, pseudo: string}[] = [];
-  private queueBonus : {id: string, pseudo: string}[] = [];
+  private queue : Queue[] = [];
+  private queueBonus : Queue[] = [];
   private mapIdSocket = new Map<string, number>();
   private gamePongs = new Map<string, GamePong>();
   private players = new Set<number>();
@@ -64,8 +72,8 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   handleDisconnect(client: Socket) {
     this.logger.log(`Socket ${client.id} disconnect on the server`);
-    this.queue = this.queue.filter(e => e.id != this.mapIdSocket.get(client.id));
-    this.queueBonus = this.queueBonus.filter(e => e.id != this.mapIdSocket.get(client.id));
+    this.queue = this.queue.filter(e => e.sock.id != client.id);
+    this.queueBonus = this.queueBonus.filter(e => e.sock.id != client.id);
     this.mapIdSocket.delete(client.id);
     
 
@@ -97,41 +105,42 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
     let id = this.mapIdSocket.get(client.id);
     let game: GamePong;
-    let players: {id: number, pseudo: string}[] = [];
+    let players: Queue[] = [];
     const user = await this.userService.findid(id);
     console.log(user);
     if (bonus)
     {
-      if (this.queueBonus.find(e => this.mapIdSocket.get(e.id) == id))
+      if (this.queueBonus.find(e => e.id == id))
       {
         return;
       }
-      this.queueBonus.push({id: user.id, pseudo: user.pseudo})
+      this.queueBonus.push({sock: client, id: user.id, pseudo: user.pseudo})
       if (this.queueBonus.length >= 2)
       {
-        players = this.queueBonus.splice(2,0);
+        players = this.queueBonus.splice(0,2);
         game = this.createGame(true);
       }
     }
     else
     {
-      if (this.queue.find(e => this.mapIdSocket.get(e.id) == id))
+      if (this.queue.find(e => e.id == id))
       {
         return;
       }
-      this.queue.push({id: user.id, pseudo: user.pseudo});
+      this.queue.push({sock: client, id: user.id, pseudo: user.pseudo});
       if (this.queue.length >= 2)
       {
-        players = this.queue.splice(2,0);
+        players = this.queue.splice(0,2);
         game = this.createGame(false);
       }
     }
     if(game)
     {
-      const socket1 = await this.server.in(theSocketId).fetchSockets();
-      const socket2 = await this.server.in(theSocketId).fetchSockets();
+      console.log("log test: ", players[0]);
       game.addPlayer(players[0].pseudo, players[0].id);
       game.addPlayer(players[1].pseudo, players[1].id);
+      this.server.in(players[0].sock.id).socketsJoin(game.roomID);
+      this.server.in(players[1].sock.id).socketsJoin(game.roomID);
       this.startGame(game);
     }
   };
