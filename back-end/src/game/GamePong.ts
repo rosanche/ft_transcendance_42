@@ -34,7 +34,7 @@ const bonusSize = 25;
 const freqBonus = 8000;
 
 const paddleHeight = 100;
-const paddleWidth = 10;
+const paddleWidth = 15;
 const paddleSpeed = 7.5;
 
 
@@ -156,7 +156,7 @@ export class GamePong {
     if (newX + ballSize >= this.paddleX1 && newX - ballSize <= this.paddleX1 + paddleWidth 
       && newY + ballSize >= this.info.paddle1Y && newY - ballSize <= this.info.paddle1Y + this.paddleHeight1)
     {
-      if(this.paddleCollision(this.paddleX1, this.info.paddle1Y, this.paddleHeight1)) // a modifier
+      if(this.paddleCollision(this.paddleX1, this.info.paddle1Y, this.paddleHeight1)) 
       {
         this.ballSpeed = this.isBonusActive(typeBonus[2], 1) ? baseBallSpeed * 1.5 : baseBallSpeed;
         this.lastTouch = 1;
@@ -165,7 +165,7 @@ export class GamePong {
     else if((newY + ballSize > this.info.paddle2Y) && (newY - ballSize < this.info.paddle2Y + this.paddleHeight2) 
       && (newX + ballSize > this.paddleX2) && (newX - ballSize < this.paddleX2 + paddleWidth))
     {
-      if(this.paddleCollision(this.paddleX2, this.info.paddle2Y, this.paddleHeight2)) // a modifier
+      if(this.paddleCollision(this.paddleX2, this.info.paddle2Y, this.paddleHeight2)) 
       {
         this.ballSpeed = this.isBonusActive(typeBonus[2], 2) ? baseBallSpeed * 1.5 : baseBallSpeed;
         this.lastTouch = 2;
@@ -175,6 +175,7 @@ export class GamePong {
     {
       this.info.bonus.forEach((el,i,arr) =>
       {
+        // console.log(time - el.date);
         if (el.owner === null && time - el.date >= 250 && this.lastTouch !== 0)
         {
           if ((Math.pow(newX - el.x, 2) + Math.pow(newY - el.y, 2)) < Math.pow(bonusSize + ballSize, 2))
@@ -182,65 +183,95 @@ export class GamePong {
             el.owner = this.lastTouch;
             el.date = time;
           }
-          else if(time - el.date >= freqBonus * 3)
+          else if((time - el.date) >= (freqBonus * 3))
           {
             deleteBonus.push(i);
           }
         }
-        else if (el.owner !== null)
+        else if(el.owner !== null)
         {
-          if (time - el.date > freqBonus * 1,5)
+          if ((time - el.date) > (freqBonus * 2))
           {
+            // console.log(deleteBonus);
             deleteBonus.push(i);
           }
         }
       });
+      // console.log(deleteBonus);
     }
-
-    if (deleteBonus.length)
+    if (deleteBonus.length != 0)
     {
       deleteBonus.sort().reverse();
+      //console.log(deleteBonus);
+      //console.log(this.info.bonus);
       deleteBonus.forEach(element => {
         this.info.bonus.splice(element, 1);
       });
+      //console.log(this.info.bonus);
     }
+    
     return (this.info);
   }
 
-  private paddleCollision(paddleX: number, paddleY: number, paddleH: number) :number {
-    var paddle = {x: paddleX ,y: paddleY};
+  private angleCollision(Px: number, Py: number)
+  {
+    let angle: number;
+    angle = (Math.PI / 3) * (-Py);
+    if (Px < 0)
+    {
+      angle += Math.PI
+    }
 
-      if (this.info.ballY >= paddle.y && this.info.ballY <= paddle.y + paddleH)
+    return angle;
+  }
+
+  private paddleCollision(paddleX: number, paddleY: number, paddleH: number) :number {
+    let paddle = {x: paddleX ,y: paddleY};
+    let percentY = (this.info.ballY - (paddleY + (paddleH / 2))) / (paddleH / 2);
+    let percentX = (this.info.ballX - (paddleX + (paddleWidth / 2))) / (paddleWidth / 2);
+      if (Math.abs(percentY) < 1)
       {
         if (Math.abs(this.info.ballX - (paddle.x + paddleWidth / 2)) <=  ballSize + paddleWidth / 2)
         {
+          
           this.angleBall = Math.atan2(this.info.ballY - (paddle.y + paddleH/ 2), this.info.ballX - (paddle.x + paddleWidth/ 2));
+          console.log(this.angleCollision(percentX,percentY));
+          console.log(this.angleBall);
           return(1);
         }
       }
-      else if (this.info.ballX >= paddle.x && this.info.ballX <= paddle.x + paddleWidth)
+      else if (Math.abs(percentX) < 1)
       {
         if (Math.abs(this.info.ballY - (paddle.y + paddleH / 2)) <=  ballSize + paddleH / 2)
         {
           this.angleBall = Math.atan2(this.info.ballX - (paddle.y + paddleH/ 2), this.info.ballX - (paddle.x + paddleWidth/ 2));
+          console.log(this.angleCollision(percentX,percentY));
+          console.log(this.angleBall);
           return(1);
         }
       }
-      var v: {x: number,y :number}[] = [];
-      v[0] =  paddle;
-      v[1] = {x: paddle.x + paddleWidth, y: paddle.y};
-      v[2] = {x: paddle.x, y: paddle.y + paddleH};
-      v[3] = {x: paddle.x + paddleWidth, y: paddle.y + paddleH};
-      for (const p of v)
+      else
       {
-        if((Math.pow(p.x - this.info.ballX,2) + Math.pow(p.y - this.info.ballY,2) <= Math.pow(ballSize,2)))
+        var v: {x: number,y :number}[] = [];
+        v[0] =  paddle;
+        v[1] = {x: paddle.x + paddleWidth, y: paddle.y};
+        v[2] = {x: paddle.x, y: paddle.y + paddleH};
+        v[3] = {x: paddle.x + paddleWidth, y: paddle.y + paddleH};
+        for (const p of v)
         {
-          this.angleBall = Math.atan2(this.info.ballY - (paddle.y + paddleH/ 2), this.info.ballX - (paddle.x + paddleWidth/ 2));
-          return(1);
+          if((Math.pow(p.x - this.info.ballX,2) + Math.pow(p.y - this.info.ballY,2) <= Math.pow(ballSize,2)))
+          {
+            this.angleBall = Math.atan2(this.info.ballY - (paddle.y + paddleH/ 2), this.info.ballX - (paddle.x + paddleWidth/ 2));
+            console.log(this.angleCollision(percentX,percentY));
+            console.log(this.angleBall);
+            return(1);
+          }
         }
       }
       return(0);
   }
+
+
 
   
   private limitCollision() {
@@ -316,7 +347,7 @@ export class GamePong {
   private newBonus() : BonusPong
   {
     const x = (Math.random() * 800) + 400;
-    const y = (Math.random() * 600) + 150;
+    const y = (Math.random() * 100) + 400;
     const type = typeBonus[Math.floor(Math.random() * typeBonus.length)];
     const owner = null;
     const date = Date.now()
@@ -326,13 +357,13 @@ export class GamePong {
   private handleBonus()
   {
     let bonus : BonusPong = this.newBonus();
-    if (this.isBonusActive(typeBonus[0],1) === false)
-    {
+    // if (this.isBonusActive(typeBonus[0],1) === false)
+    // {
       
-      bonus.owner = 1;
-      bonus.type = typeBonus[1];
-      this.info.bonus.push(bonus)
-    }
+    //   bonus.owner = 1;
+    //   bonus.type = typeBonus[1];
+    //   this.info.bonus.push(bonus)
+    // }
     this.paddleHeight1 = this.isBonusActive(typeBonus[0],1) ? paddleHeight * 2 : paddleHeight;
     this.paddleHeight2 = this.isBonusActive(typeBonus[0],2) ? paddleHeight * 2 : paddleHeight;
     this.paddleSpeed1 = this.isBonusActive(typeBonus[1],1) ? paddleSpeed * 2 : paddleSpeed;
@@ -343,7 +374,7 @@ export class GamePong {
   {
 
     for (const el of this.info.bonus) {
-      if (el.type == type && el.owner == player)
+      if (el.type === type && el.owner === player)
       {
         return true;
       }   

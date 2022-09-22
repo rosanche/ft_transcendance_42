@@ -37,7 +37,7 @@ type PongState = {
 
 const bonusSize = 25;
 const paddleHeight = 100;
-const paddleWidth = 10;
+const paddleWidth = 15;
 const ballSize = 15;
 
 const socket = socketio('http://localhost:3000/game',{
@@ -160,6 +160,8 @@ const Canvas :  React.FC<CanvasProps> = ({...props}) => {
     
         socket.on('disconnect', () => {
           setIsConnected(false);
+          setIsGame(false);
+          setIsWaiting(false);
         });
     
         socket.on('pong', () => {
@@ -252,6 +254,7 @@ const Canvas :  React.FC<CanvasProps> = ({...props}) => {
         {
             if (el.type == typeBonus[0])
             {
+                console.log("Bonus: ", el.owner)
                 if (el.owner == 1)
                 {
                     H1 *=2;

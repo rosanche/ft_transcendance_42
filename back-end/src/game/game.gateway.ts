@@ -83,7 +83,6 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     this.logger.log(`Socket ${client.id} connect on the server and real id is ${user.id}`);
     this.gamePongs.forEach((game) => {
       if (game.id1 == user.id || game.id2 == user.id){
-        if (game.idInterval === null)
         client.emit("game start");
         client.join(game.roomID);
       }
@@ -193,6 +192,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     game.setIdInterval(idInterval);
     this.players.add(game.id1);
     this.players.add(game.id2);
+    console.log(this.players)
     this.server.to(game.roomID).emit("game start");
 
   }

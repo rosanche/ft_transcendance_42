@@ -80,9 +80,9 @@ export class UserController
   }
 
   @Get('playingUser')
-  getPlayingUser() : Set<number>
+  getPlayingUser() : number[]
   {
       console.log(this.gameGateway.getPlayingUser());
-      return this.gameGateway.getPlayingUser();
+      return [...this.gameGateway.getPlayingUser()];
   }
 }
