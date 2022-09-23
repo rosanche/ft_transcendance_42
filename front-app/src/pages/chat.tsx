@@ -50,6 +50,10 @@ const Chat = () => {
     }
     useEffect(() => {
 
+      socket.on('info channel', (mm : Form[])=>{
+        setMsg(mm);
+      })
+
       socket.on('connect', () => {
           setIsConnected(true);
       });
@@ -86,13 +90,14 @@ const Chat = () => {
   },[]);
 
   useEffect(() => {
-        console.log("oui!!!!!!!!!!!!!!!!!!!!!!!!!")
+     //   console.log("oui!!!!!!!!!!!!!!!!!!!!!!!!!")
     if (typeof document != "undefined") {
         const cookieValue = document.cookie.split('; ').find((row) => row.startsWith('access_token'))?.split('=')[1];
         console.log(cookieValue);
         socket.auth.token = cookieValue;
         console.log(router.query)
         socket.connect();
+        socket.emit("channelinit");
     }
 
     return () => {

@@ -9,7 +9,7 @@ import { AuthService } from "../auth/auth.service";
 type Form  = {
     channel : string,
     pseudo : string,
-    texte : String,
+    texte : string,
 };
 
 @WebSocketGateway({ namespace: '/chat' })
@@ -325,12 +325,62 @@ export class ChatGateway implements OnGatewayInit {
         }
     }
 
+    @SubscribeMessage('channelinit')
+    async postChannel(client: Socket, channel : string)
+    {
+        const user = await this.authService.getUserFromSocket(client);
+        const cha = await this.Prisma.channel.findFirst({
+            where:{
+                name: channel,
+                users: {
+                    some: {
+                        id : user.id
+                    }
+                }
+            }
+        });
+        if (cha)
+        {
+            const posts = await this.Prisma.post.findMany({
+                where:{
+                           destByID : cha.id
+                },
+                select: {
+                    message: true,
+                    createur:{
+                        select: {
+                            pseudo: true,
+                        }
+                    },
+                    dest:{
+                        select: {
+                            name: true,
+                        }
+                    },
+                }
+            });
+            var re = new Array<Form>();
+            let  na : Form;
+            console.log(posts)
+            for (let i : number = 1; posts[i]; ++i) {
+                console.log(posts[i].dest.name);
+                console.log(posts[i].createur.pseudo);
+                console.log(posts[i].message);
+            na = {channel: posts[i].dest.name, pseudo: posts[i].createur.pseudo, texte: posts[i].message}
+            re.push(na);
+            }
+            console.log(re)
+            this.wss.emit('info channel', re); 
+            
+        }
+        //return {channel: "", pseudo: "", Texte: ""}
+    }
+
     @SubscribeMessage('channelToServer')
     async handleMessage(client: Socket, message: Form) {
         const user = await this.authService.getUserFromSocket(client);
         console.log(`bonjour le monde ${user.pseudo}`);
-        this.wss.emit('chatToClient', {channel: message.channel, pseudo: user.pseudo, texte: message.texte }); 
-        return;
+      //  this.wss.emit('chatToClient', {channel: message.channel, pseudo: user.pseudo, texte: message.texte }); 
         const ban = await this.Prisma.ban.findMany({
             where: {
                 active: true,
@@ -342,18 +392,18 @@ export class ChatGateway implements OnGatewayInit {
                 id: user.id,
             }
         });
-        /*
-        if (!(this.banactive.get(message.room).get(user.id) || this.muteactive.get(message.room).get(user.id)) 
-            || await this.ban_or_not(message.room, user.id)) {
+    
+        if (!(this.banactive.get(message.channel).get(user.id) || this.muteactive.get(message.channel).get(user.id)) 
+            || await this.ban_or_not(message.channel, user.id)) {
             
             const cha = await this.Prisma.channel.findUnique({
                 where:{
-                    name : message.room,
+                    name : message.channel,
                 }
             })
-            this.Prisma.post.create({
+           await this.Prisma.post.create({
                 data: {
-                    message: message.message,
+                    message: message.texte,
                     userID: user.id,
                     destByID: cha.id
                 }
@@ -370,9 +420,10 @@ export class ChatGateway implements OnGatewayInit {
                     }
                 }
             });
-            this.wss.to(message.room).emit('chatToClient', message, block); 
+            console.log(`bonjour le monde ${user.pseudo}`);
+            message.pseudo = user.pseudo;
+            this.wss.to(message.channel).emit('chatToClient', message, block); 
         }
-        */
     }
 
     @SubscribeMessage('msgToServer')
