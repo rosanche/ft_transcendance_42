@@ -6,11 +6,19 @@ import { User, Channel } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuthService } from "../auth/auth.service";
 
+type chann  = {
+    id : number,
+    name : string,
+    private : boolean,
+    admin : boolean,
+};
+
 type Form  = {
     channel : string,
     pseudo : string,
     texte : string,
 };
+
 
 @WebSocketGateway({ namespace: '/chat' })
 export class ChatGateway implements OnGatewayInit {
@@ -116,8 +124,8 @@ export class ChatGateway implements OnGatewayInit {
         if (user) {
             this.logger.log(`Socket ${client.id} connect on the server with pseudo ${user.pseudo}`);
             this.iddd[user.id] = client.id;
-            client.join("general");
-            client.to("general").emit('joinedRoom', "typescript")
+        //    client.join("general");
+          //  client.to("general").emit('joinedRoom', "typescript")
         }
       /*  else {
             client.to("typescrsipt").emit('joinedRoom', "typescript")
@@ -208,14 +216,19 @@ export class ChatGateway implements OnGatewayInit {
         }
     }
 
-    @SubscribeMessage('leaveRoom')
-    async handleRoomLeave(client: Socket, room: string) {
+    @SubscribeMessage('quit')
+    async handleRoomLeave(client: Socket, room: chann) {
+        const user = await this.authService.getUserFromSocket(client);
+        if (!user)
+        {
+            return;
+        }
         console.log("oui");
-        if('dm' == room) {
+        if('dm' == room.name) {
             const user = await this.authService.getUserFromSocket(client);
             const channelup = await this.Prisma.channel.update({
                 where: {
-                    name: room
+                    name: room.name
                 },
                 data: {
                     users:{ 
@@ -227,8 +240,9 @@ export class ChatGateway implements OnGatewayInit {
                 }
             });
         }
-        client.join(room);
-        client.emit('leftRoom', room)
+        client.leave(room.name);
+        console.log(room)
+        this.wss.to(client.id).emit('left chanel', room)
     }
 
     @SubscribeMessage('blockedUser')
@@ -325,6 +339,48 @@ export class ChatGateway implements OnGatewayInit {
         }
     }
 
+    @SubscribeMessage('listchannels')
+    async listChannels(client: Socket, channel : string)
+    {
+        const user = await this.authService.getUserFromSocket(client);
+        if (user)
+        {
+            const  channels = await this.Prisma.channel.findMany({
+                where:{
+                    users:{
+                    some: {
+                    id: user.id,
+                    }}
+                },
+                select:{
+                    id: true,
+                    name: true,
+                    private: true,
+                    admin:{
+                        where:{
+                            id : user.id,
+                        },
+                        select:{
+                        id : true
+                        }
+                    }
+                }
+            })
+            var re = new Array<chann>();
+            let  na : chann;
+            for (let i : number = 0; channels[i]; ++i) {
+            na = {id: channels[i].id, name: channels[i].name, private: channels[i].private, admin: (channels[i].admin[0].id === user.id) }
+                const a : string = na.name;
+                console.log(` oui enfin c'est toi ${channels[i].admin[0].id} ${user.id} et ${na.admin}`);
+                client.join(a);
+
+                re.push(na);
+            }
+            console.log(`aouit ${channels[0].name}`);
+            this.wss.to(this.iddd[user.id]).emit('channels list',re);
+        }
+    }
+
     @SubscribeMessage('channelinit')
     async postChannel(client: Socket, channel : string)
     {
@@ -361,16 +417,13 @@ export class ChatGateway implements OnGatewayInit {
             });
             var re = new Array<Form>();
             let  na : Form;
-            console.log(posts)
-            for (let i : number = 1; posts[i]; ++i) {
-                console.log(posts[i].dest.name);
-                console.log(posts[i].createur.pseudo);
-                console.log(posts[i].message);
+            for (let i : number = 0; posts[i]; ++i) {
             na = {channel: posts[i].dest.name, pseudo: posts[i].createur.pseudo, texte: posts[i].message}
+            
             re.push(na);
             }
-            console.log(re)
-            this.wss.emit('info channel', re); 
+         //   console.log(re)
+            this.wss.to(this.iddd[user.id]).emit('info channel', re); 
             
         }
         //return {channel: "", pseudo: "", Texte: ""}
@@ -392,15 +445,22 @@ export class ChatGateway implements OnGatewayInit {
                 id: user.id,
             }
         });
-    
+        const cha = await this.Prisma.channel.findFirst({
+            where:{
+                name : message.channel,
+                users: {
+                    some: {
+                        id: user.id,
+                    }
+                }
+            }
+        })
+        if (!cha)
+            return null;
         if (!(this.banactive.get(message.channel).get(user.id) || this.muteactive.get(message.channel).get(user.id)) 
             || await this.ban_or_not(message.channel, user.id)) {
             
-            const cha = await this.Prisma.channel.findUnique({
-                where:{
-                    name : message.channel,
-                }
-            })
+            
            await this.Prisma.post.create({
                 data: {
                     message: message.texte,
@@ -420,10 +480,10 @@ export class ChatGateway implements OnGatewayInit {
                     }
                 }
             });
-            console.log(`bonjour le monde ${user.pseudo}`);
+            console.log(`bonjour le monde ${user.pseudo} et ${message.channel}`);
             message.pseudo = user.pseudo;
             this.wss.to(message.channel).emit('chatToClient', message, block); 
-        }
+            }
     }
 
     @SubscribeMessage('msgToServer')

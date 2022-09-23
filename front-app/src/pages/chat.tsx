@@ -17,17 +17,36 @@ const socket = socketio('http://localhost:3000/chat',{
         texte : String,
   };
 
+  type channel  = {
+    id : number,
+    name : string,
+    private : boolean,
+    admin : boolean,
+};
 
 
 const Chat = () => {
     const [data, setData] =  useState<Form>({pseudo : "me", channel: "general" ,texte: ""});
     const [msg, setMsg] =  useState<Form[]>([]);
     const [msg2, setMsg2] =  useState<string>("");
-    const [channel, setChannel] =  useState<string[]>([]);
-    const [chatName, setChatName] =  useState<string>("general");
+    const [channel, setChannel] =  useState<channel[]>([]);
+    const [chatName, setChatName] =  useState<channel>({id:0, name : "", private : false});
     //const [pre, setPre] =  useState<Form>({pseudo : "", channel: "" ,text: ""});
     const [isConnected, setIsConnected] = useState(socket.connected);
     const router = useRouter();
+
+    const quit = async (chat : channel) =>{
+        await socket.emit('quit', chat)
+        const u = await channel.filter(el => chat.name !== el.name);
+        console.log(u);
+       await setChannel(u);
+       console.log(channel);
+       await setChatName(channel[0])
+        await console.log(chatName);
+        const a : channel = await channel.at(0);
+        console.log(a.name);
+      await  setData({pseudo : data.pseudo, channel: a.name ,texte: ""})
+    }
 
     const sendMessage = async () => {
       console.log("ouiiiiiiiii")
@@ -37,7 +56,12 @@ const Chat = () => {
      console.log(data)
       await  socket.emit("channelToServer",data);
       setMsg2("");
-      setData({channel: chatName, pseudo : data.pseudo ,texte: ""});
+      setData({channel: data.channel, pseudo : data.pseudo ,texte: ""});
+    }
+
+    const changechannel = (el : channel) => {
+      setData({channel: el.name, pseudo: 'me' ,text: ""});
+      setChatName(el)
     }
 
     const log = (ms : Form) => {
@@ -50,8 +74,15 @@ const Chat = () => {
     }
     useEffect(() => {
 
-      socket.on('info channel', (mm : Form[])=>{
+      socket.on('channels list' ,(channels : string[]) => {
+        setChannel(channels)
+      })
+      socket.on('info channel', (mm : {}[])=>{
         setMsg(mm);
+      })
+
+      socket.on('left chanel', (room : channel ) =>{
+        setChatName({id:0, name : "", private : false})
       })
 
       socket.on('connect', () => {
@@ -81,11 +112,14 @@ const Chat = () => {
       //   socket.on('user', (user : {name: string, id: }))
     
       return () => {
+          socket.off('info channel')
+          socket.off('info channel')
           socket.off('connect');
           socket.off('user info');
           socket.off('auth error');
           socket.off('disconnect');
           socket.off('chatToClient');
+          socket.off('left chanel');
       };
   },[]);
 
@@ -98,6 +132,7 @@ const Chat = () => {
         console.log(router.query)
         socket.connect();
         socket.emit("channelinit");
+        socket.emit("listchannels");
     }
 
     return () => {
@@ -114,36 +149,35 @@ const Chat = () => {
             data.channel
           }
           </h1>
-        
- 
-        <Button  className="mb-10  px-2 py-1"
+         
+              <Button  className="mb-10  px-2 py-1"
                 variant="contained"
                 color="active"
-                onClick={() => log(data)}
+                onClick={() => quit(chatName)}
                 >
                   quit
                 </Button>
-                <Button  className="mb-10 ml-3 px-2 py-1"
+              {
+                chatName.admin  ? 
+              (
+                <h2>
+              <Button  className="mb-10  px-2 py-1"
                 variant="contained"
                 color="active"
                 onClick={() => log(data)}
                 >
-                  mute
+                  blocked
                 </Button>
-                <Button  className="mb-10 ml-3 px-2 py-1"
+                <Button  className="mb-10  px-2 py-1"
                 variant="contained"
                 color="active"
                 onClick={() => log(data)}
                 >
                   ban
                 </Button>
-                <Button  className="mb-10 ml-3 px-2 py-1"
-                variant="contained"
-                color="active"
-                onClick={() => log(data)}
-                >
-                  admin
-                </Button>
+                </h2>
+                ): (<h1></h1>)
+                }
               </div>
             <div>
             <input className=" px-2 py-1" type="text" value={data.texte}  onChange={(e) => {
@@ -161,7 +195,7 @@ const Chat = () => {
                 </Button>
              <p>
                 {
-                    msg.map((el) => (
+                    msg.filter((el)=> el.channel === data.channel).map((el) => (
                     <li key={el.channel}>{el.pseudo} : {el.texte}</li>
                 ))
                   }
@@ -172,10 +206,10 @@ const Chat = () => {
                 <Button  className="ml-3 px-2 py-1"
                 variant="contained"
                 color="active"
-                onClick={() =>  setData({channel: el, pseudo: 'me' ,text: ""})}
+                onClick={() => changechannel(el)  }
                 >
                   {
-                    el
+                    el.name
                   }
                 </Button>
 
