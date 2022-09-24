@@ -5,12 +5,14 @@ import { Jwt2FAGuard } from '../auth/guard';
 import { User, Channel } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuthService } from "../auth/auth.service";
+import * as bcrypt from 'bcrypt';
 
 type chann  = {
     id : number,
     name : string,
     private : boolean,
     admin : boolean,
+    password: boolean,
 };
 
 type Form  = {
@@ -18,6 +20,19 @@ type Form  = {
     pseudo : string,
     texte : string,
 };
+
+type pass = {
+    name : string
+    password : string
+  };
+
+  type ban = {
+    mute_ban: string, 
+    name  : string,
+    pseudo: string,
+    time : number,
+    motif : string, 
+  };
 
 
 @WebSocketGateway({ namespace: '/chat' })
@@ -28,13 +43,13 @@ export class ChatGateway implements OnGatewayInit {
 
     private logger : Logger = new Logger('ChatGateway');
     private iddd : Map<Number, Number[]> = new Map();
-    private banactive  = new  Map<string , Map<Number, Boolean> >();
-    private muteactive = new Map<string, Map<Number, Boolean> >();
+    /*private banactive  = new  Map<Number, Ban >();
+    private muteactive = new Map<Number, Map<Number, Boolean> >();*/
     private mp  = new Map<string, Number[]>;
 
     
 
-    async ban_or_not(cha : string, id: number) {
+   /* async ban_or_not(cha : string, id: number) {
         const ban = await this.Prisma.ban.findMany({
             where:{
                 active: true,
@@ -81,7 +96,7 @@ export class ChatGateway implements OnGatewayInit {
     async isbanmute(user : User,  room : string)
     {
         return await !(this.ban_or_not(room, user.id) || this.muteactive.get(room).get(user.id)) 
-    }
+    }*/
 
     async afterInit(server : any) {
         this.logger.log('initilized!');
@@ -98,17 +113,17 @@ export class ChatGateway implements OnGatewayInit {
                 }
         });
         console.log(cha);
-        for (let i :number = 0; cha[i]; i++) {
+      /*  for (let i :number = 0; cha[i]; i++) {
             const a = new Map<number, Boolean>()
-            await this.banactive.set(cha[i].name, new Map<Number, Boolean>());
-            await this.muteactive.set(cha[i].name, new Map<Number, Boolean>());
+          //  await this.banactive.set(cha[i].name, new Map<Number, Boolean>());
+           // await this.muteactive.set(cha[i].name, new Map<Number, Boolean>());
             for (let n :number = 0; cha[i].users[n]; n++) {
-                await this.banactive.get(cha[i].name).set(cha[i].users[n].id, false)
-                console.log(this.banactive.get(cha[i].name).get(cha[i].users[n].id));
-                this.ban_or_not(cha[i].name, cha[i].users[n].id)
+             //   await this.banactive.get(cha[i].name).set(cha[i].users[n].id, false)
+               // console.log(this.banactive.get(cha[i].name).get(cha[i].users[n].id));
+                t//his.ban_or_not(cha[i].name, cha[i].users[n].id)
             }
             console.log(`${cha[i].name} ha oui d'accord c'est toi`);
-        }
+        }*/
     }
 
     async  handleDisconnect(client: Socket) {
@@ -198,22 +213,93 @@ export class ChatGateway implements OnGatewayInit {
         this.wss.to(this.iddd[user2.id]).emit('joinedRoom', 'dm');
      }
 
-
-     @SubscribeMessage('joinRoom')
-     async handleRoomJoin(client: Socket, room: string) {
+     @SubscribeMessage('joins channel password')
+     async handleRoomJoinPassword(client: Socket, chat: pass) {
         const user = await this.authService.getUserFromSocket(client);
-        if(room != 'dm')
-        {
-            if (!this.isbancha(user, room))
-            {
-                client.join(room);
-                client.emit('joinedRoom', room);
+        if (!user)
+            return ;
+        const channel = await this.Prisma.channel.findFirst({
+            where: {
+                NOT:{
+                    users: {
+                        some: {
+                            id : user.id
+                        }
+                    },
+                    hash: null,
+                },
+                name: chat.name,
             }
+        });
+        if (channel !== null && await bcrypt.compare(chat.password, channel.hash))
+        {
+            await this.Prisma.channel.update({
+                where:{
+                    id: channel.id,
+
+                },
+                data:{
+                    users:{
+                        connect:[{id: user.id,}]
+                    }
+                }
+            })
+            client.join(chat.name);
+            console.log('renvoie');
+            const a : chann =  await {id: channel.id, name: channel.name, private: channel.private , admin: (false), password: true}
+            console.log(this.iddd[user.id]);
+            this.wss.to(this.iddd[user.id]).emit('join channel true', a);
         }
         else
         {
-            return ;
+            console.log('je suis une porte');
+            this.wss.to(this.iddd[user.id]).emit('join channel false password', chat);
         }
+        return ; 
+    }
+
+     @SubscribeMessage('joins channel')
+     async handleRoomJoin(client: Socket, room: string) {
+        const user = await this.authService.getUserFromSocket(client);
+        if (!user)
+            return ;
+        const channel = await this.Prisma.channel.findFirst({
+            where: {
+                NOT:{
+                    users: {
+                        some: {
+                            id : user.id
+                        }
+                    }
+                },
+                name: room,
+                hash: null,
+            }
+        });
+        if (channel !== null)
+        {
+            await this.Prisma.channel.update({
+                where:{
+                    id: channel.id,
+
+                },
+                data:{
+                    users:{
+                        connect:[{id: user.id,}]
+                    }
+                }
+            })
+            client.join(room);
+            console.log('renvoie');
+            const a : chann =  await {id: channel.id, name: channel.name, private: channel.private , admin: (false), password: false}
+            console.log(this.iddd[user.id]);
+            this.wss.to(this.iddd[user.id]).emit('join channel true', a);
+        }
+        else
+        {
+            this.wss.to(this.iddd[user.id]).emit('join channel false', room);
+        }
+        return ; 
     }
 
     @SubscribeMessage('quit')
@@ -224,7 +310,7 @@ export class ChatGateway implements OnGatewayInit {
             return;
         }
         console.log("oui");
-        if('dm' == room.name) {
+      /*  if('dm' == room.name) {
             const user = await this.authService.getUserFromSocket(client);
             const channelup = await this.Prisma.channel.update({
                 where: {
@@ -239,10 +325,32 @@ export class ChatGateway implements OnGatewayInit {
                     }
                 }
             });
+        }*/
+        const channelup = await this.Prisma.channel.update({
+            where: {
+                name: room.name
+            },
+            data: {
+                users:{ 
+                    disconnect:
+                    {
+                        id: user.id
+                    }
+                },
+                admin:{ 
+                    disconnect:
+                    {
+                        id: user.id
+                    }
+                }
+            }
+        });
+        if (channelup)
+        {
+            client.leave(room.name);
+            console.log(room)
+            this.wss.to(client.id).emit('left chanel', room)
         }
-        client.leave(room.name);
-        console.log(room)
-        this.wss.to(client.id).emit('left chanel', room)
     }
 
     @SubscribeMessage('blockedUser')
@@ -271,13 +379,13 @@ export class ChatGateway implements OnGatewayInit {
     }
     
     @SubscribeMessage('blockedChannel')
-    async blockedChannel(client: Socket, src: { pseudo: string, room: string, type: string,  time : Number, description : string}) {
+    async blockedChannel(client: Socket, src: ban) {
         const user = await this.authService.getUserFromSocket(client);
-        if (user)
+        if (!user)
             return "";
         const cha = await this.Prisma.channel.findFirst({
             where: {
-                name: src.room,
+                name: src.name, 
                 users: {
                     some: {
                         pseudo : src.pseudo,
@@ -290,20 +398,33 @@ export class ChatGateway implements OnGatewayInit {
                 }
             },
         });
+        const user2 = await this.Prisma.user.findUnique({
+            where:{
+                pseudo : src.pseudo
+            }
+        })
+        if (!user2)
+        return;
+        console.log("AAAkgogjAAA")
         if (cha) {
-            if (src.type !== "ban")
-                src.type = "mute";
+            if (src.mute_ban !== "ban" && src.mute_ban !== "mute")
+                return;
+            console.log("AAAA")
             const ban = await this.Prisma.ban.create({
                 data:
                 {
                     timeBan: +src.time,
                     finshBan: Date.now() + 60000 * +src.time,
-                    muteBan: src.type,
+                    muteBan: src.mute_ban,
                     active: true,
-                    iduser: 1,
+                    iduser: user2.id,
                 }
             });  
-            this.wss.to(this.iddd[src.pseudo]).emit('chatTo' + src.type, src);
+          /*  if (src.mute_ban === "ban")
+                this.wss.to(this.iddd[src.pseudo]).leave(src.name);*/
+            console.log(src)
+            this.wss.to(src.name).emit('you ban_mute', src);
+            //this.wss.to(cha.name).emit('info ban_mute', src);
         }
     }
 
@@ -339,6 +460,34 @@ export class ChatGateway implements OnGatewayInit {
         }
     }
 
+    @SubscribeMessage('pubchannels')
+    async pubchannels(client: Socket, channel : string) {
+        const user = await this.authService.getUserFromSocket(client);
+        if (user)
+        {
+            const  channels = await this.Prisma.channel.findMany({
+                where:{
+                    NOT:{
+                    users:{
+                    some: {
+                    id: user.id,
+                    }}
+                    },
+                    private: false,
+                }})
+                var re = new Array<chann>();
+                var re = new Array<chann>();
+                console.log("AAAAAAAAAAAoui")
+            let  na : chann;
+            for (let i : number = 0; channels[i]; ++i) {
+                    na = {id: channels[i].id, name: channels[i].name, private: channels[i].private, admin: (false), password: (channels[i].hash !== null) }
+                console.log(` oui enfin c'est toi oupa  ${user.id} et ${na.admin}`);
+                re.push(na);
+            }
+            this.wss.to(this.iddd[user.id]).emit('channels pub', re);
+            }
+    }
+
     @SubscribeMessage('listchannels')
     async listChannels(client: Socket, channel : string)
     {
@@ -363,16 +512,22 @@ export class ChatGateway implements OnGatewayInit {
                         select:{
                         id : true
                         }
-                    }
+                    },
+                    hash: true,
                 }
             })
             var re = new Array<chann>();
             let  na : chann;
             for (let i : number = 0; channels[i]; ++i) {
-            na = {id: channels[i].id, name: channels[i].name, private: channels[i].private, admin: (channels[i].admin[0].id === user.id) }
+                console.log(channels[i].admin);
+            if (channels[i].admin.length !== 0)
+            na = {id: channels[i].id, name: channels[i].name, private: channels[i].private, admin: (true),  password: (channels[i].hash !== null)}
+            else
+            na = {id: channels[i].id, name: channels[i].name, private: channels[i].private, admin: (false), password: (channels[i].hash !== null)}
+
                 const a : string = na.name;
-                console.log(` oui enfin c'est toi ${channels[i].admin[0].id} ${user.id} et ${na.admin}`);
-                client.join(a);
+                console.log(` oui enfin c'est toi  ${user.id} et ${na.admin}`);
+                client.join(channels[i].name);
 
                 re.push(na);
             }
@@ -381,53 +536,49 @@ export class ChatGateway implements OnGatewayInit {
         }
     }
 
+
+
     @SubscribeMessage('channelinit')
-    async postChannel(client: Socket, channel : string)
+    async postChannel(client: Socket)
     {
         const user = await this.authService.getUserFromSocket(client);
-        const cha = await this.Prisma.channel.findFirst({
+        const cha = await this.Prisma.channel.findMany({
             where:{
-                name: channel,
                 users: {
                     some: {
                         id : user.id
                     }
                 }
-            }
-        });
-        if (cha)
-        {
-            const posts = await this.Prisma.post.findMany({
-                where:{
-                           destByID : cha.id
-                },
-                select: {
-                    message: true,
-                    createur:{
-                        select: {
-                            pseudo: true,
-                        }
-                    },
-                    dest:{
-                        select: {
-                            name: true,
-                        }
+            },
+            select:{
+                id : true,
+                name: true,
+                post:{
+                    select: {
+                        message: true,
+                        createur:{
+                            select: {
+                                pseudo: true,
+                            }
                     },
                 }
-            });
-            var re = new Array<Form>();
-            let  na : Form;
-            for (let i : number = 0; posts[i]; ++i) {
-            na = {channel: posts[i].dest.name, pseudo: posts[i].createur.pseudo, texte: posts[i].message}
-            
-            re.push(na);
             }
-         //   console.log(re)
+        }
+        }); 
+        var re = new Array<Form>();
+        let  na : Form;
+        for (let i : number = 0; cha.length != i; ++i) {
+                for (let n : number = 0; cha[i].post.length != n; ++n) {
+                    na = {channel: cha[i].name, pseudo: cha[i].post[n].createur.pseudo, texte: cha[i].post[n].message}
+                    re.push(na);
+                }
+            }
+            
+           console.log(re)
             this.wss.to(this.iddd[user.id]).emit('info channel', re); 
             
         }
-        //return {channel: "", pseudo: "", Texte: ""}
-    }
+        
 
     @SubscribeMessage('channelToServer')
     async handleMessage(client: Socket, message: Form) {
@@ -457,8 +608,7 @@ export class ChatGateway implements OnGatewayInit {
         })
         if (!cha)
             return null;
-        if (!(this.banactive.get(message.channel).get(user.id) || this.muteactive.get(message.channel).get(user.id)) 
-            || await this.ban_or_not(message.channel, user.id)) {
+        if (true) {
             
             
            await this.Prisma.post.create({
