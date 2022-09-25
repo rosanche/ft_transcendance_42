@@ -11,13 +11,23 @@ import { User } from "@prisma/client";
 import { UserService } from '../user/user.service';
 import { PrismaService } from '../prisma/prisma.service';
 
-var timetick = 17
+var timetick = 10
 
 
 interface Queue {
   sock : Socket,
   id: number,
   pseudo: string
+}
+
+type EndGame = {
+  score1: number,
+  score2: number,
+  id1: number,
+  id2: number,
+  pseudo1: string,
+  pseudo2: string,
+  winner: number
 }
 
 
@@ -102,7 +112,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   @SubscribeMessage('queue')
   async handleQueue(client: Socket, bonus: boolean){
 
-    let id = this.mapIdSocket.get(client.id);
+    const id = this.mapIdSocket.get(client.id);
     let game: GamePong;
     let players: Queue[] = [];
     const user = await this.userService.findid(id);
@@ -164,6 +174,26 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     }
   };
 
+  @SubscribeMessage('join')
+  async handleJoin(client: Socket, roomID: string){
+    const game = this.gamePongs.get(roomID);
+    const id = this.mapIdSocket.get(client.id);
+    const user = await this.userService.findid(id);
+    if (game)
+    {
+      if (game.id2 == -1)
+      {
+        game.addPlayer(user.pseudo, user.id);
+        client.join(roomID);
+        this.startGame(game);
+      }
+      else
+      {
+        client.join(roomID);
+        client.emit("game start");
+      }
+    }
+  }
 
 
   sendInfo(game : GameGateway)
@@ -192,7 +222,8 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     game.setIdInterval(idInterval);
     this.players.add(game.id1);
     this.players.add(game.id2);
-    console.log(this.players)
+    console.log(this.players);
+    console.log(game.roomID);
     this.server.to(game.roomID).emit("game start");
 
   }
@@ -204,14 +235,97 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     return game;
   }
 
-  stopGame(game: GamePong, leaverID: number = 0)
+  async stopGame(game: GamePong, winnerID: number)
   {
     clearInterval(game.idInterval);
-    // update data base
-    //send victory information to player
+    
+    const user1 =  await this.prisma.user.findUnique({
+      where: { 
+      id: game.id1 },
+    });
+    const user2 = await this.prisma.user.findUnique({
+      where: { 
+      id: game.id2 },
+    });
+    let level1 = user1.level;
+    let level2 = user2.level;
+    let exp1 = (winnerID === user1.id) ? user1.experience + level2 + 1 : user1.experience;
+    let exp2 = (winnerID === user2.id) ? user2.experience + level1 + 1 : user2.experience;
+    while( exp1 >= Math.pow(level1 + 1,2))
+    {
+      level1++;
+    }
+    while( exp2 >= Math.pow(level2 + 1,2))
+    {
+      level2++;
+    }
+    await this.prisma.user.updateMany({
+      where: { 
+      id: game.id1 },
+      data: {
+        experience: exp1,
+        level: level1,
+        nbr_games: {
+          increment: 1
+        },
+        nbr_wins: {
+          increment: (winnerID === user1.id) ? 1 : 0
+        },
+        nbr_looses: {
+          increment: (winnerID === user1.id) ? 0 : 1
+        },
+        goals_f: {
+          increment: game.info.score1
+        },
+        goals_a: {
+          increment: game.info.score2
+        },
+      }
+    });
+    await this.prisma.user.updateMany({
+      where: { 
+      id: game.id2 },
+      data: {
+        experience: exp2,
+        level: level2,
+        nbr_games: {
+          increment: 1
+        },
+        nbr_wins: {
+          increment: (winnerID === user2.id) ? 1 : 0
+        },
+        nbr_looses: {
+          increment: (winnerID === user2.id) ? 0 : 1
+        },
+        goals_f: {
+          increment: game.info.score2
+        },
+        goals_a: {
+          increment: game.info.score1
+        },
+      }
+    });
+    await this.prisma.game.create({
+      data: {
+      id_1: game.id1,
+      id_2: game.id2,
+      score_1:game.info.score1,
+      score_2:game.info.score2,
+      winner: winnerID
+      }
+    });
+    
     this.players.delete(game.id1);
     this.players.delete(game.id2);
-    this.server.to(game.roomID).emit("game end");
+    const endGame : EndGame ={
+    id1 : game.id1,
+    id2 : game.id2,
+    pseudo1 :user1.pseudo,
+    pseudo2  :user2.pseudo,
+    score1  :game.info.score1,
+    score2  :game.info.score2,
+    winner : winnerID}
+    this.server.to(game.roomID).emit("game end", endGame);
     this.server.socketsLeave(game.roomID)
     this.gamePongs.delete(game.roomID);
   }
@@ -220,14 +334,28 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     const info = game.updatePosition();
     //gateway.logger.log(`a game update`);
     gateway.server.volatile.to(game.roomID).emit("data", info);
-    if (info.score1 <= 9 && info.score2 <= 9)
+    if (info.score1 <= 10 && info.score2 <= 10)
     {
       return;
     }
     else
     {
-      gateway.stopGame(game);
+      if (info.score1 > info.score2)
+      {gateway.stopGame(game, 1);}
+      else
+      {gateway.stopGame(game, 2);}
     }
+  }
+
+  searchRoomID(id: number) : string 
+  {
+    let roomID: string = null; 
+    this.gamePongs.forEach((game) => {
+      if (game.id1 == id || game.id2 == id){
+        roomID = game.roomID;
+      }
+    });
+    return roomID
   }
 };
 

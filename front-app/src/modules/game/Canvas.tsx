@@ -21,6 +21,16 @@ type BonusPong =
     owner: null | number
 }
 
+type EndGame = {
+    score1: number,
+    score2: number,
+    id1: number,
+    id2: number,
+    pseudo1: string,
+    pseudo2: string,
+    winner: number
+}
+
 const typeBonus = ["PaddleSize", "PaddleSpeed", "BallSpeed"];
 
 type PongState = {
@@ -38,7 +48,7 @@ type PongState = {
 const bonusSize = 25;
 const paddleHeight = 100;
 const paddleWidth = 15;
-const ballSize = 15;
+const ballSize = 12;
 
 const socket = socketio('http://localhost:3000/game',{
     autoConnect: false,
@@ -54,6 +64,7 @@ const Canvas :  React.FC<CanvasProps> = ({...props}) => {
     const router = useRouter();
     const canvasRef = useRef<HTMLCanvasElement | null>(null) ;
     const queryRef =  useRef<string | null>(null) ;
+    const endGameRef = useRef<EndGame | null>(null);
     const keyRef = useRef<{up : boolean, down : boolean}>({up: false, down: false}) ;
     const scaleRef = useRef<Number>(1);
     let windowWidth :number = props.width;
@@ -73,6 +84,7 @@ const Canvas :  React.FC<CanvasProps> = ({...props}) => {
     const [isConnected, setIsConnected] = useState(socket.connected);
     const [isGame, setIsGame] = useState(false);
     const [isWaiting, setIsWaiting] = useState(false);
+    const [isEndGame, setIsEndGame] = useState(false);
     const [lastPong, setLastPong] = useState(null);
 
 
@@ -100,7 +112,6 @@ const Canvas :  React.FC<CanvasProps> = ({...props}) => {
         {
             newDirection = 1;
         }
-        console.log({newDirection, direction});
         if (newDirection != direction)
         {
             setDirection(newDirection);
@@ -134,7 +145,6 @@ const Canvas :  React.FC<CanvasProps> = ({...props}) => {
         {
             newDirection = 1;
         }
-        console.log({newDirection, direction});
         setDirection(newDirection);
      
         //setUpdate(true);
@@ -152,6 +162,16 @@ const Canvas :  React.FC<CanvasProps> = ({...props}) => {
 
         socket.on('user info', (user : {id: number, pseudo: string}) => {
             console.log(user);
+            if (typeof window != "undefined")
+            {
+                const queryParams = new URLSearchParams(window.location.search);
+                queryRef.current = queryParams.get("ID");
+                console.log(queryRef.current);
+                if (queryRef.current !== null)
+                {
+                    socket.emit('join', queryRef.current);
+                }
+            }
         });
 
         socket.on('auth error', () => {
@@ -174,14 +194,20 @@ const Canvas :  React.FC<CanvasProps> = ({...props}) => {
         });
         socket.on('wait game', () => {
             setIsWaiting(true);
+            setIsEndGame(false);
             setIsGame(false);
           });
         socket.on('game start', () => {
+            console.log("test")
           setIsGame(true);
+          setIsEndGame(false);
           setIsWaiting(false);
         });
-        socket.on('game end', () => {
+        socket.on('game end', (data: EndGame) => {
+            endGameRef.current = data;
           setIsGame(false);
+          setIsEndGame(true);
+          setIsWaiting(false);
         });
 
         //   socket.on('user', (user : {name: string, id: }))
@@ -207,11 +233,9 @@ const Canvas :  React.FC<CanvasProps> = ({...props}) => {
             const cookieValue = document.cookie.split('; ').find((row) => row.startsWith('access_token'))?.split('=')[1];
             console.log(cookieValue);
             socket.auth.token = cookieValue;
-            console.log(router.query)
             socket.connect();
 
         }
-
         return () => {
             socket.disconnect();
         };
@@ -254,14 +278,14 @@ const Canvas :  React.FC<CanvasProps> = ({...props}) => {
         {
             if (el.type == typeBonus[0])
             {
-                console.log("Bonus: ", el.owner)
+                // console.log("Bonus: ", el.owner)
                 if (el.owner == 1)
                 {
-                    H1 *=2;
+                    H1 = paddleHeight * 2;
                 }
                 else if (el.owner == 2)
                 {
-                    H2 *=2;
+                    H2 = paddleHeight * 2;
                 }
             }
         }
@@ -280,7 +304,7 @@ const Canvas :  React.FC<CanvasProps> = ({...props}) => {
                 ctx.fillRect(800 - 5,i,10,50);
             }
             ctx.fillRect(40,info.paddle1Y,paddleWidth,H1);
-            ctx.fillRect(Number(props.width) - (40 + paddleWidth),info.paddle2Y,paddleWidth,H1);
+            ctx.fillRect(Number(props.width) - (40 + paddleWidth),info.paddle2Y,paddleWidth,H2);
             ctx.beginPath();
             ctx.arc(info.ballX, info.ballY, ballSize, 0, Math.PI * 2, true);
             ctx.fill();
@@ -354,10 +378,42 @@ const Canvas :  React.FC<CanvasProps> = ({...props}) => {
                 </div>
                 </div>
                 
-                <canvas className="aspect-video w-full" width={1600} height={900} ref={canvasRef}/> 
+                <canvas className="aspect-video w-full rounded" width={1600} height={900} ref={canvasRef}/> 
             </>
         );
     
+    }
+    else if(isEndGame)
+    {
+        return (
+            <> 
+            <div className="h-56 grid grid-cols-1 gap-8 justify-items-center" >
+                <span className="text-amber-500 text-6xl font-default font-bold justify-items-center text-align: center mb-8">
+                    Winner!
+                </span>
+
+                <span className="text-amber-500 text-4xl font-default font-bold justify-items-center text-align: center mb-8">
+                    {(endGameRef.current.winner == endGameRef.current.id1) ? endGameRef.current.pseudo1 : endGameRef.current.pseudo2}
+                </span>
+
+             
+                 
+                 <Button
+                     variant="contained"
+                     color="active"
+                     onClick={() => {
+                         setIsEndGame(false);
+                         setIsGame(false);
+                         setIsWaiting(false)
+                         }
+                     }
+ 
+                 >
+                   New game
+                 </Button>
+             </div>
+             </>
+         );
     }
     else
     {

@@ -281,4 +281,25 @@ export class UserService
         return user;
     }
 
+    async findGameID(user : User)
+    {
+
+        return (
+            await this.Prisma.game.findMany(
+                {
+                    where: {
+                        OR :[
+                        {
+                            id_1: user.id,
+                        },
+                        {
+                            id_2: user.id,
+                        },
+                        ]
+                    }
+                }
+            )
+        );
+    }
+
 }

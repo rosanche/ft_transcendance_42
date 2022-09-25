@@ -9,7 +9,7 @@ COPY prisma ./prisma/
 
 RUN yarn install
 
-RUN yarn add glob rimraf
+RUN yarn add glob
 
 COPY . .
 RUN chmod -R 777 ./node_modules/.prisma  ./node_modules/prisma
