@@ -20,6 +20,7 @@ const socket = socketio('http://localhost:3000/chat',{
   type pass = {
     name : string
     password : string
+    private: boolean
   }
 
   type channel  = {
@@ -27,6 +28,7 @@ const socket = socketio('http://localhost:3000/chat',{
     name : string,
     private : boolean,
     admin : boolean,
+    owner : boolean,
     password : boolean,
 };
 
@@ -40,11 +42,13 @@ type ban = {
 
 
 const Chat = () => {
-    let password : boolean = false
+    const [newAdmin, setNewAdmin] = useState<boolean>(false);
+    const [newOwner, setNewOwner] = useState<boolean>(false);
+    const [create, setCreate] = useState<boolean>(false);
     const [ban, setBan] = useState<ban>({ mute_ban: "", name : "", pseudo: "", time: 0, motif: ""});
-    const [ads, setAds] =  useState<number>(0);
-    const [passj, setPassj] =  useState<pass>({name : "", password: ""});
-    const [join, setJoin] =  useState<channel>({id:0, name : "", private : false, admin: false, password: false});
+  //  const [ads, setAds] =  useState<number>(0);
+    const [passj, setPassj] =  useState<pass>({name : "", password: "", private: false});
+    const [join, setJoin] =  useState<channel>({id:0, name : "", private : false, admin: false, owner: false ,password: false});
     const [data, setData] =  useState<Form>({pseudo : "me", channel: "general" ,texte: ""});
     const [msg, setMsg] =  useState<Form[]>([]);
     const [chatName, setChatName] =  useState<channel>({id:0, name : "", private : false, admin: false, password: false});
@@ -53,10 +57,11 @@ const Chat = () => {
     //const [pre, setPre] =  useState<Form>({pseudo : "", channel: "" ,text: ""});
     const [isConnected, setIsConnected] = useState(socket.connected);
     const router = useRouter();
+
     const joinPass = async (passj : pass) => {
       await  socket.emit('joins channel password', passj);
-      await setPassj({name : "", password: ""})
-      await setJoin({id:0, name : "", private : false, admin: false, password: false})
+      await setPassj({name : "", password: "", private: false})
+      await setJoin({id:0, name : "", private : false, admin: false, owner: false, password: false})
     }
 
     const quit = async (chat : channel) =>{
@@ -73,12 +78,37 @@ const Chat = () => {
       await  setData({pseudo : data.pseudo, channel: a.name ,texte: ""})
       setChannelPub([...channelPub,chat])
     }
+
+    const addAdmin = async (cha : ban) =>
+    {
+      console.log(cha)
+      socket.emit("new admin", cha);
+    }
+    
+    const changeOwner = async (cha : ban) =>
+    {
+      console.log(cha)
+      socket.emit("change owner", cha);
+    }
+
+    const creatCha = async (cha : pass) => {
+      console.log(cha);
+      socket.emit('creatcha', cha);
+      setPassj({name : "", password: "", private: false});
+    }
     const Ban = async () =>
     { 
         await  socket.emit("blockedChannel", ban);
       //const u =  await channel.filter(el => v.name !== el.name);
         await console.log("ASDFFSFSF")
     }
+    const test = async () => {
+      console.log("A");
+    }
+    /*const modifpub = async (ret : channel) => {
+          const tmp = await channel.filter((e)=> ret.name !== e.name);
+          setChannelPub(tmp);
+    }*/
 
     const sendMessage = async () => {
       console.log("ouiiiiiiiii")
@@ -101,6 +131,8 @@ const Chat = () => {
       if (el.password === false)
       {
       await  socket.emit('joins channel', el.name)
+      const a : channel[] =  await channelPub.filter(b => b.name !== el.name);
+      setChannelPub(a);
       }
       else
       {
@@ -118,7 +150,27 @@ const Chat = () => {
         //setData({channel: chatName, pseudo : data.pseudo ,texte: ""});
     }
     useEffect(() => {
+      console.log("AAAAA");
 
+      'owner no left'
+      socket.on('owner no left', (c: channel) =>
+      {
+      //  setChannel((u)=> [...u,c]);
+        setChatName(c);
+        setNewOwner(true);
+      })
+      socket.on('my new channel pub', (c: channel) =>
+      {
+        setChannel((u)=> [...u,c]);
+        setChatName(c);
+        setCreate(false);
+      })
+
+      socket.on('new channel pub', (c: channel) =>
+      {
+        setChannelPub((a)=> [...a,c]);
+      }
+      )
       socket.on('you ban_mute', (ret : ban) => {
         socket.off('you ban_mute');
           if(ret.mute_ban === 'ban')
@@ -136,13 +188,12 @@ const Chat = () => {
         console.log("enfin une nouvellle fiture");
           setChannel((channels) => [...channels, ret]);
           changechannel(ret);
-          const a : channel[] =  channelPub.filter(b => b.name !== ret.name);
-          setChannelPub(a);
+          //modifpub(ret)
+         // 
       })
 
       socket.on('channels list' ,(channels : channel[]) => {
         socket.off('channels list');
-        console.log("AAAAAAAAAAAAAAAAAAAAA");
         setChannel(channels)
       })
       'join channel false password'
@@ -157,7 +208,7 @@ const Chat = () => {
       })
 
       socket.on('info channel', (mm : Form[])=>{
-        socket.off('info channel');
+        //socket.off('info channel');
         console.log(mm);
         setMsg(mm);
       })
@@ -183,8 +234,6 @@ const Chat = () => {
       });
 
       socket.on('chatToClient', (src : Form) => {
-        console.log("noono")
-        console.log(src)
         log(src)
       });
       
@@ -193,6 +242,7 @@ const Chat = () => {
       //   socket.on('user', (user : {name: string, id: }))
     
       return () => {
+          socket.off('my new channel pub');
           socket.off('channels list');
           socket.off('info channel');
           socket.off('channels pub');
@@ -203,12 +253,14 @@ const Chat = () => {
           socket.off('chatToClient');
           socket.off('left chanel');
           socket.off('join channel true');
+          socket.off('new channel pub');
       };
   },[]);
 
   useEffect(() => {
-     //   console.log("oui!!!!!!!!!!!!!!!!!!!!!!!!!")
+        console.log("oui!!!!!!!!!!!!!!!!!!!!!!!!!")
     if (typeof document != "undefined") {
+      console.log("ouissssss")
         const cookieValue = document.cookie.split('; ').find((row) => row.startsWith('access_token'))?.split('=')[1];
        // console.log(cookieValue);
         socket.auth.token = cookieValue;
@@ -226,14 +278,23 @@ const Chat = () => {
 
     return (
       <RoundedContainer className="px-14 py-20 mt-16 bg-indigo-200">
-        
         <div>
           <h1>
           {
-            data.channel
+            chatName.name
           }
           </h1>
-         
+          
+          <Button  className="mb-10  px-2 py-1"
+                variant="contained"
+                color="active"
+                onClick={() => setCreate(!create)}
+                >
+                  create
+                </Button>
+              { 
+              !create &&
+              <div>
               <Button  className="mb-10  px-2 py-1"
                 variant="contained"
                 color="active"
@@ -241,9 +302,60 @@ const Chat = () => {
                 >
                   quit
                 </Button>
+                {
+                  newOwner && 
+                  <h3>
+                  new owner :
+                <input className=" px-2 py-1" type="text" value={ban.pseudo}  onChange={(e) => {
+                 setBan({mute_ban: "", name : chatName.name, pseudo:  e.target.value , time: ban.time , motif: ""}); }} placeholder="Enter new owner" 
+                 name="chat"/>
+                 {
+                    ban.pseudo !== "" && 
+                    <Button  className="mb-10  px-2 py-1"
+                variant="contained"
+                color="active"
+                onClick={() => changeOwner(ban)}
+                >
+                  envoie 
+                </Button>
+
+                  }
+                 </h3>
+                  }
+               
               {
                 chatName.admin  && 
                 <div>
+                  {
+                    chatName.owner &&
+                    <Button  className="mb-10  px-2 py-1"
+                variant="contained"
+                color="active"
+                onClick={() => setNewAdmin(!newAdmin)}
+                >
+                  add admin
+                </Button>
+                  }
+                  {
+                    newAdmin && 
+                    <h3>
+                    new admin :
+                  <input className=" px-2 py-1" type="text" value={ban.pseudo}  onChange={(e) => {
+                   setBan({mute_ban: "", name : chatName.name, pseudo:  e.target.value , time: ban.time , motif: ""}); }} placeholder="Enter new owner" 
+                   name="chat"/>
+                   {
+                      ban.pseudo !== "" && 
+                      <Button  className="mb-10  px-2 py-1"
+                  variant="contained"
+                  color="active"
+                  onClick={() => addAdmin(ban)}
+                  >
+                    envoie 
+                  </Button>
+  
+                    }
+                   </h3>
+                  }
               <Button  className="mb-10  px-2 py-1"
                 variant="contained"
                 color="active"
@@ -263,7 +375,7 @@ const Chat = () => {
                   ban.mute_ban === "mute" && 
                   <h3>
                    <input type="range" id="volume" name="volume" value={ban.time} min="0" max="100"  onChange={(e) => {setBan({mute_ban: ban.mute_ban ,name : chatName.name , pseudo: ban.pseudo, time: e.target.value, motif: ban.motif})}}/>
-                    <label for="time mute">time mute </label>
+                    <label name="time mute">time mute </label>
                     pseudo :
                     <input className=" px-2 py-1" type="text" value={ban.pseudo}  onChange={(e) => {
                  setBan({mute_ban: ban.mute_ban, name : chatName.name , pseudo: e.target.value, time: ban.time , motif: ban.motif}); }} placeholder="Enter  pseudo" 
@@ -286,10 +398,8 @@ const Chat = () => {
                 }
                 </div>
                 }
-              </div>
             <div>
              <p>
-              
                 {
                     msg.filter((el)=> el.channel === data.channel).map((el, i) => (
                     <li key={i}>{el.pseudo} : {el.texte}</li>
@@ -351,7 +461,7 @@ const Chat = () => {
           <h3>
             {join.name} password :
             <input className=" px-2 py-1" type="password" value={passj.password}  onChange={(e) => {
-                 setPassj({name: join.name ,password : e.target.value}); }} placeholder="Enter password" 
+                 setPassj({name: join.name ,password : e.target.value, private: passj.private}); }} placeholder="Enter password" 
                  onKeyPress={(event) => {
                   event.key === "Enter" && joinPass(passj);
                 }}
@@ -364,6 +474,43 @@ const Chat = () => {
                   Envoie
                 </Button>
           </h3>
+        }
+        </div>
+        </div>
+        }
+        {
+          create &&
+        <div>
+
+              password: <input className=" px-2 py-1" type="password" value={passj.password}  onChange={(e) => {
+                 setPassj({name: passj.name ,password : e.target.value, private: passj.private}); }} placeholder="Enter password" 
+                 name="chat"/>
+
+             name: <input className=" px-2 py-1" type="text" value={passj.texte}  onChange={(e) => {
+                 setPassj({name: e.target.value ,password : passj.password, private: passj.private}); }} placeholder="name channel" 
+                 name="chat"/>
+                 <div>
+      <input type="radio" id="private" name="type" value={passj.texte} onChange={() => { 
+        setPassj({name: passj.name ,password : passj.password, private: true});
+      }}/>
+      <label >private</label>
+
+      <input type="radio" id="public" name="type" value={passj.texte} onChange={()=> { 
+        setPassj({name: passj.name ,password : passj.password, private: false});
+      }} checked/>
+      <label>public</label>
+    </div>
+      {
+        passj.name != "" &&
+        <Button  className="ml-3 px-2 py-1"
+                variant="contained"
+                color="active"
+                onClick={() =>  creatCha(passj)}
+                >
+                  Envoie
+                </Button>
+      }        
+        </div>
         }
         </div>
         </RoundedContainer>
