@@ -82,19 +82,38 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   handleDisconnect(client: Socket) {
     this.logger.log(`Socket ${client.id} disconnect on the server`);
+    let id = this.mapIdSocket.get(client.id);
+    let delGame: GamePong = null;
+    this.gamePongs.forEach((game) => {
+      if ((game.id1 == id) && (game.idInterval === null)){
+        delGame = game;
+      }
+    });
+    if (delGame)
+    {
+      this.server.socketsLeave(delGame.roomID);
+      this.gamePongs.delete(delGame.roomID);
+    }
     this.queue = this.queue.filter(e => e.sock.id != client.id);
     this.queueBonus = this.queueBonus.filter(e => e.sock.id != client.id);
     this.mapIdSocket.delete(client.id);
-    
 
   }
 
   handleUserID(client: Socket, user: User){
     this.logger.log(`Socket ${client.id} connect on the server and real id is ${user.id}`);
     this.gamePongs.forEach((game) => {
-      if (game.id1 == user.id || game.id2 == user.id){
-        client.emit("game start");
-        client.join(game.roomID);
+      if ((game.id1 == user.id || game.id2 == user.id)){
+        if (game.idInterval !== null)
+        {
+          client.join(game.roomID);
+          this.startGame(game);
+        }
+        else
+        {
+          client.emit("game start");
+          client.join(game.roomID);
+        }
       }
     });
     // if (this.queueGame.length != 0)
