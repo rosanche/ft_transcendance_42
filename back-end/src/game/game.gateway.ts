@@ -1,4 +1,5 @@
-import { Logger } from '@nestjs/common';
+
+import { Injectable, forwardRef, Logger, Inject } from "@nestjs/common";
 import { ConnectedSocket, OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { GameService } from './game.service';
@@ -6,8 +7,29 @@ import * as _ from "lodash"
 import {v4 as uuidv4} from "uuid"
 import {GamePong} from "./GamePong"
 import { AuthService } from '../auth/auth.service';
+import { User } from "@prisma/client";
+import { UserService } from '../user/user.service';
+import { PrismaService } from '../prisma/prisma.service';
 
-var timetick = 15
+var timetick = 10
+
+
+interface Queue {
+  sock : Socket,
+  id: number,
+  pseudo: string
+}
+
+type EndGame = {
+  score1: number,
+  score2: number,
+  id1: number,
+  id2: number,
+  pseudo1: string,
+  pseudo2: string,
+  winner: number
+}
+
 
 @WebSocketGateway({
   namespace: "game",
@@ -16,14 +38,17 @@ var timetick = 15
   }
   
 })
+@Injectable()
 export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect{
 
-  constructor (private readonly gameService: GameService, private readonly authService: AuthService){}
+  constructor (private authService: AuthService, @Inject(forwardRef(() => UserService)) private userService: UserService,  private prisma: PrismaService){}
   
-  private queueGame :GamePong[];
-  private socketClient :Socket[];
-  private mapIdSocket : {client: Socket, id: number}[] = [];
+  
+  private queue : Queue[] = [];
+  private queueBonus : Queue[] = [];
+  private mapIdSocket = new Map<string, number>();
   private gamePongs = new Map<string, GamePong>();
+  private players = new Set<number>();
   
 
   @WebSocketServer() server: Server;
@@ -37,37 +62,121 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   }
 
-  async handleConnection(@ConnectedSocket() client: Socket, ...args: any[]) {
+  async handleConnection(client: Socket, ...args: any[]){
+    console.log(client.handshake);
     const user = await this.authService.getUserFromSocket(client);
-    this.logger.log(`Socket ${client.id} connect on the server with pseudo ${user.pseudo}`);
+    if (user)
+    {
+      this.logger.log(`Socket ${client.id} connect on the server with pseudo ${user.pseudo}`);
+      this.handleUserID(client, user);
+      this.mapIdSocket.set(client.id, user.id);
+      client.emit("user info", {id: user.id, pseudo: user.pseudo});
+    }
+    else
+    {
+      console.log("erreur d'authentification");
+      client.emit("auth error");
+      client.disconnect();
+    }
   }
 
-  handleDisconnect(@ConnectedSocket() client: Socket) {
+  handleDisconnect(client: Socket) {
     this.logger.log(`Socket ${client.id} disconnect on the server`);
-    
-    //_.remove(this.mapIdSocket, (n) => { return n.client.id == client.id;});
+    let id = this.mapIdSocket.get(client.id);
+    let delGame: GamePong = null;
+    this.gamePongs.forEach((game) => {
+      if ((game.id1 == id) && (game.idInterval === null)){
+        delGame = game;
+      }
+    });
+    if (delGame)
+    {
+      this.server.socketsLeave(delGame.roomID);
+      this.gamePongs.delete(delGame.roomID);
+    }
+    this.queue = this.queue.filter(e => e.sock.id != client.id);
+    this.queueBonus = this.queueBonus.filter(e => e.sock.id != client.id);
+    this.mapIdSocket.delete(client.id);
 
   }
 
-  @SubscribeMessage('id')
-  handleUserID(client: Socket, payload: {id : number, name: string}){
-    this.logger.log(`Socket ${client.id} connect on the server and real id is ${payload.id}`);
+  handleUserID(client: Socket, user: User){
+    this.logger.log(`Socket ${client.id} connect on the server and real id is ${user.id}`);
     this.gamePongs.forEach((game) => {
-      if (game.id1 == payload.id || game.id2 == payload.id){
-        this.stopGame(game);
-        game.id1 = 0;
-        game.id2 = 0;
+      if ((game.id1 == user.id || game.id2 == user.id)){
+        if (game.idInterval !== null)
+        {
+          client.join(game.roomID);
+          this.startGame(game);
+        }
+        else
+        {
+          client.emit("game start");
+          client.join(game.roomID);
+        }
       }
-      
-    } )
-    _.remove(this.mapIdSocket, (n) => { return n.id == payload.id;});
-    this.mapIdSocket.push({client, id: payload.id});
-    this.startGame(payload.id, payload.name, 0, "player2");
+    });
+    // if (this.queueGame.length != 0)
+    // {
+    //   this.queueGame[0].addNewPlayer(user.pseudo, user.id);
+    //   this.queueGame.splice(0,1);
+    //   console.log(this.queueGame.length);
+    // }
+    // else
+    // {
+    //   this.startGame(user.id, user.pseudo, true);
+    // }
+  };
+
+  @SubscribeMessage('queue')
+  async handleQueue(client: Socket, bonus: boolean){
+
+    const id = this.mapIdSocket.get(client.id);
+    let game: GamePong;
+    let players: Queue[] = [];
+    const user = await this.userService.findid(id);
+    console.log(user);
+    if (bonus)
+    {
+      if (this.queueBonus.find(e => e.id == id))
+      {
+        return;
+      }
+      this.queueBonus.push({sock: client, id: user.id, pseudo: user.pseudo})
+      if (this.queueBonus.length >= 2)
+      {
+        players = this.queueBonus.splice(0,2);
+        game = this.createGame(true);
+      }
+    }
+    else
+    {
+      if (this.queue.find(e => e.id == id))
+      {
+        return;
+      }
+      this.queue.push({sock: client, id: user.id, pseudo: user.pseudo});
+      if (this.queue.length >= 2)
+      {
+        players = this.queue.splice(0,2);
+        game = this.createGame(false);
+      }
+    }
+    if(game)
+    {
+      console.log("log test: ", players[0]);
+      game.addPlayer(players[0].pseudo, players[0].id);
+      game.addPlayer(players[1].pseudo, players[1].id);
+      this.server.in(players[0].sock.id).socketsJoin(game.roomID);
+      this.server.in(players[1].sock.id).socketsJoin(game.roomID);
+      this.startGame(game);
+    }
   };
 
   @SubscribeMessage('move')
-  handleMessage(client: Socket, payload: {move: number, id: number}): void {
-    let id = payload.id;
+  handleMove(client: Socket, payload: {move: number}): void {
+
+    let id = this.mapIdSocket.get(client.id);
     let game: GamePong;
     this.gamePongs.forEach((n : GamePong) => { if(n.id1 == id || n.id2 == id ) {game = n; }});
     if(!game)
@@ -84,6 +193,26 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     }
   };
 
+  @SubscribeMessage('join')
+  async handleJoin(client: Socket, roomID: string){
+    const game = this.gamePongs.get(roomID);
+    const id = this.mapIdSocket.get(client.id);
+    const user = await this.userService.findid(id);
+    if (game)
+    {
+      if (game.id2 == -1)
+      {
+        game.addPlayer(user.pseudo, user.id);
+        client.join(roomID);
+        this.startGame(game);
+      }
+      else
+      {
+        client.join(roomID);
+        client.emit("game start");
+      }
+    }
+  }
 
 
   sendInfo(game : GameGateway)
@@ -97,51 +226,156 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     }
   }
 
+  getPlayingUser() : Set<number>
+  {
+    console.log(this.players)
+    return this.players;
+  }
 
-  startGame(id1: number, user1: string, id2: number, user2: string )
+
+  startGame(game :GamePong)
   {
     this.logger.log(`a game start`);
-    const roomID = this.createGame(user1, id1);
-    const game = this.gamePongs.get(roomID);
-    game.id2 = id2;
-    game.name2 = user2;
-
-
-
-
-
+    
     const idInterval : NodeJS.Timer = setInterval(this.updateGame, timetick, game, this);
-    game.setIdInterval(idInterval); 
+    game.setIdInterval(idInterval);
+    this.players.add(game.id1);
+    this.players.add(game.id2);
+    console.log(this.players);
+    console.log(game.roomID);
+    this.server.to(game.roomID).emit("game start");
 
   }
 
-  createGame(username: string, id: number) : string {
+  createGame(bonus: boolean) {
     const roomID = uuidv4();
-    this.gamePongs.set(roomID, new GamePong(roomID, username, id));
-    return roomID;
+    const game = new GamePong(roomID, bonus)
+    this.gamePongs.set(roomID, game);
+    return game;
   }
 
-  stopGame(game: GamePong)
+  async stopGame(game: GamePong, winnerID: number)
   {
     clearInterval(game.idInterval);
-    // update data base
-    //send victory information to player
+    
+    const user1 =  await this.prisma.user.findUnique({
+      where: { 
+      id: game.id1 },
+    });
+    const user2 = await this.prisma.user.findUnique({
+      where: { 
+      id: game.id2 },
+    });
+    let level1 = user1.level;
+    let level2 = user2.level;
+    let exp1 = (winnerID === user1.id) ? user1.experience + level2 + 1 : user1.experience;
+    let exp2 = (winnerID === user2.id) ? user2.experience + level1 + 1 : user2.experience;
+    while( exp1 >= Math.pow(level1 + 1,2))
+    {
+      level1++;
+    }
+    while( exp2 >= Math.pow(level2 + 1,2))
+    {
+      level2++;
+    }
+    await this.prisma.user.updateMany({
+      where: { 
+      id: game.id1 },
+      data: {
+        experience: exp1,
+        level: level1,
+        nbr_games: {
+          increment: 1
+        },
+        nbr_wins: {
+          increment: (winnerID === user1.id) ? 1 : 0
+        },
+        nbr_looses: {
+          increment: (winnerID === user1.id) ? 0 : 1
+        },
+        goals_f: {
+          increment: game.info.score1
+        },
+        goals_a: {
+          increment: game.info.score2
+        },
+      }
+    });
+    await this.prisma.user.updateMany({
+      where: { 
+      id: game.id2 },
+      data: {
+        experience: exp2,
+        level: level2,
+        nbr_games: {
+          increment: 1
+        },
+        nbr_wins: {
+          increment: (winnerID === user2.id) ? 1 : 0
+        },
+        nbr_looses: {
+          increment: (winnerID === user2.id) ? 0 : 1
+        },
+        goals_f: {
+          increment: game.info.score2
+        },
+        goals_a: {
+          increment: game.info.score1
+        },
+      }
+    });
+    await this.prisma.game.create({
+      data: {
+      id_1: game.id1,
+      id_2: game.id2,
+      score_1:game.info.score1,
+      score_2:game.info.score2,
+      winner: winnerID
+      }
+    });
+    
+    this.players.delete(game.id1);
+    this.players.delete(game.id2);
+    const endGame : EndGame ={
+    id1 : game.id1,
+    id2 : game.id2,
+    pseudo1 :user1.pseudo,
+    pseudo2  :user2.pseudo,
+    score1  :game.info.score1,
+    score2  :game.info.score2,
+    winner : winnerID}
+    this.server.to(game.roomID).emit("game end", endGame);
+    this.server.socketsLeave(game.roomID)
     this.gamePongs.delete(game.roomID);
   }
 
   updateGame(game: GamePong, gateway:GameGateway){ 
     const info = game.updatePosition();
     //gateway.logger.log(`a game update`);
-    gateway.server.volatile.emit("data", info);
-    if (info.score1 <= 9 && info.score2 <= 9)
+    gateway.server.volatile.to(game.roomID).emit("data", info);
+    if (info.score1 <= 10 && info.score2 <= 10)
     {
       return;
     }
     else
     {
-      gateway.stopGame(game);
+      if (info.score1 > info.score2)
+      {gateway.stopGame(game, 1);}
+      else
+      {gateway.stopGame(game, 2);}
     }
   }
-}
+
+  searchRoomID(id: number) : string 
+  {
+    let roomID: string = null; 
+    this.gamePongs.forEach((game) => {
+      if (game.id1 == id || game.id2 == id){
+        roomID = game.roomID;
+      }
+    });
+    return roomID
+  }
+};
 
 

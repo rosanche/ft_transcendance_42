@@ -149,6 +149,7 @@ export class ChatGateway implements OnGatewayInit {
             client.disconnect();
         }*/
      }
+     
 
     async mpcha(user: User,client: Socket, user2: User) {
         const channel =  await this.Prisma.mp.findFirst({
