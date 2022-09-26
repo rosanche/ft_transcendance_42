@@ -1,5 +1,5 @@
-import{ Injectable } from '@nestjs/common';
-import { FriendDto, UserUpdateDto } from  '../auth/dto';
+import { Injectable} from "@nestjs/common";
+import { FriendDto, UserUpdateDto } from 'src/auth/dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { User } from '@prisma/client';
 
@@ -61,6 +61,7 @@ export class UserService
                 profileImage: true,
                 nbr_games: true,
                 nbr_wins: true,
+                pseudo: true,
                 nbr_looses: true,
                 goals_f: true,
                 goals_a: true,
@@ -301,4 +302,26 @@ export class UserService
         });
         return user;
     }
+
+    async findGameID(user : User)
+    {
+
+        return (
+            await this.Prisma.game.findMany(
+                {
+                    where: {
+                        OR :[
+                        {
+                            id_1: user.id,
+                        },
+                        {
+                            id_2: user.id,
+                        },
+                        ]
+                    }
+                }
+            )
+        );
+    }
+
 }

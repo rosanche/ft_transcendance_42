@@ -1,5 +1,6 @@
 import { Module } from "@nestjs/common"
 import { JwtModule } from "@nestjs/jwt";
+
 import { AuthController } from "./auth.controller";
 import { AuthService } from "./auth.service";
 import { API42Strategy, GoogleStrategy, Jwt2FAStrategy, JwtStrategy } from "./strategy";
