@@ -200,7 +200,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     const user = await this.userService.findid(id);
     if (game)
     {
-      if (game.id2 == -1)
+      if (game.id2 == -1 || game.id2 == id)
       {
         game.addPlayer(user.pseudo, user.id);
         client.join(roomID);

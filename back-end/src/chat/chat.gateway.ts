@@ -101,20 +101,20 @@ export class ChatGateway implements OnGatewayInit {
     }*/
 
     async afterInit(server : any) {
-        this.logger.log('initilized!');
-        const cha  = await this.Prisma.channel.findMany({
-            select: {
-                id: true,
-                name: true,
-                users: {
-                    select: {
-                        id: true,
-                        pseudo: true,
-                        }
-                    },
-                }
-        });
-        console.log(cha);
+        // this.logger.log('initilized!');
+        // const cha  = await this.Prisma.channel.findMany({
+        //     select: {
+        //         id: true,
+        //         name: true,
+        //         users: {
+        //             select: {
+        //                 id: true,
+        //                 pseudo: true,
+        //                 }
+        //             },
+        //         }
+        // });
+        // console.log(cha);
       /*  for (let i :number = 0; cha[i]; i++) {
             const a = new Map<number, Boolean>()
           //  await this.banactive.set(cha[i].name, new Map<Number, Boolean>());
