@@ -10,6 +10,7 @@ import { AuthService } from '../auth/auth.service';
 import { User } from "@prisma/client";
 import { UserService } from '../user/user.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { ChatGateway } from "src/chat/chat.gateway";
 
 var timetick = 10
 
@@ -41,7 +42,7 @@ type EndGame = {
 @Injectable()
 export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect{
 
-  constructor (private authService: AuthService, @Inject(forwardRef(() => UserService)) private userService: UserService,  private prisma: PrismaService){}
+  constructor (private chatGateway: ChatGateway, private authService: AuthService, @Inject(forwardRef(() => UserService)) private userService: UserService,  private prisma: PrismaService){}
   
   
   private queue : Queue[] = [];
@@ -235,8 +236,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   startGame(game :GamePong)
   {
-    this.logger.log(`a game start`);
-    
+    this.chatGateway.wss.emit('chatToClient', {channel : "general", pseudo : game.info.name1, texte : "start a game",});
     const idInterval : NodeJS.Timer = setInterval(this.updateGame, timetick, game, this);
     game.setIdInterval(idInterval);
     this.players.add(game.id1);

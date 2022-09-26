@@ -634,7 +634,7 @@ export class ChatGateway implements OnGatewayInit {
             //this.wss.to(cha.name).emit('info ban_mute', src);
         }
     }
-
+    
         // chef channel
     @SubscribeMessage('change owner')
     async newOwner(client: Socket, src: ban) {
