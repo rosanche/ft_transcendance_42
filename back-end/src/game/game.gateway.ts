@@ -1,9 +1,7 @@
 
 import { Injectable, forwardRef, Logger, Inject } from "@nestjs/common";
-import { ConnectedSocket, OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
+import { OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-
-import * as _ from "lodash"
 import {v4 as uuidv4} from "uuid"
 import {GamePong} from "./GamePong"
 import { AuthService } from '../auth/auth.service';
@@ -215,6 +213,41 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     }
   }
 
+  @SubscribeMessage('create private game')
+  async handleCreatePrivateGame(client: Socket, id2: number, bonus: boolean){
+    const id1 = this.mapIdSocket.get(client.id);
+    const user1 = await this.userService.findid(id1);
+    const user2 = await this.userService.findid(id2);
+    const game = this.createGame(bonus);
+    game.addPlayer(user1.pseudo, user1.id);
+    game.addPlayer(user2.pseudo, user2.id);
+    client.join(game.roomID);
+    client.emit("wait game");
+  }
+
+  @SubscribeMessage('invite')
+  async handleInvite(client: Socket, ID: number){
+    const user = await this.userService.findid(ID);
+    const game = this.searchGame(ID);
+    if (!game)
+    {
+      client.emit("Error invite", 1);
+      return;
+    }
+    if (game)
+    {
+      if (game.id2 == ID)
+      {
+        client.join(game.roomID);
+        this.startGame(game);
+      }
+      else
+      {
+        client.emit("Error invite", 2);
+      }
+    }
+  }
+
 
   sendInfo(game : GameGateway)
   {
@@ -236,7 +269,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   startGame(game :GamePong)
   {
-    this.chatGateway.wss.emit('chatToClient', {channel : "general", pseudo : game.info.name1, texte : "start a game",});
+    //this.chatGateway.wss.emit('chatToClient', {channel : "general", pseudo : game.info.name1, texte : "start a game",});
     const idInterval : NodeJS.Timer = setInterval(this.updateGame, timetick, game, this);
     game.setIdInterval(idInterval);
     this.players.add(game.id1);
@@ -254,6 +287,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     return game;
   }
 
+  // la game doit commencer a tes 
   async stopGame(game: GamePong, winnerID: number)
   {
     clearInterval(game.idInterval);
@@ -375,6 +409,16 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       }
     });
     return roomID
+  }
+
+  searchGame(id: number) : GamePong 
+  {
+    this.gamePongs.forEach((game) => {
+      if (game.id1 == id || game.id2 == id){
+        return game;
+      }
+    });
+    return null;
   }
 };
 
