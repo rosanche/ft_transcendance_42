@@ -391,11 +391,15 @@ const Canvas :  React.FC<CanvasProps> = ({...props}) => {
                 <span className="text-amber-500 text-6xl font-default font-bold justify-items-center text-align: center mb-8">
                     Winner!
                 </span>
-
                 <span className="text-amber-500 text-4xl font-default font-bold justify-items-center text-align: center mb-8">
                     {(endGameRef.current.winner == endGameRef.current.id1) ? endGameRef.current.pseudo1 : endGameRef.current.pseudo2}
                 </span>
+                <div>
+                    <span className="text-white text-6xl font-default font-bold justify-items-center text-align: center mb-8">
+                        "${endGameRef.current.score1} : ${endGameRef.current.score2}"
+                    </span>
 
+                </div>
              
                  
                  <Button
