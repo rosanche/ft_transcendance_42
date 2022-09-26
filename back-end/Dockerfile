@@ -7,7 +7,7 @@ COPY package*.json ./
 COPY prisma ./prisma/
 
 
-RUN npm install
+RUN yarn install
 
 RUN yarn add glob
 
