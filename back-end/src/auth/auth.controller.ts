@@ -24,13 +24,14 @@ export class AuthController {
       res.send(access_token);
     }
 
-    @HttpCode(HttpStatus.OK)
     @Post('signin')
     async signin(@Body() dto: AuthInDto, @Res() res) {
+      console.log("signin");
       const user : Partial<User>  = await this.authService.signin(dto);
+
       const access_token = await this.authService.login(user);
       res.cookie('access_token', access_token.access_token);
-      return(access_token);
+      res.send(access_token);
     }
 
     //Google Oauth 2.0 Authentification 

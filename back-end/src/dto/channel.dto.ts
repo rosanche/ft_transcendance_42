@@ -1,8 +1,8 @@
 import { IsEmail, IsNotEmpty, IsString, IsInt,IsNumberString, IsBoolean} from "class-validator";
 
 export class ChannelDto {
-    @IsBoolean()
-    private: boolean;
+    @IsNumberString()
+    private: Number;
     @IsString()
     @IsNotEmpty()
     name: string;

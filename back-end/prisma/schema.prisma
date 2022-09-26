@@ -18,7 +18,6 @@ model User {
   email String @unique
   hash String?
   pseudo String @unique
-  picture String @default("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT583QoiMnyrlvq2PPzn8IH0uAKHg7mw0uEQT4Msqh4roMkSzlUO4VtnCv-wgkxJ5Lc6NM&usqp=CAU")
   
   isTwoFactorAuthenticationEnabled Boolean @default(false)
   twoFactorAuthenticationSecret String? 
@@ -42,10 +41,15 @@ model User {
   friendBy User[] @relation("acce_friend")
   myfriends  User[] @relation("acce_friend")
 
+  blocked User[] @relation("blocked")
+  myblocked User[] @relation("blocked")
+
   channel_creat Channel[] @relation("channelcreat")
   admin_channel Channel[] @relation("channeladmin")
   User_channel Channel[] @relation("channeluser")
+  blocked_channel Channel[] @relation("channelblocked")
 
+  mp Mp[] @relation("mpuser")
   mypost  Post[] @relation("mypost")
   
   @@map("user")
@@ -65,9 +69,8 @@ model Game {
 
 model Channel {
   id Int @id @default(autoincrement())
-  createdAt DateTime @default(now())
-  updateAt DateTime @updatedAt
-  createur User[] @relation("channelcreat")
+  createur User @relation("channelcreat", fields: [createurID], references: [id])
+  createurID Int
   
   name String @unique()
   hash String?
@@ -75,9 +78,37 @@ model Channel {
 
   admin User[] @relation("channeladmin")
   users User[] @relation("channeluser")
-
+  blocked User[] @relation("channelblocked")
   post Post[] @relation("channelpost")
+  bans Ban[] @relation("channelban")
   @@map("channel")
+}
+
+
+ model Ban {
+  id Int @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  timeBan   Int  ?
+  finshBan  Int ? 
+  muteBan   String
+  active    Boolean
+  description  String ?
+  Channel Channel[] @relation("channelban")
+  iduser Int
+
+    @@map("ban")
+}
+
+model Mp {
+  id Int @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updateAt DateTime @updatedAt
+  blocked Boolean
+  user User[] @relation("mpuser")
+  userID1 Int 
+  userID2 Int
+  post Post[] @relation("mppost")
+  @@map("mp")
 }
 
 model Post {
@@ -85,8 +116,12 @@ model Post {
   createdAt DateTime @default(now())
   updateAt DateTime @updatedAt
   
-  createur User[] @relation("mypost")
-  dest Channel[] @relation("channelpost")
-  mesage String
+  createur User? @relation("mypost",fields: [userID], references: [id])
+  userID Int?
+  dest Channel? @relation("channelpost", fields: [destByID], references: [id])
+  mp Mp? @relation("mppost", fields: [mpID], references: [id])
+  destByID Int?
+  mpID Int?
+  message String
   @@map("post")
 }

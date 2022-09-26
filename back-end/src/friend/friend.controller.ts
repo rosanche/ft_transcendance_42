@@ -1,8 +1,8 @@
 import { Query ,Controller , Get, Param , UseGuards, Patch, Body, Post, UseInterceptors, Res ,UploadedFile, Request} from "@nestjs/common"
 import { FriendService } from "./friend.service"
 import { User } from '@prisma/client';
-import { GetUser } from 'src/auth/decorator';
-import { JwtGuard } from 'src/auth/guard';
+import { GetUser } from '../auth/decorator';
+import { JwtGuard } from '../auth/guard';
 import { UserUpdateDto, FriendDto } from "../auth/dto";
 import {FileInterceptor} from '@nestjs/platform-express'
 import {diskStorage} from 'multer'

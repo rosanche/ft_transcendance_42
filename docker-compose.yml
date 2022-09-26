@@ -38,9 +38,33 @@ services:
       - /usr/src/app/node_modules
     restart: unless-stopped
 
+  front-end:
+    container_name: "front-end_${NODE_ENV}"
+    image: "front-end_${NODE_ENV}"
+    environment:
+      - NODE_ENV:${NODE_ENV}
+    build:
+      context: ./front-app
+      target: "${NODE_ENV}"
+      dockerfile: Dockerfile
+    entrypoint: ["yarn", "dev", "-p", "3001"]
+    env_file:
+      - .env
+    ports:
+      - 3001:3001
+      - 6006:6006
+    depends_on:
+      - postgres
+      - back-end
+    networks:
+      - transcendence-network
+    volumes:
+      - ./front-app:/usr/src/app
+      - /usr/src/app/node_modules
+    restart: unless-stopped
+
 networks:
   transcendence-network:
 
 volumes:
   data:
-

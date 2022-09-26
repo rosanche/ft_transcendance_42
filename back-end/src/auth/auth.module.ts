@@ -8,6 +8,7 @@ import { API42Strategy, GoogleStrategy, Jwt2FAStrategy, JwtStrategy } from "./st
 @Module({
     imports : [JwtModule.register({})],
     providers : [AuthService, JwtStrategy, GoogleStrategy, API42Strategy, Jwt2FAStrategy],
-    controllers : [AuthController]
+    controllers : [AuthController],
+    exports: [AuthService]
 })
 export class AuthModule{}
