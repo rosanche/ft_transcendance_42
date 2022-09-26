@@ -42,6 +42,8 @@ type ban = {
 
 
 const Chat = () => {
+    const [useBlock, setUseBlock] = useState<string[]>([]);
+    const [me, setMe] = useState<string>("");
     const [newAdmin, setNewAdmin] = useState<boolean>(false);
     const [newOwner, setNewOwner] = useState<boolean>(false);
     const [create, setCreate] = useState<boolean>(false);
@@ -140,6 +142,15 @@ const Chat = () => {
       }
 
     } 
+    const demParti = (el : Form) => {
+      console.log(el)
+    }
+
+    const BlockedUser = (el : Form) => {
+      //console.log(el)
+
+      socket.emit('blockedUser', el)
+    }
 
     const log = (ms : Form) => {
        console.log(ms);
@@ -152,7 +163,19 @@ const Chat = () => {
     useEffect(() => {
       console.log("AAAAA");
 
-      'owner no left'
+      socket.on('use info block', (c: string[]) =>
+      {
+      //  setChannel((u)=> [...u,c]);
+          console.log("oui 2");
+          setUseBlock(c);
+      })
+
+      socket.on('use info', (c: string) =>
+      {
+      //  setChannel((u)=> [...u,c]);
+          setMe(c);
+      })
+      
       socket.on('owner no left', (c: channel) =>
       {
       //  setChannel((u)=> [...u,c]);
@@ -269,6 +292,8 @@ const Chat = () => {
         socket.emit("channelinit");
         socket.emit("listchannels");
         socket.emit("pubchannels");
+        socket.emit("me info");
+        socket.emit("me blocks");
     }
 
     return () => {
@@ -401,8 +426,28 @@ const Chat = () => {
             <div>
              <p>
                 {
-                    msg.filter((el)=> el.channel === data.channel).map((el, i) => (
-                    <li key={i}>{el.pseudo} : {el.texte}</li>
+                    msg.filter((el)=> el.channel === data.channel && useBlock.find((u) => u === el.pseudo) === undefined ).map((el, i) => (
+                    <li key={i}>{el.pseudo} : {el.texte}
+                    {
+                      me !== el.pseudo &&
+                      <span>
+                    <Button  className="ml-3 px-2 py-1"
+                variant="contained"
+                color="active"
+                onClick={() =>  BlockedUser(el)}
+                >
+                  !
+                </Button>
+                <Button  className="ml-3 px-2 py-1"
+                variant="contained"
+                color="active"
+                onClick={() =>  demParti(el)}
+                >
+                  ?
+                </Button>
+                </span>
+                    }
+                    </li>
                 ))
                   }
                    <input className=" px-2 py-1" type="text" value={data.texte}  onChange={(e) => {

@@ -678,6 +678,41 @@ export class ChatGateway implements OnGatewayInit {
             //this.wss.to(cha.name).emit('info ban_mute', src);
         }
     }
+    @SubscribeMessage('me info')
+    async infoUser(client: Socket) {
+        const user = await this.authService.getUserFromSocket(client);
+
+        this.wss.to(client.id).emit("use info", user.pseudo)
+    }
+
+    @SubscribeMessage('me blocks')
+    async userBlock(client: Socket) {
+        const user = await this.authService.getUserFromSocket(client);
+
+        const block = await this.Prisma.user.findUnique({
+            where:{
+                id: user.id,
+            },
+            select:{
+                myblocked:{ 
+                    select: {
+                        pseudo: true 
+                    }
+                }
+            }
+        });
+
+        var re = new Array<string>();
+            let  na : string;
+            for (let i : number = 0; block.myblocked.length !== i; ++i) {
+                re.push(block.myblocked[i].pseudo);
+                console.log("AAAAAAAAAAAAAAAAAAAAAAAAsss")
+            }
+            console.log("AAAAAAAAAAAAAAAAAAAAAdAAA")
+        this.wss.to(client.id).emit("use info block", re)
+    }
+    
+
     @SubscribeMessage('new admin')
     async newAdmin(client: Socket, src: ban) {
         const user = await this.authService.getUserFromSocket(client);
@@ -727,7 +762,7 @@ export class ChatGateway implements OnGatewayInit {
 
     // action user
     @SubscribeMessage('blockedUser')
-    async blockedUser(client: Socket, src: { pseudo: string, room: string, type: string,  time : Number, description : string}) {
+    async blockedUser(client: Socket, src: Form) {
         const user = await this.authService.getUserFromSocket(client);
         const user2 = await this.Prisma.user.findUnique({
             where: {
@@ -735,7 +770,7 @@ export class ChatGateway implements OnGatewayInit {
             }
         });
         if (user2 && user) {
-            return await this.Prisma.user.update({
+             await this.Prisma.user.update({
                 where: {
                     id : user.id,
                 },
@@ -747,6 +782,7 @@ export class ChatGateway implements OnGatewayInit {
                     }
                 }
             });
+            this.wss.to(client.id).emit("block use", src.pseudo);
         }
         return null;
     }
