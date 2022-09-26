@@ -2,10 +2,11 @@ import {  Logger, Query ,Controller , Get, Param , UseGuards, Patch, Body, Post,
 import {ConnectedSocket , SubscribeMessage ,WebSocketGateway, OnGatewayInit, WsResponse,OnGatewayConnection,OnGatewayDisconnect, WebSocketServer} from "@nestjs/websockets";
 import { Socket, Server } from "socket.io";
 import { Jwt2FAGuard } from '../auth/guard';
-import { User, Channel } from '@prisma/client';
+import { User, Channel , Mp} from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuthService } from "../auth/auth.service";
 import * as bcrypt from 'bcrypt';
+import { UserService } from "src/user/user.service";
 
 type chann  = {
     id : number,
@@ -217,9 +218,9 @@ export class ChatGateway implements OnGatewayInit {
         this.wss.to(this.iddd[user2.id]).emit('joinedRoom', 'dm');
      }
 
-    
+    /*
     @SubscribeMessage('mpToServer')
-    async handleMessageMp(client: Socket, message: { sender: string, pseudo: String, message: string }) {
+    async handleMessageMp(client: Socket, message:  ) {
         const user = await this.authService.getUserFromSocket(client);
         message.sender = user.pseudo;
         const user2 = await this.Prisma.user.findFirst({
@@ -248,7 +249,7 @@ export class ChatGateway implements OnGatewayInit {
             this.wss.to(this.iddd[+this.mp[0]][0]).emit('chatToClient', message );
             this.wss.to(this.iddd[+this.mp[1]][0]).emit('chatToClient', message );
         }
-    }
+    }*/
 
     @SubscribeMessage('pubchannels')
     async pubchannels(client: Socket, channel : string) {
@@ -355,7 +356,37 @@ export class ChatGateway implements OnGatewayInit {
                 }
             }
         }
-        }); 
+        });
+        const mp = await this.Prisma.mp.findMany({
+                where: {
+                    OR : [
+                        {
+                            userID1: user.id,
+                            
+                        },
+                        {
+                            userID2: user.id,
+                        },
+                    ]
+            },
+            select: {
+                post:{
+                    select: {
+                        message: true,
+                        createur: {
+                            select: {
+                                pseudo: true,
+                            }
+                        },
+                    }
+                },
+                user: {
+                    select: {
+                        pseudo: true,
+                    }
+                }
+            }
+        });
         var re = new Array<Form>();
         let  na : Form;
         for (let i : number = 0; cha.length != i; ++i) {
@@ -364,10 +395,79 @@ export class ChatGateway implements OnGatewayInit {
                     re.push(na);
                 }
             }
+            for (let i : number = 0; mp.length != i; ++i) {
+                if ( mp[i].user[0].pseudo === user.pseudo && mp[i].user.length == 2)
+                        na = {channel: mp[i].user[1].pseudo, pseudo: na.pseudo, texte: na.texte}
+                    else
+                        na = {channel: mp[i].user[0].pseudo, pseudo: na.pseudo, texte: na.texte}
+                for (let n : number = 0; mp[i].post.length != n; ++n) {
+                    console.log(mp[i].post[n]);
+                    na = {channel: na.channel , pseudo: mp[i].post[n].createur.pseudo, texte: mp[i].post[n].message}
+                    re.push(na);
+                }
+            }
             
            console.log(re)
             this.wss.to(this.iddd[user.id]).emit('info channel', re); 
             
+        }
+
+        @SubscribeMessage('list mps')
+        async listUser(client: Socket)
+        {
+            const user = await this.authService.getUserFromSocket(client);
+            if (user)
+            {
+                var re = new Array<chann>();
+                const mps = await this.Prisma.mp.findMany({
+                    where:{
+                        OR:[
+                            {
+                                userID1: user.id,
+                            },
+                            {
+                                userID2: user.id,
+                            }
+                        ]
+                    },
+                    select:{
+                        user:{
+                            select:{
+                            pseudo: true,
+                            id: true,
+                            }
+                        }
+                    },
+                 });
+                 console.log(mps[0]);
+                for (let i : number = 0; mps.length != i; ++i) {
+                    if (mps[i].user[0].pseudo === user.pseudo && mps[i].user.length == 2)
+                    {
+                        console.log(mps[i]);
+                        re.push({id: -1, name: mps[i].user[1].pseudo , private: true, admin: false, owner: false  ,password: false})  
+                    }
+                    else
+                        re.push({id: -1, name: mps[i].user[0].pseudo , private: true, admin: false, owner: false  ,password: false});
+
+                }
+                this.wss.to(client.id).emit('mp list', re); 
+            }
+        }
+
+        @SubscribeMessage('list users')
+        async listMp(client: Socket)
+        {
+            const user = await this.authService.getUserFromSocket(client);
+            if (user)
+            {
+                const users = await this.Prisma.user.findMany({});
+                var re = new Array<string>();
+                
+                for (let i : number = 0; users.length != i; ++i) {
+                    re.push(users[i].pseudo);
+                }
+                this.wss.to(client.id).emit('user list', re); 
+            }
         }
 
     // action channel base
@@ -459,6 +559,42 @@ export class ChatGateway implements OnGatewayInit {
            this.wss.to(this.iddd[user.id]).emit('join channel false', room);
        }
        return ; 
+   }
+
+   @SubscribeMessage('invite channel')
+   async inviteCha(client: Socket, chat : ban) {
+    const user = await this.authService.getUserFromSocket(client);
+    const user2 = await this.Prisma.user.findUnique({
+        where:{
+            pseudo: chat.pseudo,
+        }
+    });
+    if (!user || user2)
+        return;
+    const channel = await this.Prisma.channel.findFirst({
+        where: {
+            name: chat.name,
+
+                        admin: {
+                            some: {id: user.id}
+                        },
+        },
+    });
+    console.log(channel);
+    if (!channel)
+            return;
+    await this.Prisma.channel.update({
+            where: {
+                    id: channel.id,
+            },
+            data: {
+                users: {
+                    connect:[{id: user2.id}]
+                },
+            }
+        })
+        this.wss.to(client.id).emit('invite sucess');
+        //this.wss.to(this.iddd[user.id]).emit('join channel true', a);
    }
 
     @SubscribeMessage('quit')
@@ -853,5 +989,67 @@ export class ChatGateway implements OnGatewayInit {
         }
     }
 
+    
+    @SubscribeMessage('message mp')
+    async messageMP(client: Socket, chan : Form)
+    {
+        const user = await this.authService.getUserFromSocket(client);
+        const user2 = await this.Prisma.user.findUnique({
+            where: {
+                pseudo :  chan.pseudo,
+            }
+        });
+        const  val = await this.Prisma.mp.findFirst({
+            where: {
+                OR : [
+                    {
+                        userID1: user.id,
+                        userID2 : user2.id,
+                    },
+                    {
+                        userID1: user2.id,
+                        userID2 : user.id,
+                    },
+                ]
 
+            }
+        });
+        if (val) {
+            await this.Prisma.post.create({
+                    data:{
+                        mpID: val.id,
+                        message: chan.texte,
+                        userID: user.id,
+                    }
+                
+            });
+            this.wss.to(this.iddd[user.id]).emit('chatToClient', chan );
+            this.wss.to(this.iddd[user2.id]).emit('chatToClient', {Channel: user.pseudo, pseudo: chan.pseudo, texte: chan.texte});
+            return;
+        }
+        const cha = await this.Prisma.mp.create({
+            data: {
+               
+                        userID1: user.id,
+                        userID2 : user2.id,
+                        blocked: false,
+              user:{  
+                connect:[
+                    {id: user.id},
+                    {id: user2.id}
+                ]
+            },
+        }
+           
+        });
+
+        await this.Prisma.post.create({
+            data:{
+                mpID: cha.id,
+                message: chan.texte,
+                userID: user.id,
+            }
+        });
+
+    }
 }
