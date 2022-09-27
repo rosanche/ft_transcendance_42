@@ -40,7 +40,7 @@ type EndGame = {
 @Injectable()
 export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect{
 
-  constructor (private chatGateway: ChatGateway, private authService: AuthService, @Inject(forwardRef(() => UserService)) private userService: UserService,  private prisma: PrismaService){}
+  constructor (@Inject(forwardRef(() => ChatGateway)) private chatGateway: ChatGateway, private authService: AuthService, @Inject(forwardRef(() => UserService)) private userService: UserService,  private prisma: PrismaService){}
   
   
   private queue : Queue[] = [];
@@ -48,6 +48,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   private mapIdSocket = new Map<string, number>();
   private gamePongs = new Map<string, GamePong>();
   private players = new Set<number>();
+  private invitation : GamePong[] = [];
   
 
   @WebSocketServer() server: Server;
@@ -227,7 +228,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   @SubscribeMessage('invite')
   async handleInvite(client: Socket, ID: number){
-    const user = await this.userService.findid(ID);
+    const id = this.mapIdSocket.get(client.id);
     const game = this.searchGame(ID);
     if (!game)
     {
@@ -236,7 +237,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     }
     if (game)
     {
-      if (game.id2 == ID)
+      if (game.id2 == id)
       {
         client.join(game.roomID);
         this.startGame(game);
@@ -312,7 +313,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     {
       level2++;
     }
-    await this.prisma.user.updateMany({
+    this.prisma.user.updateMany({
       where: { 
       id: game.id1 },
       data: {
@@ -335,7 +336,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         },
       }
     });
-    await this.prisma.user.updateMany({
+    this.prisma.user.updateMany({
       where: { 
       id: game.id2 },
       data: {
@@ -358,7 +359,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         },
       }
     });
-    await this.prisma.game.create({
+    this.prisma.game.create({
       data: {
       id_1: game.id1,
       id_2: game.id2,
@@ -419,6 +420,17 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       }
     });
     return null;
+  }
+
+  searchInvite(id: number) : number[]
+  {
+    let ids : number[] = []
+    this.invitation.forEach((game) => {
+      if (game.id2 == id){
+        ids.push(game.id1);
+      }
+    });
+    return ids;
   }
 };
 

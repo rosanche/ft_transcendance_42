@@ -283,6 +283,7 @@ export class GamePong {
       this.angleBall = ( (Math.PI / 2) * Math.random()) - (Math.PI / 4) ;
       this.ballSpeed = baseBallSpeed * 0.6;
       this.lastTouch = 0;
+      this.startTime = Date.now();
       this.info.bonus = [];
     }
     else if(newX + ballSize < 0)
@@ -292,6 +293,7 @@ export class GamePong {
       this.angleBall = Math.PI + ( (Math.PI / 2) * Math.random()) - (Math.PI / 4) ;
       this.ballSpeed = baseBallSpeed * 0.6
       this.lastTouch = 0;
+      this.startTime = Date.now();
       this.info.bonus = [];
       
     }
@@ -362,10 +364,49 @@ export class GamePong {
     //   bonus.type = typeBonus[0];
     //   this.info.bonus.push(bonus)
     // }
-    this.paddleHeight1 = this.isBonusActive(typeBonus[0],1) ? paddleHeight * 2 : paddleHeight;
-    this.paddleHeight2 = this.isBonusActive(typeBonus[0],2) ? paddleHeight * 2 : paddleHeight;
-    this.paddleSpeed1 = this.isBonusActive(typeBonus[1],1) ? paddleSpeed * 2 : paddleSpeed;
-    this.paddleSpeed2 = this.isBonusActive(typeBonus[1],2) ? paddleSpeed * 2 : paddleSpeed;
+    if (this.isBonusActive(typeBonus[0],1) && this.paddleHeight1 != paddleHeight * 2)
+    {
+      this.paddleHeight1 = paddleHeight * 2
+      this.info.paddle1Y -= Math.ceil(paddleHeight / 2);
+      if(this.info.paddle1Y < 0)
+      {
+        this.info.paddle1Y = 0;
+      }
+      else if((this.info.paddle1Y + (paddleHeight * 2)) > yMax)
+      {
+        this.info.paddle1Y = yMax - (paddleHeight * 2);
+      }
+
+    }
+    else if(!this.isBonusActive(typeBonus[0],1) && this.paddleHeight1 == paddleHeight * 2)
+    {
+      this.paddleHeight1 = paddleHeight
+      this.info.paddle1Y += Math.ceil(paddleHeight / 2);
+    }
+
+    if (this.isBonusActive(typeBonus[0],2) && this.paddleHeight2 != paddleHeight * 2)
+    {
+      this.paddleHeight2 = paddleHeight * 2
+      this.info.paddle2Y -= Math.ceil(paddleHeight / 2);
+      if(this.info.paddle2Y < 0)
+      {
+        this.info.paddle2Y = 0;
+      }
+      else if((this.info.paddle2Y + (paddleHeight * 2)) > yMax)
+      {
+        this.info.paddle2Y = yMax - (paddleHeight * 2);
+      }
+
+    }
+    else if(!this.isBonusActive(typeBonus[0],2) && this.paddleHeight2 == paddleHeight * 2)
+    {
+      this.paddleHeight2 = paddleHeight
+      this.info.paddle2Y += Math.ceil(paddleHeight / 2);
+    }
+    // this.paddleHeight1 = this.isBonusActive(typeBonus[0],1) ? paddleHeight * 2 : paddleHeight;
+    // this.paddleHeight2 = this.isBonusActive(typeBonus[0],2) ? paddleHeight * 2 : paddleHeight;
+    this.paddleSpeed1 = this.isBonusActive(typeBonus[1],1) ? paddleSpeed * 1.5 : paddleSpeed;
+    this.paddleSpeed2 = this.isBonusActive(typeBonus[1],2) ? paddleSpeed * 1.5 : paddleSpeed;
   }
 
   private isBonusActive(type: string, player: number) :boolean

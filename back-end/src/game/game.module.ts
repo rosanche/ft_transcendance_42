@@ -6,7 +6,7 @@ import { ChatModule } from 'src/chat/chat.module';
 
 
 @Module({
-    imports:[AuthModule,forwardRef(() => UserModule), ChatModule],
+    imports:[AuthModule,forwardRef(() => UserModule), forwardRef(() => ChatModule)],
     providers: [GameGateway],
     exports: [GameGateway]
 })
