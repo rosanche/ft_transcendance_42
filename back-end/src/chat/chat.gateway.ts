@@ -780,7 +780,7 @@ export class ChatGateway implements OnGatewayInit {
     //admin channel
 
     @SubscribeMessage('blockedChannel')
-    async blockedChannel(client: Socket, src: ban) {
+    async blockedChannel(client: Socket, src: ban) {z
         const user = await this.authService.getUserFromSocket(client);
         if (!user)
             return "";
@@ -1123,7 +1123,7 @@ export class ChatGateway implements OnGatewayInit {
 
     }
     
-    @SubscribeMessage('dem freind')
+    @SubscribeMessage('dem_friend')
     async demFriend(client: Socket, src : users)
     {
         console.log("demande amie")
@@ -1178,9 +1178,11 @@ export class ChatGateway implements OnGatewayInit {
                     },
                 },
             });
+           // this.wss.to(client.id).emit("dem_friend", users_2.id);
+            this.wss.to(this.iddd[users_2.id]).emit("dem_friend",  client.id);
     }
 
-    @SubscribeMessage('sup dem freind')
+    @SubscribeMessage('sup_dem_friend')
     async supDemFriend(client: Socket, src : users)
     {
         const user = await this.authService.getUserFromSocket(client);
@@ -1211,10 +1213,12 @@ export class ChatGateway implements OnGatewayInit {
                     },
                 },
             });
-            console.log(users)
+        //this.wss.to(client.id).emit("sup_dem_friend",);
+        this.wss.to(this.iddd[users_2.id]).emit("sup_dem_friend", client.id);
+       //     console.log(users)
     }
 
-    @SubscribeMessage('accept freind')
+    @SubscribeMessage('accept_friend')
     async acceptFriend(client: Socket, src : users)
     {
         const user = await this.authService.getUserFromSocket(client)
@@ -1246,6 +1250,7 @@ export class ChatGateway implements OnGatewayInit {
                     }]}
             },
         })
+
         await this.Prisma.user.update({
             where: { 
                 id: user.id 
@@ -1257,10 +1262,12 @@ export class ChatGateway implements OnGatewayInit {
                     }]
                 },
             },
-        });        
+        });
+        this.wss.to(client.id).emit("accept_friend", users_2.id);
+        this.wss.to(this.iddd[users_2.id]).emit("accept_friend", client.id); 
     }
 
-    @SubscribeMessage('refuse freind')
+    @SubscribeMessage('refuse friend')
     async refuseFriend(client: Socket, src : users)
     {
         const user = await this.authService.getUserFromSocket(client)
@@ -1288,10 +1295,11 @@ export class ChatGateway implements OnGatewayInit {
                 }
             },
         });
-        
+        this.wss.to(client.id).emit("refuse_friend", users_2.id);
+        this.wss.to(this.iddd[users_2.id]).emit("refuse_friend", client.id);
     }
 
-    @SubscribeMessage('sup freind')
+    @SubscribeMessage('sup friend')
     async supFriend(client: Socket, src : users)
     {
         const user = await this.authService.getUserFromSocket(client);
@@ -1331,5 +1339,7 @@ export class ChatGateway implements OnGatewayInit {
                 },
             },
         });
+        this.wss.to(client.id).emit("sup_friend", user2.id);
+        this.wss.to(this.iddd[user2.id]).emit("sup_friend", client.id);
     }
 }

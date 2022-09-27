@@ -90,23 +90,23 @@ const Chat = () => {
 
     const demfriend = async (el : users) => {
       console.log(el)
-      await socket.emit('dem freind', el);
+      await socket.emit('dem friend', el);
     }
     
     const acceptfriend = async (el : users) => { 
       console.log(el)
-      await socket.emit('accept freind', el);
+      await socket.emit('accept friend', el);
     }
 
     const supdemfirend = async (el : users) => {
 
       console.log(el)
-      await socket.emit('sup dem freind', el);
+      await socket.emit('sup dem friend', el);
     }
 
     const refusefriend = async (el : users) => { 
       console.log(el)
-      await socket.emit('refuse freind', el);
+      await socket.emit('refuse friend', el);
     }
 
     const changeChaMp = async (val : number) => {
@@ -832,7 +832,7 @@ const Chat = () => {
                 color="active"
                 onClick={() => {changefriendmode(3)}}
                 >
-                  demande freind
+                  demande friend
                 </Button>
                 {
                   frienMode === 3 &&
