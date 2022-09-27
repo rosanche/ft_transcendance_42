@@ -39,9 +39,17 @@ const BUTTON_THEME: ButtonTheme = {
     },
   },
   link: {
-    base: "inline-flex justify-center relative font-default font-bold text-sm p-4 appearance-none",
+    base: "text-white hover:text-pink-pressed inline-flex justify-center relative font-default text-base italic appearance-none",
     active: {
       default: "text-pink hover:text-pink-pressed",
+    },
+  },
+  icon: {
+    base:
+      'inline-flex justify-center items-center items-center relative rounded-md font-headings font-bold text-sm text-white border-solid appearance-none hover:text-pink',
+    active: {
+      default: 'hover:text-pink',
+      loading: 'cursor-default pointer-events-none',
     },
   },
   none: {

@@ -6,7 +6,7 @@ import { User } from "@prisma/client";
 import { Request, Response } from "express";
 import { AuthService } from "./auth.service";
 import { AuthInDto,AuthUpDto, CodeAuthDto } from "./dto";
-import { JwtGuard } from "./guard";
+import { Jwt2FAGuard, JwtGuard } from "./guard";
 
 @Controller('auth')
 export class AuthController {
@@ -16,7 +16,7 @@ export class AuthController {
 
     @Post('signup')
     async signup(@Body() dto: AuthUpDto, @Res() res) {
-      
+
       const user : Partial<User>  = await this.authService.signup(dto);
       console.log('bonjour');
       const access_token = await this.authService.login(user);
@@ -34,7 +34,7 @@ export class AuthController {
       res.send(access_token);
     }
 
-    //Google Oauth 2.0 Authentification 
+    //Google Oauth 2.0 Authentification
 
     @Get('google')
     @UseGuards(AuthGuard('google'))
@@ -54,7 +54,7 @@ export class AuthController {
     @Get('42api')
     @UseGuards(AuthGuard('42'))
     async api42Auth(@Req() req: Request) {
-        
+
     }
 
     @Get('42api/redirect')
@@ -65,13 +65,13 @@ export class AuthController {
         const user : Partial<User> = req.user;
         const access_token = await this.authService.login(user);
         res.cookie('access_token', access_token.access_token);
-      
+
         res.redirect(`http://localhost:3001/connexion?2faEnabled=${req.user['isTwoFactorAuthenticationEnabled']}`);
     }
 
     //2FA Auth
     @Post('2fa/generate')
-    @UseGuards(JwtGuard)
+    @UseGuards(Jwt2FAGuard)
     async register(@Res() response: Response, @Req() request: Request) {
       const { otpAuthUrl } =
         await this.authService.generateTwoFactorAuthenticationSecret(
@@ -84,26 +84,32 @@ export class AuthController {
     }
 
     @Post('2fa/turn-on')
-    @UseGuards(JwtGuard)
-    async turnOnTwoFactorAuthentication(@Req() request, @Body() body: CodeAuthDto) {
-
+    @UseGuards(Jwt2FAGuard)
+    async turnOnTwoFactorAuthentication(@Req() request, @Body() body: CodeAuthDto, @Res() res) {
+// console.log("$$body", body);
         if (!request.user.twoFactorAuthenticationSecret){
+          // console.log("$$wrong")
             throw new UnauthorizedException('Two Factor Authentication Secret Not Generate');
         }
         const isCodeValid = this.authService.isTwoFactorAuthenticationCodeValid(
             body.twoFactorAuthenticationCode,
             request.user,
         );
+        // console.log("$$answer", isCodeValid, body.twoFactorAuthenticationCode)
         if (!isCodeValid) {
           throw new UnauthorizedException('Wrong authentication code');
         }
         await this.authService.turnOnTwoFactorAuthentication(request.user.id);
+
+        const access_token = await this.authService.loginWith2fa(request.user);
+      res.cookie('access_token', access_token.access_token);
+      res.send(access_token);
     }
 
     @Post('2fa/authenticate')
     @HttpCode(200)
-    @UseGuards(JwtGuard)
-    async authenticate(@Req() request, @Body() body: CodeAuthDto) {
+    @UseGuards(Jwt2FAGuard)
+    async authenticate(@Req() request, @Body() body: CodeAuthDto, @Res() res) {
         if (!request.user.isTwoFactorAuthenticationEnabled){
             throw new UnauthorizedException('Two Factor Authentication Disabled');
         }
@@ -119,6 +125,8 @@ export class AuthController {
           throw new UnauthorizedException('Wrong authentication code');
         }
 
-        return this.authService.loginWith2fa(request.user);
+        const access_token = await this.authService.loginWith2fa(request.user);
+      res.cookie('access_token', access_token.access_token);
+      res.send(access_token);
     }
 }
