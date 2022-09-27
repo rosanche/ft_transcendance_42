@@ -3,13 +3,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { Button } from "modules/common/components/_ui/Button/Button";
 import socketio from "socket.io-client";
 import { useRouter } from "next/router";
-
-const socket = socketio("http://localhost:3000/chat", {
-  autoConnect: false,
-  auth: {
-    token: "abcd",
-  },
-});
+import { useSocketContext } from "modules/common/context/SocketContext";
 
 type Form = {
   channel: string;
@@ -41,6 +35,8 @@ type ban = {
 };
 
 const Chat = () => {
+  const socket = useSocketContext();
+  console.log("$$socket", socket);
   const [newAdmin, setNewAdmin] = useState<boolean>(false);
   const [newOwner, setNewOwner] = useState<boolean>(false);
   const [create, setCreate] = useState<boolean>(false);

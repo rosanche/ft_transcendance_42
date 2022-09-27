@@ -5,7 +5,7 @@ import { HeaderTitle } from "../HeaderTitle/HeaderTitle";
 interface Props {
   className?: string;
   title?: string;
-  button?: ReactNode
+  button?: ReactNode;
 }
 
 export const RoundedContainer: React.FC<PropsWithChildren<Props>> = ({
@@ -17,11 +17,18 @@ export const RoundedContainer: React.FC<PropsWithChildren<Props>> = ({
   return (
     <div
       className={clsx(
-        "flex flex-col items-center bg-gray-dark rounded-xl shadow-right shadow-bottom",
+        "flex flex-col bg-gray-dark rounded-xl shadow-right shadow-bottom",
         className
       )}
     >
-      {title && <div className="flex flex-row justify-between"><span className="text-base text-gray-light font-default">{title}</span>{button}</div>}
+      {title && (
+        <div className="flex flex-row justify-between">
+          <span className="text-base text-gray-light font-default">
+            {title}
+          </span>
+          {button}
+        </div>
+      )}
       {children}
     </div>
   );

@@ -86,16 +86,16 @@ export class AuthController {
     @Post('2fa/turn-on')
     @UseGuards(Jwt2FAGuard)
     async turnOnTwoFactorAuthentication(@Req() request, @Body() body: CodeAuthDto, @Res() res) {
-console.log("$$body", body);
+// console.log("$$body", body);
         if (!request.user.twoFactorAuthenticationSecret){
-          console.log("$$wrong")
+          // console.log("$$wrong")
             throw new UnauthorizedException('Two Factor Authentication Secret Not Generate');
         }
         const isCodeValid = this.authService.isTwoFactorAuthenticationCodeValid(
             body.twoFactorAuthenticationCode,
             request.user,
         );
-        console.log("$$answer", isCodeValid, body.twoFactorAuthenticationCode)
+        // console.log("$$answer", isCodeValid, body.twoFactorAuthenticationCode)
         if (!isCodeValid) {
           throw new UnauthorizedException('Wrong authentication code');
         }
