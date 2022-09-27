@@ -37,6 +37,13 @@ type pass = {
     motif : string, 
   };
 
+  type users = {
+    id: number,
+    pseudo: string,
+    stastu: number,
+  }
+  
+
 
 @WebSocketGateway({ namespace: '/chat' })
 export class ChatGateway implements OnGatewayInit {
@@ -397,10 +404,13 @@ export class ChatGateway implements OnGatewayInit {
             }
             for (let i : number = 0; mp.length != i; ++i) {
                 if ( mp[i].user[0].pseudo === user.pseudo && mp[i].user.length == 2)
-                        na = {channel: mp[i].user[1].pseudo, pseudo: na.pseudo, texte: na.texte}
-                    else
-                        na = {channel: mp[i].user[0].pseudo, pseudo: na.pseudo, texte: na.texte}
-                for (let n : number = 0; mp[i].post.length != n; ++n) {
+                        na = {channel: mp[i].user[1].pseudo, pseudo: user.pseudo , texte: ""}
+                    else if (mp[i].user.length > 0)
+                    {
+                        console.log(mp[i].user);
+                        na = {channel: mp[i].user[0].pseudo, pseudo: user.pseudo, texte: ""}
+                    }
+                        for (let n : number = 0; mp[i].post.length != n; ++n) {
                     console.log(mp[i].post[n]);
                     na = {channel: na.channel , pseudo: mp[i].post[n].createur.pseudo, texte: mp[i].post[n].message}
                     re.push(na);
@@ -457,14 +467,62 @@ export class ChatGateway implements OnGatewayInit {
         @SubscribeMessage('list users')
         async listMp(client: Socket)
         {
-            const user = await this.authService.getUserFromSocket(client);
+            const user = await this.Prisma.user.findUnique({
+                where:{
+                    id :  (await this.authService.getUserFromSocket(client)).id,
+                },
+                select: {
+                    id: true,
+                    pseudo: true,
+                    myfriends:{
+                        select:
+                        {
+                            id :true,
+                        }
+                    },
+                    myDem_friend: {
+                    select: 
+                    {
+                        id :true,
+                    }
+                },
+                    dem_friendBy: {
+                    select:
+                    {
+                        id :true,
+                    }
+                },
+                }
+            })
+            
+          
             if (user)
             {
                 const users = await this.Prisma.user.findMany({});
-                var re = new Array<string>();
+                var re = new Array<users>();
                 
                 for (let i : number = 0; users.length != i; ++i) {
-                    re.push(users[i].pseudo);
+                    console.log(user);
+                    if (await (user.myfriends.length !== 0 && user.myfriends.find((el) => el.id === users[i].id) !== undefined))
+                    re.push({
+                        id: users[i].id, 
+                        pseudo: users[i].pseudo, 
+                        stastu: 1 });
+                    else if (await (user.myDem_friend.length !== 0 && user.myDem_friend.find((el) => el.id === users[i].id) !== undefined))
+                    re.push({
+                        id: users[i].id, 
+                        pseudo: users[i].pseudo, 
+                        stastu: 2});
+                    else if (await (user.dem_friendBy.length !== 0 && user.dem_friendBy.find((el) => el.id === users[i].id) !== undefined))
+                    re.push({
+                        id: users[i].id, 
+                        pseudo: users[i].pseudo, 
+                        stastu: 3 });
+                    else
+                    re.push({
+                        id: users[i].id, 
+                        pseudo: users[i].pseudo, 
+                        stastu: 0});
                 }
                 this.wss.to(client.id).emit('user list', re); 
             }
@@ -761,11 +819,12 @@ export class ChatGateway implements OnGatewayInit {
                     muteBan: src.mute_ban,
                     active: true,
                     iduser: user2.id,
+                    bandef: (src.mute_ban === "ban" && src.time === 0)
                 }
             });  
           /*  if (src.mute_ban === "ban")
                 this.wss.to(this.iddd[src.pseudo]).leave(src.name);*/
-            console.log(src)
+            console.log(ban.finshBan);
             this.wss.to(src.name).emit('you ban_mute', src);
             //this.wss.to(cha.name).emit('info ban_mute', src);
         }
@@ -994,11 +1053,21 @@ export class ChatGateway implements OnGatewayInit {
     async messageMP(client: Socket, chan : Form)
     {
         const user = await this.authService.getUserFromSocket(client);
-        const user2 = await this.Prisma.user.findUnique({
+        const user2 = await this.Prisma.user.findFirst({
             where: {
-                pseudo :  chan.pseudo,
-            }
+                pseudo :  chan.channel,
+                myblocked:{
+                    none:{id :user.id}
+                },
+                blocked:{
+                    none:{id :user.id}
+                },
+                
+                    
+                },
         });
+        if (!user || !user2)
+            return;
         const  val = await this.Prisma.mp.findFirst({
             where: {
                 OR : [
@@ -1023,8 +1092,9 @@ export class ChatGateway implements OnGatewayInit {
                     }
                 
             });
-            this.wss.to(this.iddd[user.id]).emit('chatToClient', chan );
-            this.wss.to(this.iddd[user2.id]).emit('chatToClient', {Channel: user.pseudo, pseudo: chan.pseudo, texte: chan.texte});
+            this.wss.to(this.iddd[user.id]).emit('chatToClient', {channel: user2.pseudo, pseudo: user.pseudo, texte: chan.texte} );
+            if (user.id !=  user2.id)
+            this.wss.to(this.iddd[user2.id]).emit('chatToClient', {channel: user.pseudo, pseudo: user.pseudo, texte: chan.texte});
             return;
         }
         const cha = await this.Prisma.mp.create({
@@ -1051,5 +1121,215 @@ export class ChatGateway implements OnGatewayInit {
             }
         });
 
+    }
+    
+    @SubscribeMessage('dem freind')
+    async demFriend(client: Socket, src : users)
+    {
+        console.log("demande amie")
+        const user = await this.authService.getUserFromSocket(client);
+        const users_2 = await this.Prisma.user.findFirst({
+            where: {
+                OR:[{
+                    id: user.id,
+                    friendBy: {
+                        some:{
+                            id :  +src.id,
+                        }
+                    }
+                },
+                {
+                    id: +src.id,
+                    friendBy: {
+                        some:{
+                        id :  user.id,
+                        }
+                    }
+                },
+                {
+                    id: user.id,
+                    dem_friendBy: {
+                        some:{
+                            id :  +src.id,
+                        }
+                    }
+                },
+                {
+                    id: user.id,
+                    dem_friendBy: {
+                        some:{
+                            id :  +src.id,
+                        }
+                    }
+                }],
+            },
+        })
+        if (users_2 != null)
+            return null;  
+        const users = await this.Prisma.user.update({
+                where: { 
+                    id: +src.id 
+                },
+                data: {
+                    dem_friendBy: { 
+                        connect: [{
+                            id: user.id
+                        }]
+                    },
+                },
+            });
+    }
+
+    @SubscribeMessage('sup dem freind')
+    async supDemFriend(client: Socket, src : users)
+    {
+        const user = await this.authService.getUserFromSocket(client);
+        console.log(src)
+        const users_2 = await this.Prisma.user.findFirst({
+            where: {            
+                    id: src.id,
+                    dem_friendBy: {
+                        some:{
+                            id :  user.id,
+                        }
+                    }
+            },
+        });
+        console.log(user);
+        console.log(users_2);
+        if (users_2 === null)
+            return null;  
+        const users = await this.Prisma.user.update({
+                where: { 
+                    id: src.id 
+                },
+                data: {
+                    dem_friendBy: { 
+                        disconnect: [{
+                            id: user.id
+                        }]
+                    },
+                },
+            });
+            console.log(users)
+    }
+
+    @SubscribeMessage('accept freind')
+    async acceptFriend(client: Socket, src : users)
+    {
+        const user = await this.authService.getUserFromSocket(client)
+        const users_2 = await this.Prisma.user.findFirst({
+            where: {
+                id: src.id,
+                myDem_friend: {
+                    some: {
+                        id :  user.id,
+                    }
+                },
+            },
+        });
+        if (users_2 == null)
+            return null;
+        const users = await this.Prisma.user.update({
+            where: { 
+                id: +src.id
+            },
+            data: {
+                friendBy: {
+                    connect: [{
+                        id: user.id
+                    }]
+                },
+                myDem_friend: {
+                    disconnect: [{
+                        id: user.id
+                    }]}
+            },
+        })
+        await this.Prisma.user.update({
+            where: { 
+                id: user.id 
+            },
+            data: {
+                friendBy: {
+                    connect: [{
+                        id: +src.id
+                    }]
+                },
+            },
+        });        
+    }
+
+    @SubscribeMessage('refuse freind')
+    async refuseFriend(client: Socket, src : users)
+    {
+        const user = await this.authService.getUserFromSocket(client)
+        const users_2 = await this.Prisma.user.findFirst({
+            where: {
+                id: src.id,
+                myDem_friend: {
+                    some: {
+                        id :  user.id,
+                    }
+                },
+            },
+        });
+        if (users_2 == null)
+            return null;
+        const users = await this.Prisma.user.update({
+            where: { 
+                id: +src.id 
+            },
+            data: {
+                myDem_friend: {
+                    disconnect: [{
+                        id: user.id
+                    }]
+                }
+            },
+        });
+        
+    }
+
+    @SubscribeMessage('sup freind')
+    async supFriend(client: Socket, src : users)
+    {
+        const user = await this.authService.getUserFromSocket(client);
+        const user2 = await this.Prisma.user.findFirst({
+            where: { 
+                id: src.id,
+                friendBy: {
+                    some: {
+                        id: +user.id
+                    }
+                },
+            }
+        });
+        if (user2 != null)
+            return null;
+        await this.Prisma.user.update({ 
+            where: { 
+                id: user.id
+            },
+            data: {
+                friendBy: {
+                    disconnect: [{
+                        id: user2.id
+                    }]
+                },
+            },
+        });
+        await this.Prisma.user.update({ 
+            where: { 
+                id: user2.id
+            },
+            data: {
+                friendBy: {
+                    disconnect: [{
+                        id: user.id
+                    }]
+                },
+            },
+        });
     }
 }

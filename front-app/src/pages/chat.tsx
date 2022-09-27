@@ -40,13 +40,22 @@ type ban = {
   motif : string, 
 };
 
+type users = {
+  id: number,
+  pseudo: string,
+  stastu: number,
+}
+
 
 const Chat = () => {
+    const [DemFriend, setDemFriend] = useState<string[]>([]);
+    const [myDemFriend, setMyDemFriend] = useState<string[]>([]);
+    const [myFriend, setMyFriend] = useState<string[]>([]);
     const [myMp, setMyMp] = useState<channel[]>([]);
-    const [msgMP, setMsgMP] =  useState<Form[]>([]);
-    const [mp, setMp] = useState<string>("");
-    const [cha_mp, setCha_mp] = useState<boolean>(true);
-    const [users, setUsers] = useState<string[]>([])
+    const [mp, setMp] = useState<Form>([]);
+    const [cha_mp, setCha_mp] = useState<number>(1);
+    const [frienMode, setFriendMode] = useState<number>(1);
+    const [users, setUsers] = useState<users[]>([])
     const [useBlock, setUseBlock] = useState<string[]>([]);
     const [me, setMe] = useState<string>("");
     const [invite, setInvite] = useState<boolean>(false);
@@ -78,6 +87,35 @@ const Chat = () => {
       await setJoin({id:0, name : "", private : false, admin: false, owner: false, password: false})
     }
 
+
+    const demfriend = async (el : users) => {
+      console.log(el)
+      await socket.emit('dem freind', el);
+    }
+    
+    const acceptfriend = async (el : users) => { 
+      console.log(el)
+      await socket.emit('accept freind', el);
+    }
+
+    const supdemfirend = async (el : users) => {
+
+      console.log(el)
+      await socket.emit('sup dem freind', el);
+    }
+
+    const refusefriend = async (el : users) => { 
+      console.log(el)
+      await socket.emit('refuse freind', el);
+    }
+
+    const changeChaMp = async (val : number) => {
+      setChatName({id:0, name : "", private : false, admin: false, password: false});
+      setData({pseudo : data.pseudo, channel: "" ,texte: ""})
+      setCha_mp(val);
+      setMp("")
+    }
+
     const quit = async (chat : channel) =>{
         await socket.emit('quit', chat)
         
@@ -85,14 +123,20 @@ const Chat = () => {
         console.log(u);
        await setChannel(u);
        console.log(channel);
-       await setChatName(channel[0])
+       await setChatName({id:0, name : "", private : false, admin: false, password: false})
         await console.log(chatName);
         const a : channel = await channel.at(0);
         console.log(a.name);
       await  setData({pseudo : data.pseudo, channel: a.name ,texte: ""})
       setChannelPub([...channelPub,chat])
     }
+    const changefriendmode = async (i : number) => { 
 
+      setChatName({id:0, name : "", private : false, admin: false, password: false});
+      setData({pseudo : data.pseudo, channel: "" ,texte: ""})
+      setFriendMode(i);
+      setMp("");
+    }
     const addAdmin = async (cha : ban) =>
     {
       console.log(cha)
@@ -148,6 +192,8 @@ const Chat = () => {
       console.log(el)
       setData({channel: el.name,  pseudo: data.pseudo,  texte: ""});
       await setChatName(el)
+      if (el.id === -1)
+        setMp(el.name)
       //console.log(chatName)
     }
 
@@ -177,6 +223,7 @@ const Chat = () => {
 
     const log = (ms : Form) => {
        console.log(ms);
+       console.log("success")
           setMsg((m) => [...m,ms])
         //setChannel([...channel,  ms.text])
        
@@ -193,7 +240,7 @@ const Chat = () => {
         setMyMp(c)
       });
 
-      socket.on('user list', (c: string[]) =>
+      socket.on('user list', (c: users[]) =>
       {
       //  setChannel((u)=> [...u,c]);
           console.log("oui 3");
@@ -284,6 +331,7 @@ const Chat = () => {
 
       socket.on('user info', (user : {id: number, pseudo: string}) => {
           console.log(user);
+          setData({channel: "", pseudo: user.pseudo, texte: ""});
       });
 
       socket.on('auth error', () => {
@@ -302,7 +350,7 @@ const Chat = () => {
 
       //   socket.on('user', (user : {name: string, id: }))
     
-      return () => {                this.wss.to(client.id).emit('mp list', re); 
+      return () => {                
           socket.off('my new channel pub');
           socket.off('channels list');
           socket.off('info channel');
@@ -347,22 +395,29 @@ const Chat = () => {
         <Button  className="mb-10  px-2 py-1"
                 variant="contained"
                 color="active"
-                onClick={() => setCha_mp(true)}
+                onClick={() => {changeChaMp(1) }}
                 >
                   channel
                 </Button>
                 <Button  className="mb-10  px-2 py-1"
                 variant="contained"
                 color="active"
-                onClick={() => setCha_mp(false)}
+                onClick={() => {changeChaMp(2)}}
                 >
                   message private
+                </Button>
+                <Button  className="mb-10  px-2 py-1"
+                variant="contained"
+                color="active"
+                onClick={() => {changeChaMp(3)}}
+                >
+                  friend
                 </Button>
         </span>
         <div>
         {
-          cha_mp &&
-        <span>
+          cha_mp == 1 && 
+        <div>
           <h1>
           {
             chatName.name
@@ -378,6 +433,8 @@ const Chat = () => {
               { 
               !create &&
               <div>
+              {
+                chatName.name != "" &&
               <Button  className="mb-10  px-2 py-1"
                 variant="contained"
                 color="active"
@@ -385,6 +442,7 @@ const Chat = () => {
                 >
                   quit
                 </Button>
+              }
                 {
                   newOwner && 
                   <h3>
@@ -464,7 +522,7 @@ const Chat = () => {
                   invite &&
                   <span>
                     pseudo :
-                    <input className=" px-2 py-1" type="text" value={ban.pseudo}  onChange={(e) => {
+                    <input className=" px-2 py-1" type="text" value={ban.pseudo} onChange={(e) => {
                  setBan({mute_ban: ban.mute_ban, name : chatName.name , pseudo: e.target.value, time: ban.time , motif: ban.motif}); }} placeholder="Enter  pseudo" 
                  name="chat"/>
                  {
@@ -482,7 +540,18 @@ const Chat = () => {
                 {
                   ban.mute_ban === "mute" && 
                   <h3>
-                   <input type="range" id="volume" name="volume" value={ban.time} min="0" max="100"  onChange={(e) => {setBan({mute_ban: ban.mute_ban ,name : chatName.name , pseudo: ban.pseudo, time: e.target.value, motif: ban.motif})}}/>
+                    <div>
+                    {
+                      ban.time != 0 &&
+                      <text>{ban.time}</text>
+                      
+                    }
+                    {
+                      ban.time == 0 &&
+                      <text>def</text>
+                      }
+                   <input type="range" id="volume" name="volume" default={10} value={ban.time} min="0" max="100"  onChange={(e) => {setBan({mute_ban: ban.mute_ban ,name : chatName.name , pseudo: ban.pseudo, time: e.target.value, motif: ban.motif})}}/>
+                   </div>
                     <label name="time mute">time mute </label>
                     pseudo :
                     <input className=" px-2 py-1" type="text" value={ban.pseudo}  onChange={(e) => {
@@ -507,6 +576,8 @@ const Chat = () => {
                 </div>
                 }
             <div>
+            {
+                chatName.name != "" &&
              <p>
                 {
                     msg.filter((el)=> el.channel === data.channel && useBlock.find((u) => u === el.pseudo) === undefined ).map((el, i) => (
@@ -514,7 +585,7 @@ const Chat = () => {
                     {
                       me !== el.pseudo &&
                       <span>
-                    <Button  className="ml-3 px-2 py-1"
+                    <Button key={i} className="ml-3 px-2 py-1"
                 variant="contained"
                 color="active"
                 onClick={() =>  BlockedUser(el)}
@@ -547,6 +618,7 @@ const Chat = () => {
                   Envoie
                 </Button>
              </p>
+              }
              <p>
              my channels :
               {
@@ -640,11 +712,11 @@ const Chat = () => {
       }        
         </div>
         }
-        </span>
+        </div>
         }
         {
-          !cha_mp && 
-          <span>
+          cha_mp ==2 && 
+          <div>
             
             <div>
             search users: <input className=" px-2 py-1" type="text" value={passj.texte}  onChange={(e) => {
@@ -661,8 +733,7 @@ const Chat = () => {
                 className="ml-3 px-2 py-1"
                 variant="contained"
                 color="active"
-                onClick={() => setMp(el)  }
-                >
+                onClick={() => {changechannel({id:-1 ,name: el, private : true, admin : false, owner : false, password : false});} }>
                   {el}
                 </Button>
                     }
@@ -674,10 +745,13 @@ const Chat = () => {
               </div>
             {
               mp != '' &&
-              <p>
+              <div>
                 {
-                    msg.filter((el)=> el.channel === data.channel && useBlock.find((u) => u === el.pseudo) === undefined ).map((el, i) => (
-                    <li key={i}>{el.pseudo} : {el.texte}
+                    <h1>{data.channel}</h1>
+                }
+                {
+                     msg.filter((el)=> el.channel === data.channel && useBlock.find((u) => u === el.pseudo) === undefined ).map((el, i) => (
+                    <li key={i}>{el.pseudo} : {el.texte} 
                     {
                       me !== el.pseudo &&
                       <span>
@@ -701,7 +775,7 @@ const Chat = () => {
                 ))
                   }
                    <input className=" px-2 py-1" type="text" value={data.texte}  onChange={(e) => {
-                 setData({channel :  "mp" , pseudo : mp , texte : e.target.value}); }} placeholder="message..." 
+                 setData({channel :  data.channel , pseudo : data.pseudo , texte : e.target.value}); }} placeholder="message..." 
                  onKeyPress={(event) => {
                   event.key === "Enter" && sendPrivate();
                 }}
@@ -713,27 +787,150 @@ const Chat = () => {
                 >
                   Envoie
                 </Button>
-             </p>
+             </div>
             }
             my message private :
+            <span>
             {
+              
                 myMp.map((el,i) => (
-                  <li>
                 <Button  
                 key= {i}
                 className="ml-3 px-2 py-1"
                 variant="contained"
                 color="active"
-                onClick={() => {changechannel(el); setMp(el.name)}  }
+                onClick={() => {changechannel(el); setMp(el.name); console.log(msg)}  }
                 >
                   {
                     el.name
                   }
                 </Button>
-                </li>
                 ))
               }
-          </span>
+              </span>
+          </div>
+        }
+        {
+          cha_mp == 3 &&
+          <div>
+             <Button  className="mb-10  px-2 py-1"
+                variant="contained"
+                color="active"
+                onClick={() => {changefriendmode(1) }}
+                >
+                  my friend
+                </Button>
+                <Button  className="mb-10  px-2 py-1"
+                variant="contained"
+                color="active"
+                onClick={() => {changefriendmode(2)}}
+                >
+                  attend 
+                </Button>
+                <Button  className="mb-10  px-2 py-1"
+                variant="contained"
+                color="active"
+                onClick={() => {changefriendmode(3)}}
+                >
+                  demande freind
+                </Button>
+                {
+                  frienMode === 3 &&
+                <div>
+            search users: <input className=" px-2 py-1" type="text" value={passj.texte}  onChange={(e) => {
+                 setPassj({name: e.target.value ,password : passj.password, private: passj.private}); }} placeholder="name channel" 
+                 name="chat"/>
+                 {
+                  passj.name.length >= 1 && mp == '' &&
+                  <span>
+                  {
+                    users.filter((el) => el.pseudo.startsWith(passj.name) === true && el.stastu === 0).map((el, i) => (
+                    <li key={i}>{
+                <Button  
+                key= {i}
+                className="ml-3 px-2 py-1"
+                variant="contained"
+                color="active"
+                onClick={() => {demfriend(el);} }>
+                  {el.pseudo}
+                </Button>
+                    }
+                    </li>
+                ))
+                  } 
+                  </span>
+                 }
+              </div>
+            }
+            {
+                  frienMode === 1 &&
+                <div>
+                 {
+                  <span>
+                  {
+                    users.filter((el) => el.stastu === 1).map((el, i) => (
+                    <li key={i}>{
+                <Button  
+                key= {i}
+                className="ml-3 px-2 py-1"
+                variant="contained"
+                color="active"
+                onClick={() => {changechannel({id:-1 ,name: el, private : true, admin : false, owner : false, password : false});} }>
+                  {el.pseudo}
+                </Button>
+                    }
+                    </li>
+                ))
+                  } 
+                  </span>
+                 }
+              </div>
+            }
+            {
+                  frienMode === 2 &&
+                <div>
+                 {                  
+                  <span>
+                  {
+                    users.filter((el) => el.stastu === 2 || el.stastu === 3).map((el, i) => (
+                    <li key={i}>{
+                      <span>
+                <Button  
+                key= {i}
+                className="ml-3 px-2 py-1"
+                variant="contained"
+                color="active"
+                onClick={() => {supdemfirend(el);} }>
+                  sup demande {el.pseudo}
+                </Button>
+
+                <Button  
+                key= {i}
+                className="ml-3 px-2 py-1"
+                variant="contained"
+                color="active"
+                onClick={() => {acceptfriend(el);} }>
+                  acpt {el.pseudo}
+                </Button>
+
+                <Button  
+                key= {i}
+                className="ml-3 px-2 py-1"
+                variant="contained"
+                color="active"
+                onClick={() => {refusefriend(el);} }>
+                  refuse {el.pseudo}
+                </Button>
+                </span>
+                    }
+                    </li>
+                ))
+                  } 
+                  </span>
+                 }
+              </div>
+            }
+          </div>
         }
         </div>
         </RoundedContainer>

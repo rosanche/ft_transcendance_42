@@ -35,6 +35,10 @@ model User {
   goals_f Int @default(0)
   goals_a Int @default(0)
 
+  experience Int @default(0)
+  level Int @default(0)
+
+
   dem_friendBy User[] @relation("dem_friend")
   myDem_friend  User[] @relation("dem_friend")
   
@@ -65,6 +69,7 @@ model Game {
   id_2 Int
   @@map("game")
   score_2 Int @default(0)
+  winner Int
 }
 
 model Channel {
@@ -92,6 +97,7 @@ model Channel {
   finshBan  Int ? 
   muteBan   String
   active    Boolean
+  bandef    Boolean
   description  String ?
   Channel Channel[] @relation("channelban")
   iduser Int
