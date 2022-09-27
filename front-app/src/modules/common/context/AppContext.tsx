@@ -7,10 +7,8 @@ import {
 } from "react";
 import Cookies from "js-cookie";
 import { useRouter } from "next/router";
+import { CookieKeys } from "../types";
 
-enum CookieKeys {
-  ACCESS_TOKEN = "access_token",
-}
 
 interface AppContext {
   accessToken?: string;

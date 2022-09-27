@@ -1,15 +1,10 @@
 import clsx from "clsx";
 import IconMessage from "modules/common/components/_icons/message";
 import { Button } from "modules/common/components/_ui/Button/Button";
+import { Friend } from "modules/profile/types";
 import Image from "next/image";
 
-interface Props {
-  // imgUrl: string;
-  username: string;
-  status: "online" | "offline" | "playing";
-}
-
-export const FriendItem = ({ username, status = 'online' }: Props) => {
+export const FriendItem = ({ username, status = "online" }: Friend) => {
   const state = {
     online: "En ligne",
     offline: "Hors Ligne",
@@ -30,16 +25,21 @@ export const FriendItem = ({ username, status = 'online' }: Props) => {
         </div>
         <div className="flex flex-1 flex-col ml-4">
           <span className="text-white text-base italic">{username}</span>
-          <span className={
-            clsx("text-xs italic", 
-            status === 'online' && "text-green", 
-            status === 'offline' && "text-gray-light", 
-            status === 'online' && "text-pink")}>
-              {state[status]}
+          <span
+            className={clsx(
+              "text-xs italic",
+              status === "online" && "text-green",
+              status === "offline" && "text-gray-light",
+              status === "online" && "text-pink"
+            )}
+          >
+            {state[status]}
           </span>
         </div>
       </div>
-      <Button variant="icon"><IconMessage /></Button>
+      <Button variant="icon">
+        <IconMessage />
+      </Button>
     </div>
   );
 };
