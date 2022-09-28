@@ -38,6 +38,7 @@ model User {
   experience Int @default(0)
   level Int @default(0)
 
+
   dem_friendBy User[] @relation("dem_friend")
   myDem_friend  User[] @relation("dem_friend")
   
@@ -96,6 +97,7 @@ model Channel {
   finshBan  Int ? 
   muteBan   String
   active    Boolean
+  bandef    Boolean
   description  String ?
   Channel Channel[] @relation("channelban")
   iduser Int
