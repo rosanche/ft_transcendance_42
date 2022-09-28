@@ -56,6 +56,7 @@ CREATE TABLE "ban" (
     "finshBan" INTEGER,
     "muteBan" TEXT NOT NULL,
     "active" BOOLEAN NOT NULL,
+    "bandef" BOOLEAN NOT NULL,
     "description" TEXT,
     "iduser" INTEGER NOT NULL,
 
