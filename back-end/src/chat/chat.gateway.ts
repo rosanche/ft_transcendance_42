@@ -823,20 +823,33 @@ export class ChatGateway implements OnGatewayInit {
         }
     }
 
-    InvitationGame(hostId :number)
+    InvitationGame(hostId :number, inviteId: number)
     {
-
+        const socketIds = this.getAllSocketID(inviteId);
+        socketIds.forEach(sock => {
+            this.wss.to(sock).emit("New Invitation Game", hostId)
+        });
     }
 
-    getAllSocketId(id: number) : string[]
+    getAllInvitationGame(inviteId: number)
+    {
+        return this.gameGateway.searchInvite(inviteId);
+    }
+
+    getAllSocketID(id: number) : string[]
     {
         let socketIds : string[] = [];
-        this.mapIdSocket.forEach(function(key, val){
-            if(key == id)
+        this.mapIdSocket.forEach(function(val, key){
+            if(val == id)
             {
-                socketIds.push(val);
+                socketIds.push(key);
             }
           });
         return socketIds;
     }
+
+    getPlayingUserID() : number[]
+  {
+    return [...this.gameGateway.getPlayingUser()];
+  }
 }
