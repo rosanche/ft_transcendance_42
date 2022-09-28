@@ -4,10 +4,10 @@ import {
   UseMutationOptions,
   useQueryClient,
 } from "@tanstack/react-query";
-import { enumProfileQueryKeys } from "../queries/keys";
+import { enumProfileQueryKeys } from "modules/profile/queries/keys";
 
-const postActivate2Fa = async (twoFactorAuthenticationCode: string) => {
-  const apiUrl = `http://localhost:3000/auth/2fa/turn-on`;
+const postAuthenticate2Fa = async (twoFactorAuthenticationCode: string) => {
+  const apiUrl = `http://localhost:3000/auth/2fa/authenticate`;
 
   console.log("$$endpoint", twoFactorAuthenticationCode);
   const { data } = await axios.post<string>(
@@ -22,7 +22,7 @@ const postActivate2Fa = async (twoFactorAuthenticationCode: string) => {
   return data;
 };
 
-export const useActivate2Fa = (
+export const useAuthenticate2Fa = (
   mutationOptions?: UseMutationOptions<string, void, string>
 ) => {
   const { onSuccess, ...otherMutationOptions } = mutationOptions || {};
@@ -30,7 +30,7 @@ export const useActivate2Fa = (
 
   return useMutation<string, void, string>(
     async (twoFactorAuthenticationCode) => {
-      return postActivate2Fa(twoFactorAuthenticationCode);
+      return postAuthenticate2Fa(twoFactorAuthenticationCode);
     },
     {
       onSuccess: (...args) => {
