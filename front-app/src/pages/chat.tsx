@@ -38,20 +38,20 @@ type users = {
   id: number;
   pseudo: string;
   stastu: number;
+  blocked: boolean;
+  blocledBY: boolean;
 };
 
 const Chat = () => {
   const socket = useSocketContext();
-  console.log("$$socket", socket);
-  const [DemFriend, setDemFriend] = useState<string[]>([]);
-  const [myDemFriend, setMyDemFriend] = useState<string[]>([]);
-  const [myFriend, setMyFriend] = useState<string[]>([]);
+
   const [myMp, setMyMp] = useState<channel[]>([]);
   const [mp, setMp] = useState<Form>([]);
   const [cha_mp, setCha_mp] = useState<number>(1);
   const [frienMode, setFriendMode] = useState<number>(1);
   const [users, setUsers] = useState<users[]>([]);
   const [useBlock, setUseBlock] = useState<string[]>([]);
+  const [useBlockBY, setUseBlockBY] = useState<string[]>([]);
   const [me, setMe] = useState<string>("");
   const [invite, setInvite] = useState<boolean>(false);
   const [newAdmin, setNewAdmin] = useState<boolean>(false);
@@ -117,22 +117,27 @@ const Chat = () => {
 
   const demfriend = async (el: users) => {
     console.log(el);
-    await socket.emit("dem friend", el);
+    await socket.emit("dem friend", el.id);
   };
 
   const acceptfriend = async (el: users) => {
     console.log(el);
-    await socket.emit("accept friend", el);
+    await socket.emit("accept friend", el.id);
   };
 
   const supdemfirend = async (el: users) => {
     console.log(el);
-    await socket.emit("sup dem friend", el);
+    await socket.emit("sup dem friend", el.id);
+  };
+
+  const supfriend = async (el: users) => {
+    console.log(el);
+    await socket.emit("sup friend", el.id);
   };
 
   const refusefriend = async (el: users) => {
     console.log(el);
-    await socket.emit("refuse friend", el);
+    await socket.emit("refuse friend", el.id);
   };
 
   const changeChaMp = async (val: number) => {
@@ -150,10 +155,10 @@ const Chat = () => {
 
   const quit = async (chat: channel) => {
     await socket.emit("quit", chat);
-
-    const u = await channel.filter((el) => chat.name !== el.name);
+    const u = await channel.filter((el) => channel.name !== el.name);
     console.log(u);
     await setChannel(u);
+
     console.log(channel);
     await setChatName({
       id: 0,
@@ -213,6 +218,7 @@ const Chat = () => {
 
     console.log("UN JOUR PEUT ETRE");
     console.log(data);
+    console.log(msg);
     await socket.emit("channelToServer", data);
 
     setData({ channel: data.channel, pseudo: data.pseudo, texte: "" });
@@ -301,6 +307,16 @@ const Chat = () => {
       setChannel((u) => [...u, c]);
       setChatName(c);
       setCreate(false);
+      console.log(c);
+      setData({ channel: c.name, pseudo: data.pseudo, texte: "" });
+    });
+
+    socket.on("message join channel", (c: Form[]) => {
+      console.log(c);
+      console.log("oui");
+      const newArrayForm = [...msg, ...c];
+      console.log(newArrayForm);
+      setMsg(newArrayForm);
     });
 
     socket.on("new channel pub", (c: channel) => {
@@ -330,7 +346,7 @@ const Chat = () => {
     ("join channel false password");
 
     socket.on("join channel false password", (channels: channel[]) => {
-      socket.off("join channel false password");
+      //socket.off("join channel false password");
     });
 
     socket.on("channels pub", (channels: channel[]) => {
@@ -344,9 +360,7 @@ const Chat = () => {
       setMsg(mm);
     });
 
-    socket.on("left chanel", async (room: channel) => {
-      socket.off("left chanel");
-    });
+    socket.on("left chanel", async (room: channel) => {});
 
     socket.on("connect", () => {
       setIsConnected(true);
@@ -904,7 +918,7 @@ const Chat = () => {
               {passj.name.length >= 1 && mp == "" && (
                 <span>
                   {users
-                    .filter((el) => el.startsWith(passj.name) === true)
+                    .filter((el) => el.pseudo.startsWith(passj.name) === true)
                     .map((el, i) => (
                       <li key={i}>
                         {
@@ -916,7 +930,7 @@ const Chat = () => {
                             onClick={() => {
                               changechannel({
                                 id: -1,
-                                name: el,
+                                name: el.pseudo,
                                 private: true,
                                 admin: false,
                                 owner: false,
@@ -924,7 +938,7 @@ const Chat = () => {
                               });
                             }}
                           >
-                            {el}
+                            {el.pseudo}
                           </Button>
                         }
                       </li>
@@ -1106,14 +1120,7 @@ const Chat = () => {
                               variant="contained"
                               color="active"
                               onClick={() => {
-                                changechannel({
-                                  id: -1,
-                                  name: el,
-                                  private: true,
-                                  admin: false,
-                                  owner: false,
-                                  password: false,
-                                });
+                                supfriend(el);
                               }}
                             >
                               {el.pseudo}

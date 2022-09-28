@@ -42,15 +42,15 @@ type users = {
 
 const test = () => {
   return (
-    <Page titre="test">
+    <Page titre="test" className="W-full">
       <div className="flex flex-1 flex-row h-5/6">
-        <RoundedContainer className="flex flex-1 top-4 items-start">
-          <span>ijgfuhbkfdnjkgbvjnjktbnjgfnjkbngfjlnbjkl</span>
+        <RoundedContainer className="flex flex-1 mu-3 items-start mb-9">
+          <span className="text-white">ijgfuhbkfdnjkgbvjnjktbnjgfnjkbngfjlnbjkl</span>
         </RoundedContainer>
-        <div className="flex flex-1  flex-col justify-between">
+        <div className="flex flex-1  flex-col justify-between w-full">
           <span className="text-white">Kelly</span>
-          <div className="flex justify-end h-14  w-11/12  mr-5 mb-10">
-            <input className="rounded-lg ml-5 w-11/12 " type="text"></input>
+          <div className="flex justify-end h-8   mr-5 mb-10">
+            <input className="rounded-lg ml-5 " type="text"></input>
             <Button
               className="ml-[0.5rem] w-[rem4.5]"
               variant="contained"
