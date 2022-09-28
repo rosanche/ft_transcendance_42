@@ -29,8 +29,4 @@ export interface Friend {
   status: "online" | "offline" | "playing";
 }
 
-export interface QrCode2Fa {
-  qrCode: string;
-}
-
 export type FriendType = "friend_request" | "game_request" | "friend";

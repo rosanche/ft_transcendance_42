@@ -1,3 +1,4 @@
+import { useAuthenticate2Fa } from "modules/auth/queries/useAuthenticate2Fa.mutation";
 import { Icon42Logo } from "modules/common/components/_icons/icons";
 import { Button } from "modules/common/components/_ui/Button/Button";
 import { TextField } from "modules/common/components/_ui/TextField/TextField";
@@ -18,14 +19,28 @@ export const OtpAuthentification = () => {
   });
   const { errors } = formState;
 
+  const {
+    mutateAsync: authenticate2Fa,
+    data: fa,
+    status: fas,
+    isLoading,
+  } = useAuthenticate2Fa({ onSuccess: () => router.push("/profil") });
+
+  console.log("$$faaaaa", fa, fas);
+
   return (
     <>
       <span className="text-white text-3xl font-default font-bold mb-16">
         Renseignez votre code de vérification de google authenticator
       </span>
-      <form onSubmit={handleSubmit(() => {})} className="flex flex-row gap-3">
+      <form
+        onSubmit={handleSubmit(({ otp }) => {
+          authenticate2Fa(otp);
+        })}
+        className="flex flex-row gap-3"
+      >
         <TextField id="email" {...register("otp")} error={errors.otp} />
-        <Button variant="contained" color="active">
+        <Button variant="contained" color="active" isLoading={isLoading}>
           Valider
         </Button>
       </form>
