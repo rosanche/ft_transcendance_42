@@ -223,6 +223,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     game.addPlayer(user1.pseudo, user1.id);
     game.addPlayer(user2.pseudo, user2.id);
     client.join(game.roomID);
+    this.invitation.push(game);
     client.emit("wait game");
   }
 
@@ -259,12 +260,6 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         game.logger.log(`The name in the game Room  ${roomID} are ${gameRoom.name1}  et ${gameRoom.name2}  `);
       });
     }
-  }
-
-  getPlayingUser() : Set<number>
-  {
-    console.log(this.players)
-    return this.players;
   }
 
 
@@ -432,6 +427,14 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     });
     return ids;
   }
+
+  getPlayingUser() : Set<number>
+  {
+    console.log(this.players)
+    return this.players;
+  }
 };
+
+
 
 

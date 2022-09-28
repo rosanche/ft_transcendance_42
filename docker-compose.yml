@@ -2,7 +2,7 @@ version: '3.8'
 services:
   postgres:
     container_name: postgres
-    image: postgres
+    image: postgres:latest
     ports:
       - ${POSTGRES_DB_PORT}:${POSTGRES_DB_PORT}
     environment:
@@ -13,6 +13,7 @@ services:
       - transcendence-network
     volumes:
     - data:/var/lib/postgresql/data
+    restart: always
 
   back-end:
     container_name: "back-end_${NODE_ENV}"
