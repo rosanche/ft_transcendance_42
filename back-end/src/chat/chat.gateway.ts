@@ -1062,18 +1062,43 @@ export class ChatGateway implements OnGatewayInit {
         });
     }
 
+    cancelInvitationGame(hostId :number, inviteId: number)
+    {
+        const socketIds = this.getAllSocketID(inviteId);
+        socketIds.forEach(sock => {
+            this.wss.to(sock).emit("Cancel Invitation Game", hostId)
+        });
+
+    }
+    
+
+
+
+    
+
+
+
     @SubscribeMessage('Get Game Invitation')
-    getGameInvitation(client: Socket) : number[]
+    getGameInvitation(client: Socket)
     {
         const id = this.mapIdSocket.get(client.id);
-        return this.getAllInvitationGame(id);
+        client.emit("list invitations", this.getAllInvitationGame(id));
     }
 
     @SubscribeMessage('Get Players')
-    getPlayingUserID() : number[]
+    getPlayingUserID(client: Socket)
     {
-      return [...this.gameGateway.getPlayingUser()];
+      client.emit("list players", [...this.gameGateway.getPlayingUser()]);
     }
+
+    @SubscribeMessage('Refuse Invitation')
+    RefuseInvitation(client: Socket, id: number)
+    {
+        //const inviteId = this.mapIdSocket.get(client.id);
+        this.gameGateway.refuseGame(id);
+        
+    }
+
 
     getAllInvitationGame(inviteId: number)
     {

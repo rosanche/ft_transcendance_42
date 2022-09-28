@@ -106,8 +106,16 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       if ((game.id1 == user.id || game.id2 == user.id)){
         if (game.idInterval !== null)
         {
-          client.join(game.roomID);
-          this.startGame(game);
+          if (game.id1 == user.id)
+          {
+            client.emit("game wait");
+            client.join(game.roomID);
+          }
+          else
+          {
+            client.join(game.roomID);
+            this.startGame(game);
+          }
         }
         else
         {
@@ -214,9 +222,41 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     }
   }
 
+  timeOutinvitationHandler(game :GamePong, client: Socket) 
+  {
+    if (game && game.idInterval == null)
+    {
+      this.cancelGame(game, client);
+    }
+
+  }
+
+  cancelGame(game: GamePong, client: Socket)
+  {
+    this.chatGateway.cancelInvitationGame(game.id1, game.id2);
+    this.server.socketsLeave(game.roomID);
+    this.gamePongs.delete(game.roomID);
+  }
+
+  refuseGame(idHost :number)
+  {
+    this.gamePongs.forEach((game) => { 
+        if (game.idInterval == null && game.id1 == idHost)
+        {
+          this.server.to(game.roomID).emit("game cancel");
+          this.server.socketsLeave(game.roomID);
+          this.gamePongs.delete(game.roomID);
+          return;
+        }
+      }
+    );
+  }
+  
+
   @SubscribeMessage('create private game')
   async handleCreatePrivateGame(client: Socket, id2: number, bonus: boolean){
     const id1 = this.mapIdSocket.get(client.id);
+
     const user1 = await this.userService.findid(id1);
     const user2 = await this.userService.findid(id2);
     const game = this.createGame(bonus);
@@ -224,7 +264,9 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     game.addPlayer(user2.pseudo, user2.id);
     client.join(game.roomID);
     this.invitation.push(game);
+    this.chatGateway.InvitationGame(id1, id2);
     client.emit("wait game");
+    setTimeout(this.timeOutinvitationHandler, 100000, game, client);
   }
 
   @SubscribeMessage('invite')
@@ -283,7 +325,6 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     return game;
   }
 
-  // la game doit commencer a tes 
   async stopGame(game: GamePong, winnerID: number)
   {
     clearInterval(game.idInterval);
@@ -375,7 +416,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     score2  :game.info.score2,
     winner : winnerID}
     this.server.to(game.roomID).emit("game end", endGame);
-    this.server.socketsLeave(game.roomID)
+    this.server.socketsLeave(game.roomID);
     this.gamePongs.delete(game.roomID);
   }
 
@@ -433,7 +474,21 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     console.log(this.players)
     return this.players;
   }
+
+
+  getAllSocketID(id: number) : string[]
+    {
+        let socketIds : string[] = [];
+        this.mapIdSocket.forEach(function(val, key){
+            if(val == id)
+            {
+                socketIds.push(key);
+            }
+          });
+        return socketIds;
+    }
 };
+
 
 
 

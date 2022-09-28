@@ -147,19 +147,22 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
       console.log(user);
       if (typeof window != "undefined") {
         const queryParams = new URLSearchParams(window.location.search);
+        //ID=(ROOMID)
         queryRef.current = queryParams.get("ID");
         console.log(queryRef.current);
         if (queryRef.current !== null) {
           socket.emit("join", queryRef.current);
         }
-        queryRef.current = queryParams.get("invite");
+        //INVITE=(ID DU HOST)
+        queryRef.current = queryParams.get("INVITE");
         console.log(queryRef.current);
         if (queryRef.current !== null) {
           socket.emit("invite", queryRef.current);
         }
-        queryRef.current = queryParams.get("create");
+        //CREATE=(ID DU INVITE)
+        queryRef.current = queryParams.get("CREATE");
         console.log(queryRef.current);
-        const bonus = queryParams.get("bonus");
+        const bonus = queryParams.get("BONUS");
         console.log(bonus);
         if (queryRef.current !== null && bonus !== null) {
           socket.emit("create private game", queryRef.current, bonus);
