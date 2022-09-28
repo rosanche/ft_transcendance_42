@@ -780,7 +780,7 @@ export class ChatGateway implements OnGatewayInit {
     //admin channel
 
     @SubscribeMessage('blockedChannel')
-    async blockedChannel(client: Socket, src: ban) {z
+    async blockedChannel(client: Socket, src: ban) {
         const user = await this.authService.getUserFromSocket(client);
         if (!user)
             return "";
