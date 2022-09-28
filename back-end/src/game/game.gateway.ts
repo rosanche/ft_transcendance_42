@@ -1,15 +1,14 @@
 
 import { Injectable, forwardRef, Logger, Inject } from "@nestjs/common";
-import { ConnectedSocket, OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
+import { OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-
-import * as _ from "lodash"
 import {v4 as uuidv4} from "uuid"
 import {GamePong} from "./GamePong"
 import { AuthService } from '../auth/auth.service';
 import { User } from "@prisma/client";
 import { UserService } from '../user/user.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { ChatGateway } from "src/chat/chat.gateway";
 
 var timetick = 10
 
@@ -41,7 +40,7 @@ type EndGame = {
 @Injectable()
 export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect{
 
-  constructor (private authService: AuthService, @Inject(forwardRef(() => UserService)) private userService: UserService,  private prisma: PrismaService){}
+  constructor (@Inject(forwardRef(() => ChatGateway)) private chatGateway: ChatGateway, private authService: AuthService, @Inject(forwardRef(() => UserService)) private userService: UserService,  private prisma: PrismaService){}
   
   
   private queue : Queue[] = [];
@@ -49,6 +48,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   private mapIdSocket = new Map<string, number>();
   private gamePongs = new Map<string, GamePong>();
   private players = new Set<number>();
+  private invitation : GamePong[] = [];
   
 
   @WebSocketServer() server: Server;
@@ -200,7 +200,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     const user = await this.userService.findid(id);
     if (game)
     {
-      if (game.id2 == -1)
+      if (game.id2 == -1 || game.id2 == id)
       {
         game.addPlayer(user.pseudo, user.id);
         client.join(roomID);
@@ -210,6 +210,41 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       {
         client.join(roomID);
         client.emit("game start");
+      }
+    }
+  }
+
+  @SubscribeMessage('create private game')
+  async handleCreatePrivateGame(client: Socket, id2: number, bonus: boolean){
+    const id1 = this.mapIdSocket.get(client.id);
+    const user1 = await this.userService.findid(id1);
+    const user2 = await this.userService.findid(id2);
+    const game = this.createGame(bonus);
+    game.addPlayer(user1.pseudo, user1.id);
+    game.addPlayer(user2.pseudo, user2.id);
+    client.join(game.roomID);
+    client.emit("wait game");
+  }
+
+  @SubscribeMessage('invite')
+  async handleInvite(client: Socket, ID: number){
+    const id = this.mapIdSocket.get(client.id);
+    const game = this.searchGame(ID);
+    if (!game)
+    {
+      client.emit("Error invite", 1);
+      return;
+    }
+    if (game)
+    {
+      if (game.id2 == id)
+      {
+        client.join(game.roomID);
+        this.startGame(game);
+      }
+      else
+      {
+        client.emit("Error invite", 2);
       }
     }
   }
@@ -235,8 +270,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   startGame(game :GamePong)
   {
-    this.logger.log(`a game start`);
-    
+    //this.chatGateway.wss.emit('chatToClient', {channel : "general", pseudo : game.info.name1, texte : "start a game",});
     const idInterval : NodeJS.Timer = setInterval(this.updateGame, timetick, game, this);
     game.setIdInterval(idInterval);
     this.players.add(game.id1);
@@ -254,6 +288,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     return game;
   }
 
+  // la game doit commencer a tes 
   async stopGame(game: GamePong, winnerID: number)
   {
     clearInterval(game.idInterval);
@@ -278,7 +313,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     {
       level2++;
     }
-    await this.prisma.user.updateMany({
+    this.prisma.user.updateMany({
       where: { 
       id: game.id1 },
       data: {
@@ -301,7 +336,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         },
       }
     });
-    await this.prisma.user.updateMany({
+    this.prisma.user.updateMany({
       where: { 
       id: game.id2 },
       data: {
@@ -324,7 +359,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         },
       }
     });
-    await this.prisma.game.create({
+    this.prisma.game.create({
       data: {
       id_1: game.id1,
       id_2: game.id2,
@@ -375,6 +410,27 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       }
     });
     return roomID
+  }
+
+  searchGame(id: number) : GamePong 
+  {
+    this.gamePongs.forEach((game) => {
+      if (game.id1 == id || game.id2 == id){
+        return game;
+      }
+    });
+    return null;
+  }
+
+  searchInvite(id: number) : number[]
+  {
+    let ids : number[] = []
+    this.invitation.forEach((game) => {
+      if (game.id2 == id){
+        ids.push(game.id1);
+      }
+    });
+    return ids;
   }
 };
 

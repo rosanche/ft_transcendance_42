@@ -152,6 +152,18 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
         if (queryRef.current !== null) {
           socket.emit("join", queryRef.current);
         }
+        queryRef.current = queryParams.get("invite");
+        console.log(queryRef.current);
+        if (queryRef.current !== null) {
+          socket.emit("invite", queryRef.current);
+        }
+        queryRef.current = queryParams.get("create");
+        console.log(queryRef.current);
+        const bonus = queryParams.get("bonus");
+        console.log(bonus);
+        if (queryRef.current !== null && bonus !== null) {
+          socket.emit("create private game", queryRef.current, bonus);
+        }
       }
     });
 
@@ -245,9 +257,12 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
     }
     let H1 = paddleHeight;
     let H2 = paddleHeight;
+    let bonus = [
+      [false, false, false],
+      [false, false, false],
+    ];
     for (let el of info.bonus) {
       if (el.type == typeBonus[0]) {
-        // console.log("Bonus: ", el.owner)
         if (el.owner == 1) {
           H1 = paddleHeight * 2;
         } else if (el.owner == 2) {
@@ -255,12 +270,12 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
         }
       }
     }
-    
     const drawPong = (
       ctx: CanvasRenderingContext2D,
       props: CanvasProps,
       info: PongState
     ) => {
+      let numerobonus: number = -1;
       ctx.restore();
       ctx.save();
       ctx.globalAlpha = 1;
@@ -271,6 +286,37 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
       for (let i = 25; i < 900; i += 100) {
         ctx.fillRect(800 - 5, i, 10, 50);
       }
+      if (info.bonus.length) {
+        info.bonus.forEach((element) => {
+          switch (element.type) {
+            case typeBonus[0]:
+              ctx.fillStyle = "blue";
+              numerobonus = 0;
+              break;
+            case typeBonus[1]:
+              ctx.fillStyle = "yellow";
+              numerobonus = 1;
+              break;
+            case typeBonus[2]:
+              ctx.fillStyle = "red";
+              numerobonus = 2;
+              break;
+            default:
+              ctx.fillStyle = "orange";
+              break;
+          }
+          ctx.beginPath();
+          if (element.owner == 1) {
+            ctx.arc(20, 20 + numerobonus * 35, 15, 0, Math.PI * 2, true);
+          } else if (element.owner == 2) {
+            ctx.arc(1600 - 20, 20 + numerobonus * 35, 15, 0, Math.PI * 2, true);
+          } else {
+            ctx.arc(element.x, element.y, bonusSize, 0, Math.PI * 2, true);
+          }
+          ctx.fill();
+        });
+      }
+      ctx.fillStyle = "white";
       ctx.fillRect(40, info.paddle1Y, paddleWidth, H1);
       ctx.fillRect(
         Number(props.width) - (40 + paddleWidth),
@@ -281,31 +327,6 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
       ctx.beginPath();
       ctx.arc(info.ballX, info.ballY, ballSize, 0, Math.PI * 2, true);
       ctx.fill();
-      if (info.bonus.length) {
-        info.bonus.forEach((element) => {
-          if (element.owner == null) {
-            switch (element.type) {
-              case typeBonus[0]:
-                ctx.fillStyle = "blue";
-                break;
-              case typeBonus[1]:
-                ctx.fillStyle = "yellow";
-                break;
-              case typeBonus[2]:
-                ctx.fillStyle = "red";
-                break;
-              default:
-                ctx.fillStyle = "orange";
-                break;
-            }
-            ctx.beginPath();
-            ctx.arc(element.x, element.y, bonusSize, 0, Math.PI * 2, true);
-            ctx.fill();
-            ctx.fillStyle = "white";
-          }
-        });
-      }
-
       const score1 = "" + info.score1;
       const score2 = "" + info.score2;
       ctx.font = "120px DM Sans";
@@ -355,17 +376,17 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
     return (
       <>
         <div className="h-56 grid grid-cols-1 gap-8 justify-items-center">
-          <span className="text-amber-500 text-6xl font-default font-bold justify-items-center text-align: center mb-8">
-            Winner!
+          <span className="text-amber-500 text-6xl font-default font-bold  text-align: center mb-8">
+            Gagnant!
           </span>
-          <span className="text-amber-500 text-4xl font-default font-bold justify-items-center text-align: center mb-8">
+          <span className="text-amber-500 text-4xl font-default font-bold  text-align: center mb-8">
             {endGameRef.current.winner == endGameRef.current.id1
               ? endGameRef.current.pseudo1
               : endGameRef.current.pseudo2}
           </span>
           <div>
-            <span className="text-white text-6xl font-default font-bold justify-items-center text-align: center mb-8">
-              "${endGameRef.current.score1} : ${endGameRef.current.score2}"
+            <span className="text-white text-6xl font-default font-bold  text-align: center mb-8">
+              {endGameRef.current.score1} : {endGameRef.current.score2}
             </span>
           </div>
 
@@ -378,7 +399,7 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
               setIsWaiting(false);
             }}
           >
-            New game
+            Nouvelle Partie
           </Button>
         </div>
       </>
@@ -399,7 +420,7 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
               setIsWaiting(true);
             }}
           >
-            Pong
+            Power-Up
           </Button>
           <Button
             variant="contained"

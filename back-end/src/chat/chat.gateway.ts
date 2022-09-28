@@ -1,4 +1,4 @@
-import {  Logger, Query ,Controller , Get, Param , UseGuards, Patch, Body, Post, UseInterceptors, Res ,UploadedFile, Request} from "@nestjs/common";
+import {  Logger, Inject, forwardRef} from "@nestjs/common";
 import {ConnectedSocket , SubscribeMessage ,WebSocketGateway, OnGatewayInit, WsResponse,OnGatewayConnection,OnGatewayDisconnect, WebSocketServer} from "@nestjs/websockets";
 import { Socket, Server } from "socket.io";
 import { Jwt2FAGuard } from '../auth/guard';
@@ -6,6 +6,7 @@ import { User, Channel } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuthService } from "../auth/auth.service";
 import * as bcrypt from 'bcrypt';
+import { GameGateway } from "src/game/game.gateway";
 
 type chann  = {
     id : number,
@@ -40,7 +41,7 @@ type pass = {
 @WebSocketGateway({ namespace: '/chat' })
 export class ChatGateway implements OnGatewayInit {
 
-    constructor(private Prisma: PrismaService, private authService: AuthService){}
+    constructor(private Prisma: PrismaService, private authService: AuthService, @Inject(forwardRef(() => GameGateway)) private gameGateway: GameGateway){}
     @WebSocketServer() wss: Server;
 
     private logger : Logger = new Logger('ChatGateway');
@@ -101,20 +102,20 @@ export class ChatGateway implements OnGatewayInit {
     }*/
 
     async afterInit(server : any) {
-        this.logger.log('initilized!');
-        const cha  = await this.Prisma.channel.findMany({
-            select: {
-                id: true,
-                name: true,
-                users: {
-                    select: {
-                        id: true,
-                        pseudo: true,
-                        }
-                    },
-                }
-        });
-        console.log(cha);
+        // this.logger.log('initilized!');
+        // const cha  = await this.Prisma.channel.findMany({
+        //     select: {
+        //         id: true,
+        //         name: true,
+        //         users: {
+        //             select: {
+        //                 id: true,
+        //                 pseudo: true,
+        //                 }
+        //             },
+        //         }
+        // });
+        // console.log(cha);
       /*  for (let i :number = 0; cha[i]; i++) {
             const a = new Map<number, Boolean>()
           //  await this.banactive.set(cha[i].name, new Map<Number, Boolean>());
@@ -634,7 +635,7 @@ export class ChatGateway implements OnGatewayInit {
             //this.wss.to(cha.name).emit('info ban_mute', src);
         }
     }
-
+    
         // chef channel
     @SubscribeMessage('change owner')
     async newOwner(client: Socket, src: ban) {
