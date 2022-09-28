@@ -17,7 +17,6 @@ export class Jwt2FAStrategy extends PassportStrategy(Strategy, 'jwt-2fa')
             if (req && req.cookies) {
                 token = req.cookies['access_token'];
             }
-            console.log(token);
             return token || ExtractJwt.fromAuthHeaderAsBearerToken()(req);
         };
 
@@ -30,13 +29,13 @@ export class Jwt2FAStrategy extends PassportStrategy(Strategy, 'jwt-2fa')
 
     async validate(payload: TokenPayload)
     {
-        console.log(payload);
+        console.log("payload, authenticator validate", payload);
         const user = await this.prisma.user.findUnique({
             where: {
                 id: payload.sub
             }
         });
-        console.log(user);
+        console.log("user, authenticator validate", user);
         delete user.hash;
         if (!user.isTwoFactorAuthenticationEnabled) {
             return user;

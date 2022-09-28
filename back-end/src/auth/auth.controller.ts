@@ -108,7 +108,7 @@ export class AuthController {
 
     @Post('2fa/authenticate')
     @HttpCode(200)
-    @UseGuards(Jwt2FAGuard)
+    @UseGuards(JwtGuard)
     async authenticate(@Req() request, @Body() body: CodeAuthDto, @Res() res) {
         if (!request.user.isTwoFactorAuthenticationEnabled){
             throw new UnauthorizedException('Two Factor Authentication Disabled');

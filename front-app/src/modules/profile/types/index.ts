@@ -1,12 +1,12 @@
 export interface MyProfile {
   User_channel: [];
   createdAt: string;
-  dem_friendBy: [];
+  friendReqReceive: [];
   email: string;
   goals_a: 0;
   goals_f: 0;
   id: 1;
-  myDem_friend: ApiFriend[];
+  friendReqSend: ApiFriend[];
   myfriends: ApiFriend[];
   nbr_games: number;
   nbr_looses: number;
@@ -27,10 +27,6 @@ export interface Friend {
   // imgUrl: string;
   username: string;
   status: "online" | "offline" | "playing";
-}
-
-export interface QrCode2Fa {
-  qrCode: string;
 }
 
 export type FriendType = "friend_request" | "game_request" | "friend";

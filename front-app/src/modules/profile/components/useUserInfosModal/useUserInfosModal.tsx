@@ -5,29 +5,41 @@ import { useAppContextState } from "modules/common/context/AppContext";
 import { useActivate2Fa } from "modules/profile/mutation/useActivate2Fa.mutation";
 import { useGenerate2Fa } from "modules/profile/mutation/useGenerate2Fa.mutation";
 import Image from "next/image";
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import { useForm } from "react-hook-form";
 
 interface FormData {
   username: string;
+  otp: string;
 }
 
 export const useUserInfosModal = () => {
-  const { control, handleSubmit, formState, register } = useForm<FormData>({
+  const { handleSubmit, formState, register } = useForm<FormData>({
     defaultValues: {
       username: "",
+      otp: "",
     },
   });
   const { errors } = formState;
 
-  const { mutateAsync, data: QrCod, status: sta } = useGenerate2Fa();
+  const {
+    mutate: generateQrCode,
+    data: QrCode,
+    status: sta,
+    isLoading: isGenerateQrCodeLoading,
+  } = useGenerate2Fa();
   const { mutateAsync: activate2Fa, data: fa, status: fas } = useActivate2Fa();
+
+  console.log("$$2fa", fa, fas);
+
+  // console.log("$$qrCode", sta);
 
   const { doubleFaEnabled } = useAppContextState();
 
-  useEffect(() => {
-    mutateAsync();
-  }, []);
+  console.log("$$doubleFaEnabled", doubleFaEnabled);
+  // useEffect(() => {
+  //   mutateAsync();
+  // }, []);
 
   const UserInfos = () => (
     <div className="flex items-center flex-col space-y-8">
@@ -56,15 +68,40 @@ export const useUserInfosModal = () => {
           Valider
         </Button>
       </form>
-      <div className="flex flex-1 flex-col">
-        <span className="text-pink text-2xl font-default font-medium italic">
-          Double authentification {doubleFaEnabled ? "activé" : "désactivé"}
-        </span>
-        <Button variant="contained" color="active">
-          Activer
-        </Button>
-        {/* {QrCod && <QrCode url={QrCod} /> } */}
-      </div>
+      {QrCode ? (
+        <form
+          onSubmit={handleSubmit(({ otp }) => {
+            activate2Fa(otp);
+          })}
+          className="flex  space-y-4"
+        >
+          <span>Scannez ce QR code avec Google Authenticator</span>
+          <Image width={120} height={120} src={QrCode} className="rounded-3x" />
+          <div>
+            <TextField id="otp" {...register("otp")} error={errors.username} />
+            <Button variant="contained" color="active">
+              Activer
+            </Button>
+          </div>
+        </form>
+      ) : (
+        <div className="flex flex-1 flex-col">
+          <span className="text-pink text-2xl font-default font-medium italic">
+            Double authentification {doubleFaEnabled ? "activé" : "désactivé"}
+          </span>
+          {!doubleFaEnabled && (
+            <Button
+              variant="contained"
+              color="active"
+              onClick={() => generateQrCode()}
+              isLoading={isGenerateQrCodeLoading}
+            >
+              Activer
+            </Button>
+          )}
+          {/* {QrCod && <QrCode url={QrCod} /> } */}
+        </div>
+      )}
     </div>
   );
 

@@ -4,10 +4,10 @@ import { useRouter } from "next/router";
 import { Page } from "modules/common/components/_ui/Page/Page";
 import { useMyProfileQuery } from "modules/profile/queries/useMyProfileQuery";
 import { Button } from "modules/common/components/_ui/Button/Button";
-import { FriendsContainer } from "modules/profile/components/FriendsContainer/FriendsList";
+import { FriendsContainer } from "modules/profile/components/FriendsContainer/FriendsContainer";
 import { useAppContextState } from "modules/common/context/AppContext";
 import { useUserInfosModal } from "modules/profile/components/useUserInfosModal/useUserInfosModal";
-import { NotificationsContainer } from "modules/profile/components/NotificationsContainer/FriendsList";
+import { NotificationsContainer } from "modules/profile/components/NotificationsContainer/NotificationsContainer";
 import { useSocketContext } from "modules/common/context/SocketContext";
 
 const Profil = () => {
@@ -42,7 +42,7 @@ const Profil = () => {
           </Button>
         </div>
         <FriendsContainer friends={user?.myfriends} />
-        <NotificationsContainer friends={user?.myDem_friend} />
+        <NotificationsContainer friends={user?.friendReqReceive} />
       </div>
     </Page>
   );

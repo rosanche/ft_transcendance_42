@@ -3,6 +3,7 @@ import IconAccept from "modules/common/components/_icons/accept";
 import IconMessage from "modules/common/components/_icons/message";
 import IconRefuse from "modules/common/components/_icons/refuse";
 import { Button } from "modules/common/components/_ui/Button/Button";
+import { useSocketContext } from "modules/common/context/SocketContext";
 import { ApiFriend, Friend, FriendType } from "modules/profile/types";
 import Image from "next/image";
 
@@ -11,11 +12,24 @@ export const FriendItem = ({
   status,
   type = "friend_request",
   profileImage,
+  id,
 }: ApiFriend & { type: FriendType }) => {
+  const socket = useSocketContext();
+
   const state = {
     online: "En ligne",
     offline: "Hors Ligne",
     playing: "En pleine partie",
+  };
+
+  const acceptFriendRequest = async () => {
+    console.log("$$Ca passse", id);
+    await socket.emit("accept friend", id);
+  };
+
+  const refuseFriendRequest = async () => {
+    console.log("$$Ca passse", id);
+    await socket.emit("refuse friend", id);
   };
 
   return (
@@ -52,10 +66,10 @@ export const FriendItem = ({
 
       {type === "friend_request" ? (
         <div className="flex ml-2 space-x-1">
-          <Button variant="icon">
+          <Button variant="icon" onClick={acceptFriendRequest}>
             <IconAccept />
           </Button>
-          <Button variant="icon">
+          <Button variant="icon" onClick={refuseFriendRequest}>
             <IconRefuse />
           </Button>
         </div>

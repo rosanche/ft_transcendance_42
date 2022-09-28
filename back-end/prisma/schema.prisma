@@ -39,8 +39,8 @@ model User {
   level Int @default(0)
 
 
-  dem_friendBy User[] @relation("dem_friend")
-  myDem_friend  User[] @relation("dem_friend")
+  friendReqReceive User[] @relation("dem_friend")
+  friendReqSend  User[] @relation("dem_friend")
   
   friendBy User[] @relation("acce_friend")
   myfriends  User[] @relation("acce_friend")
