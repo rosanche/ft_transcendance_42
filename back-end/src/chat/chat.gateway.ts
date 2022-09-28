@@ -487,13 +487,13 @@ export class ChatGateway implements OnGatewayInit {
                             id :true,
                         }
                     },
-                    myDem_friend: {
+                    friendReqSend: {
                     select: 
                     {
                         id :true,
                     }
                 },
-                    dem_friendBy: {
+                    friendReqReceive: {
                     select:
                     {
                         id :true,
@@ -527,12 +527,12 @@ export class ChatGateway implements OnGatewayInit {
                         id: users[i].id, 
                         pseudo: users[i].pseudo, 
                         stastu: 1, });
-                    else if (await (user.myDem_friend.length !== 0 && user.myDem_friend.find((el) => el.id === users[i].id) !== undefined))
+                    else if (await (user.friendReqSend.length !== 0 && user.friendReqSend.find((el) => el.id === users[i].id) !== undefined))
                     re.push({
                         id: users[i].id, 
                         pseudo: users[i].pseudo, 
                         stastu: 2, });
-                    else if (await (user.dem_friendBy.length !== 0 && user.dem_friendBy.find((el) => el.id === users[i].id) !== undefined))
+                    else if (await (user.friendReqReceive.length !== 0 && user.friendReqReceive.find((el) => el.id === users[i].id) !== undefined))
                     re.push({
                         id: users[i].id, 
                         pseudo: users[i].pseudo, 
@@ -1251,14 +1251,14 @@ export class ChatGateway implements OnGatewayInit {
                     }
                 },
                 {
-                    dem_friendBy: {
+                    friendReqReceive: {
                         some:{
                             id :  user.id,
                         }
                     }
                 },
                 {
-                    myDem_friend: {
+                    friendReqSend: {
                         some:{
                             id :  user.id,
                         }
@@ -1274,7 +1274,7 @@ export class ChatGateway implements OnGatewayInit {
                     id: id 
                 },
                 data: {
-                    dem_friendBy: { 
+                    friendReqReceive: { 
                         connect: [{
                             id: user.id
                         }]
@@ -1293,7 +1293,7 @@ export class ChatGateway implements OnGatewayInit {
         const users_2 = await this.Prisma.user.findFirst({
             where: {            
                     id: id,
-                    dem_friendBy: {
+                    friendReqReceive: {
                         some:{
                             id :  user.id,
                         }
@@ -1309,7 +1309,7 @@ export class ChatGateway implements OnGatewayInit {
                     id: id 
                 },
                 data: {
-                    dem_friendBy: { 
+                    friendReqReceive: { 
                         disconnect: [{
                             id: user.id
                         }]
@@ -1324,17 +1324,21 @@ export class ChatGateway implements OnGatewayInit {
     @SubscribeMessage('accept friend')
     async acceptFriend(client: Socket, id : number)
     {
+        console.log("$$receive", id)
         const user = await this.authService.getUserFromSocket(client)
+        console.log("$$user", user)
         const users_2 = await this.Prisma.user.findFirst({
             where: {
                 id: id,
-                myDem_friend: {
+                friendReqSend: {
                     some: {
                         id :  user.id,
                     }
                 },
             },
         });
+
+        console.log("$$user2", )
         if (users_2 == null)
             return null;
         const users = await this.Prisma.user.update({
@@ -1347,7 +1351,7 @@ export class ChatGateway implements OnGatewayInit {
                         id: user.id
                     }]
                 },
-                myDem_friend: {
+                friendReqSend: {
                     disconnect: [{
                         id: user.id
                     }]}
@@ -1378,7 +1382,7 @@ export class ChatGateway implements OnGatewayInit {
         const users_2 = await this.Prisma.user.findFirst({
             where: {
                 id: id,
-                myDem_friend: {
+                friendReqSend: {
                     some: {
                         id :  user.id,
                     }
@@ -1392,7 +1396,7 @@ export class ChatGateway implements OnGatewayInit {
                 id: id 
             },
             data: {
-                myDem_friend: {
+                friendReqSend: {
                     disconnect: [{
                         id: user.id
                     }]

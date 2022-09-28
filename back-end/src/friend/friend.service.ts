@@ -30,7 +30,7 @@ export class FriendService
                 },
                 {
                     id: user.id,
-                    dem_friendBy: {
+                    friendReqReceive: {
                         some:{
                             id :  +src.id,
                         }
@@ -38,7 +38,7 @@ export class FriendService
                 },
                 {
                     id: user.id,
-                    dem_friendBy: {
+                    friendReqReceive: {
                         some:{
                             id :  +src.id,
                         }
@@ -53,7 +53,7 @@ export class FriendService
                     id: +src.id 
                 },
                 data: {
-                    dem_friendBy: { 
+                    friendReqReceive: { 
                         connect: [{
                             id: user.id
                         }]
@@ -68,7 +68,7 @@ export class FriendService
         const users_2 = await this.Prisma.user.findFirst({
             where: {
                 id: user.id,
-                dem_friendBy: {
+                friendReqReceive: {
                     some: {
                         id :  +src.id,
                     }
@@ -87,7 +87,7 @@ export class FriendService
                         id: user.id
                     }]
                 },
-                myDem_friend: {
+                friendReqSend: {
                     disconnect: [{
                         id: user.id
                     }]}
@@ -112,7 +112,7 @@ export class FriendService
         const users_2 = await this.Prisma.user.findFirst({
             where: {
                 id: user.id,
-                dem_friendBy: {
+                friendReqReceive: {
                     some: {
                         id :  +src.id,
                     }
@@ -126,7 +126,7 @@ export class FriendService
                 id: +src.id 
             },
             data: {
-                myDem_friend: {
+                friendReqSend: {
                     disconnect: [{
                         id: user.id
                     }]

@@ -22,7 +22,7 @@ export class UserService {
             profileImage: true,
           },
         },
-        myDem_friend: {
+        friendReqSend: {
           select: {
             id: true,
             pseudo: true,
@@ -30,7 +30,7 @@ export class UserService {
             profileImage: true,
           },
         },
-        dem_friendBy: {
+        friendReqReceive: {
           select: {
             id: true,
             pseudo: true,
@@ -72,7 +72,7 @@ export class UserService {
             profileImage: true,
           },
         },
-        myDem_friend: {
+        friendReqSend: {
           select: {
             id: true,
             pseudo: true,
@@ -80,7 +80,7 @@ export class UserService {
             profileImage: true,
           },
         },
-        dem_friendBy: {
+        friendReqReceive: {
           select: {
             id: true,
             pseudo: true,
@@ -131,7 +131,7 @@ export class UserService {
             goals_a: true,
           },
         },
-        myDem_friend: {
+        friendReqSend: {
           select: {
             id: true,
             pseudo: true,
@@ -139,7 +139,7 @@ export class UserService {
             profileImage: true,
           },
         },
-        dem_friendBy: {
+        friendReqReceive: {
           select: {
             id: true,
             pseudo: true,
@@ -190,7 +190,7 @@ export class UserService {
             goals_a: true,
           },
         },
-        myDem_friend: {
+        friendReqSend: {
           select: {
             id: true,
             pseudo: true,
@@ -198,7 +198,7 @@ export class UserService {
             profileImage: true,
           },
         },
-        dem_friendBy: {
+        friendReqReceive: {
           select: {
             id: true,
             pseudo: true,
@@ -261,7 +261,7 @@ export class UserService {
             profileImage: true,
           },
         },
-        myDem_friend: {
+        friendReqSend: {
           select: {
             id: true,
             pseudo: true,
@@ -269,7 +269,7 @@ export class UserService {
             profileImage: true,
           },
         },
-        dem_friendBy: {
+        friendReqReceive: {
           select: {
             id: true,
             pseudo: true,

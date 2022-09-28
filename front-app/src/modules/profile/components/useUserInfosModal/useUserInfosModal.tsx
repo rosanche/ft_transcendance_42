@@ -36,6 +36,7 @@ export const useUserInfosModal = () => {
 
   const { doubleFaEnabled } = useAppContextState();
 
+  console.log("$$doubleFaEnabled", doubleFaEnabled);
   // useEffect(() => {
   //   mutateAsync();
   // }, []);
