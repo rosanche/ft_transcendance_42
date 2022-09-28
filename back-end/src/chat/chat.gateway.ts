@@ -57,6 +57,7 @@ export class ChatGateway implements OnGatewayInit {
     /*private banactive  = new  Map<Number, Ban >();
     private muteactive = new Map<Number, Map<Number, Boolean> >();*/
     private mp  = new Map<string, Number[]>;
+    private mapIdSocket = new Map<string, number>();
 
     
 
@@ -141,7 +142,10 @@ export class ChatGateway implements OnGatewayInit {
         this.logger.log(`Method not implmented. ${client.id}`);
         const user = await this.authService.getUserFromSocket(client);
         if (user)
+        {
             this.iddd.delete(user.id);
+            this.mapIdSocket.delete(client.id);
+        }
     }
 
     async handleConnection( client: Socket, ... args: any[]) {
@@ -150,6 +154,7 @@ export class ChatGateway implements OnGatewayInit {
         if (user) {
             this.logger.log(`Socket ${client.id} connect on the server with pseudo ${user.pseudo}`);
             this.iddd[user.id] = client.id;
+            this.mapIdSocket.set(client.id, user.id);
         //    client.join("general");
           //  client.to("general").emit('joinedRoom', "typescript")
         }
@@ -1049,7 +1054,47 @@ export class ChatGateway implements OnGatewayInit {
         }
     }
 
+    InvitationGame(hostId :number, inviteId: number)
+    {
+        const socketIds = this.getAllSocketID(inviteId);
+        socketIds.forEach(sock => {
+            this.wss.to(sock).emit("New Invitation Game", hostId)
+        });
+    }
+
+    @SubscribeMessage('Get Game Invitation')
+    getGameInvitation(client: Socket) : number[]
+    {
+        const id = this.mapIdSocket.get(client.id);
+        return this.getAllInvitationGame(id);
+    }
+
+    @SubscribeMessage('Get Players')
+    getPlayingUserID() : number[]
+    {
+      return [...this.gameGateway.getPlayingUser()];
+    }
+
+    getAllInvitationGame(inviteId: number)
+    {
+        return this.gameGateway.searchInvite(inviteId);
+    }
     
+    getAllSocketID(id: number) : string[]
+    {
+        let socketIds : string[] = [];
+        this.mapIdSocket.forEach(function(val, key){
+            if(val == id)
+            {
+                socketIds.push(key);
+            }
+          });
+        return socketIds;
+    }
+
+   
+
+
     @SubscribeMessage('message mp')
     async messageMP(client: Socket, chan : Form)
     {
