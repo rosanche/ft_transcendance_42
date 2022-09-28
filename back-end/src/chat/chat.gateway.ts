@@ -49,6 +49,7 @@ export class ChatGateway implements OnGatewayInit {
     /*private banactive  = new  Map<Number, Ban >();
     private muteactive = new Map<Number, Map<Number, Boolean> >();*/
     private mp  = new Map<string, Number[]>;
+    private mapIdSocket = new Map<string, number>();
 
     
 
@@ -133,7 +134,10 @@ export class ChatGateway implements OnGatewayInit {
         this.logger.log(`Method not implmented. ${client.id}`);
         const user = await this.authService.getUserFromSocket(client);
         if (user)
+        {
             this.iddd.delete(user.id);
+            this.mapIdSocket.delete(client.id);
+        }
     }
 
     async handleConnection( client: Socket, ... args: any[]) {
@@ -142,6 +146,7 @@ export class ChatGateway implements OnGatewayInit {
         if (user) {
             this.logger.log(`Socket ${client.id} connect on the server with pseudo ${user.pseudo}`);
             this.iddd[user.id] = client.id;
+            this.mapIdSocket.set(client.id, user.id);
         //    client.join("general");
           //  client.to("general").emit('joinedRoom', "typescript")
         }
@@ -818,5 +823,20 @@ export class ChatGateway implements OnGatewayInit {
         }
     }
 
+    InvitationGame(hostId :number)
+    {
 
+    }
+
+    getAllSocketId(id: number) : string[]
+    {
+        let socketIds : string[] = [];
+        this.mapIdSocket.forEach(function(key, val){
+            if(key == id)
+            {
+                socketIds.push(val);
+            }
+          });
+        return socketIds;
+    }
 }

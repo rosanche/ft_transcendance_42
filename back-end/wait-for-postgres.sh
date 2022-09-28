@@ -8,7 +8,6 @@ done
 
 >&2 echo "Postgres is up"
 
-npx prisma generate
 npx prisma migrate dev
 npm build
 exec "$@"
