@@ -48,6 +48,7 @@ const Chat = () => {
   const [myMp, setMyMp] = useState<channel[]>([]);
   const [mp, setMp] = useState<Form>([]);
   const [cha_mp, setCha_mp] = useState<number>(1);
+  const [game, setGame] = useState<number>(0);
   const [frienMode, setFriendMode] = useState<number>(1);
   const [users, setUsers] = useState<users[]>([]);
   const [useBlock, setUseBlock] = useState<string[]>([]);
@@ -101,6 +102,11 @@ const Chat = () => {
     console.log(p);
     socket.emit("invite channel", p);
   };
+
+  const accept_invite = async () => {
+
+    router.push("http://localhost:3001/game?INVITE=" + game);
+  }
 
   const joinPass = async (passj: pass) => {
     await socket.emit("joins channel password", passj);
@@ -254,6 +260,8 @@ const Chat = () => {
   };
   const demParti = (el: Form) => {
     console.log(el);
+    router.push("http://localhost:3001/game?CREATE="+ users.find((a)=> a.pseudo == el.pseudo).id+"&BONUS=FALSE")
+
   };
 
   const BlockedUser = (el: Form) => {
@@ -359,7 +367,10 @@ const Chat = () => {
       console.log(mm);
       setMsg(mm);
     });
-
+    socket.on("New Invitation Game", (id : Number) => {
+      console.log(id);
+      setGame(id);
+    })
     socket.on("left chanel", async (room: channel) => {});
 
     socket.on("connect", () => {
@@ -430,6 +441,19 @@ const Chat = () => {
   return (
     <RoundedContainer className="px-14 py-20 mt-16 bg-indigo-200">
       <span>
+        {
+        game != 0 &&
+        <Button
+          className="mb-10  px-2 py-1"
+          variant="contained"
+          color="active"
+          onClick={() => {
+            accept_invite();
+          }}
+        >
+          game
+        </Button>
+        }
         <Button
           className="mb-10  px-2 py-1"
           variant="contained"
