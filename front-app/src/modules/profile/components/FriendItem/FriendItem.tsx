@@ -1,11 +1,19 @@
+import { useQueryClient } from "@tanstack/react-query";
 import clsx from "clsx";
 import IconAccept from "modules/common/components/_icons/accept";
+import {
+  IconAddFriend,
+  IconBlock,
+} from "modules/common/components/_icons/icons";
 import IconMessage from "modules/common/components/_icons/message";
 import IconRefuse from "modules/common/components/_icons/refuse";
 import { Button } from "modules/common/components/_ui/Button/Button";
 import { useSocketContext } from "modules/common/context/SocketContext";
+import { enumProfileQueryKeys } from "modules/profile/queries/keys";
+import { useMyProfileQuery } from "modules/profile/queries/useMyProfileQuery";
 import { ApiFriend, Friend, FriendType } from "modules/profile/types";
 import Image from "next/image";
+import { useEffect } from "react";
 
 export const FriendItem = ({
   pseudo,
@@ -15,22 +23,56 @@ export const FriendItem = ({
   id,
 }: ApiFriend & { type: FriendType }) => {
   const socket = useSocketContext();
+  const queryClient = useQueryClient();
+  const {
+    data: { myfriends },
+  } = useMyProfileQuery();
 
   const state = {
     online: "En ligne",
     offline: "Hors Ligne",
     playing: "En pleine partie",
+    blocked: "Bloqué(e)",
   };
 
+  useEffect(() => {
+    socket.on("request_friend", () => {
+      console.log("$$passsssss");
+      queryClient.invalidateQueries([enumProfileQueryKeys.MY_PROFILE]);
+    });
+    socket.on("block user infos", () => {
+      console.log("$$passsssss");
+      queryClient.invalidateQueries([enumProfileQueryKeys.MY_PROFILE]);
+    });
+    return () => {
+      socket.off("request_friend");
+      socket.off("block user infos");
+    };
+  }, []);
+
   const acceptFriendRequest = async () => {
-    console.log("$$Ca passse", id);
-    await socket.emit("accept friend", id);
+    console.log("$$friend accepted", id);
+    socket.emit("accept friend", id);
+  };
+
+  const blockUser = async () => {
+    console.log("$$user blocked", id);
+    socket.emit("block user", id);
+  };
+
+  const addFriend = async () => {
+    console.log("$$friend added", id);
+    socket.emit("dem friend", id);
   };
 
   const refuseFriendRequest = async () => {
-    console.log("$$Ca passse", id);
+    console.log("$$friend refused", id);
     await socket.emit("refuse friend", id);
   };
+  console.log(
+    "$$Bonjour",
+    myfriends?.filter((friend) => friend.id === id)
+  );
 
   return (
     <div className="flex flex-row my-3">
@@ -52,7 +94,8 @@ export const FriendItem = ({
               (status === "online" || type === "friend_request") &&
                 "text-green",
               status === "offline" && "text-gray-light",
-              (status === "online" || type === "game_request") && "text-pink"
+              (status === "online" || type === "game_request") && "text-pink",
+              status === "blocked" && "text-red"
             )}
           >
             {type === "friend"
@@ -74,9 +117,21 @@ export const FriendItem = ({
           </Button>
         </div>
       ) : (
-        <Button variant="icon">
-          <IconMessage />
-        </Button>
+        <div className="flex space-x-2">
+          {status !== "blocked" && (
+            <Button variant="icon" onClick={blockUser}>
+              <IconBlock />
+            </Button>
+          )}
+          {!myfriends?.filter((friend) => friend.id === id)[0] && (
+            <Button variant="icon" onClick={addFriend}>
+              <IconAddFriend />
+            </Button>
+          )}
+          <Button variant="icon">
+            <IconMessage />
+          </Button>
+        </div>
       )}
     </div>
   );

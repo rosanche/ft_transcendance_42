@@ -994,14 +994,16 @@ export class ChatGateway implements OnGatewayInit {
         this.wss.to(client.id).emit("use info block", re)
     }
 
-    @SubscribeMessage('blockedUser')
-    async blockedUser(client: Socket, src: Form) {
+    @SubscribeMessage('block user')
+    async blockedUser(client: Socket, src : number) {
         const user = await this.authService.getUserFromSocket(client);
         const user2 = await this.Prisma.user.findUnique({
             where: {
-                pseudo: src.pseudo,
+                id: src,
             }
         });
+        console.log("10000")
+
         if (user2 && user) {
              await this.Prisma.user.update({
                 where: {
@@ -1015,7 +1017,7 @@ export class ChatGateway implements OnGatewayInit {
                     }
                 }
             });
-            this.wss.to(client.id).emit("block use", src.pseudo);
+            this.wss.to(client.id).emit("block user infos", src);
         }
         return null;
     }
@@ -1115,50 +1117,24 @@ export class ChatGateway implements OnGatewayInit {
 
     InvitationGame(hostId :number, inviteId: number)
     {
-        console.log('InvitationGame');
         const socketIds = this.getAllSocketID(inviteId);
         socketIds.forEach(sock => {
             this.wss.to(sock).emit("New Invitation Game", hostId)
         });
     }
 
-    cancelInvitationGame(hostId :number, inviteId: number)
-    {
-        const socketIds = this.getAllSocketID(inviteId);
-        socketIds.forEach(sock => {
-            this.wss.to(sock).emit("Cancel Invitation Game", hostId)
-        });
-
-    }
-    
-
-
-
-    
-
-
-
     @SubscribeMessage('Get Game Invitation')
-    getGameInvitation(client: Socket)
+    getGameInvitation(client: Socket) : number[]
     {
         const id = this.mapIdSocket.get(client.id);
-        client.emit("list invitations", this.getAllInvitationGame(id));
+        return this.getAllInvitationGame(id);
     }
 
     @SubscribeMessage('Get Players')
-    getPlayingUserID(client: Socket)
+    getPlayingUserID() : number[]
     {
-      client.emit("list players", [...this.gameGateway.getPlayingUser()]);
+      return [...this.gameGateway.getPlayingUser()];
     }
-
-    @SubscribeMessage('Refuse Invitation')
-    RefuseInvitation(client: Socket, id: number)
-    {
-        //const inviteId = this.mapIdSocket.get(client.id);
-        this.gameGateway.refuseGame(id);
-        
-    }
-
 
     getAllInvitationGame(inviteId: number)
     {
@@ -1262,12 +1238,12 @@ export class ChatGateway implements OnGatewayInit {
     @SubscribeMessage('dem friend')
     async demFriend(client: Socket, id :  number )
     {
-        console.log("demande amie")
+        console.log("demande amie", id)
         const user = await this.authService.getUserFromSocket(client);
         const users_2 = await this.Prisma.user.findFirst({
             where: {
                 id : id,
-                NOT:{
+            NOT:{
                 OR:[
                 {
                     friendBy: {
@@ -1293,6 +1269,8 @@ export class ChatGateway implements OnGatewayInit {
             }
             },
         })
+
+        console.log("demande amie 2", user, users_2);
         if (users_2 == null)
             return null;  
         const users = await this.Prisma.user.update({
@@ -1308,8 +1286,8 @@ export class ChatGateway implements OnGatewayInit {
                 },
             });
             console.log("reussi")
-           // this.wss.to(client.id).emit("dem_friend", users_2.id);
-            this.wss.to(this.iddd[users_2.id]).emit("dem_friend",  client.id);
+           this.wss.to(client.id).emit("request_friend", users_2.id);
+            this.wss.to(this.iddd[users_2.id]).emit("request_friend",  client.id);
     }
 
     @SubscribeMessage('sup dem friend')
@@ -1342,8 +1320,8 @@ export class ChatGateway implements OnGatewayInit {
                     },
                 },
             });
-        //this.wss.to(client.id).emit("sup_dem_friend",);
-        this.wss.to(this.iddd[users_2.id]).emit("sup_dem_friend", client.id);
+        this.wss.to(client.id).emit("request_friend",);
+        this.wss.to(this.iddd[users_2.id]).emit("request_friend", client.id);
        //     console.log(users)
     }
 
@@ -1397,8 +1375,8 @@ export class ChatGateway implements OnGatewayInit {
                 },
             },
         });
-        this.wss.to(client.id).emit("accept_friend", users_2.id);
-        this.wss.to(this.iddd[users_2.id]).emit("accept_friend", client.id); 
+        this.wss.to(client.id).emit("request_friend", users_2.id);
+        this.wss.to(this.iddd[users_2.id]).emit("request_friend", client.id); 
     }
 
     @SubscribeMessage('refuse friend')
@@ -1429,8 +1407,8 @@ export class ChatGateway implements OnGatewayInit {
                 }
             },
         });
-        this.wss.to(client.id).emit("refuse friend", users_2.id);
-        this.wss.to(this.iddd[users_2.id]).emit("refuse friend", client.id);
+        this.wss.to(client.id).emit("request_friend", users_2.id);
+        this.wss.to(this.iddd[users_2.id]).emit("request_friend", client.id);
     }
 
     @SubscribeMessage('sup friend')
@@ -1474,7 +1452,7 @@ export class ChatGateway implements OnGatewayInit {
                 },
             },
         });
-        this.wss.to(client.id).emit("sup friend", user2.id);
-        this.wss.to(this.iddd[user2.id]).emit("sup friend", client.id);
+        this.wss.to(client.id).emit("request_friend", user2.id);
+        this.wss.to(this.iddd[user2.id]).emit("request_friend", client.id);
     }
 }

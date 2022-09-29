@@ -8,6 +8,8 @@ export interface MyProfile {
   id: 1;
   friendReqSend: ApiFriend[];
   myfriends: ApiFriend[];
+  blocked: ApiFriend[];
+  myblocked: ApiFriend[];
   nbr_games: number;
   nbr_looses: number;
   nbr_wins: number;
@@ -26,7 +28,7 @@ export interface ApiFriend {
 export interface Friend {
   // imgUrl: string;
   username: string;
-  status: "online" | "offline" | "playing";
+  status: "online" | "offline" | "playing" | "blocked";
 }
 
 export type FriendType = "friend_request" | "game_request" | "friend";

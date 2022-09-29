@@ -8,7 +8,7 @@ export class UserService {
   constructor(private Prisma: PrismaService) {}
 
   async findAll(): Promise<any[]> {
-    const user = await this.Prisma.user.findMany({
+    const users = await this.Prisma.user.findMany({
       select: {
         id: true,
         pseudo: true,
@@ -46,7 +46,8 @@ export class UserService {
         },
       },
     });
-    return user;
+    console.log("$$USER bitch", users)
+    return users;
   }
 
   async findid(nbr: number) {
@@ -270,6 +271,22 @@ export class UserService {
           },
         },
         friendReqReceive: {
+          select: {
+            id: true,
+            pseudo: true,
+            legend: true,
+            profileImage: true,
+          },
+        },
+        myblocked: {
+          select: {
+            id: true,
+            pseudo: true,
+            legend: true,
+            profileImage: true,
+          },
+        },
+        blocked: {
           select: {
             id: true,
             pseudo: true,

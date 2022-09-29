@@ -3,6 +3,7 @@ import socketio, { Socket } from "socket.io-client";
 import { CookieKeys } from "../types";
 import Cookies from "js-cookie";
 import { DefaultEventsMap } from "socket.io/dist/typed-events";
+import { useAppContextState } from "./AppContext";
 
 const SocketContext =
   createContext<Socket<DefaultEventsMap, DefaultEventsMap>>(undefined);
@@ -13,8 +14,10 @@ interface Props {
   children: React.ReactNode;
 }
 const SocketContextProvider = ({ children }: Props) => {
+  const { accessToken: token } = useAppContextState();
+console.log("$$autoconnect", !!accessToken)
   const socket = socketio("http://localhost:3000/chat", {
-    autoConnect: false,
+    autoConnect: !!accessToken,
     auth: {
       token: accessToken,
     },

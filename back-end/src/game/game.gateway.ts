@@ -230,7 +230,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   cancelGame(game: GamePong)
   {
-    this.chatGateway.cancelInvitationGame(game.id1, game.id2);
+    //this.chatGateway.cancelInvitationGame(game.id1, game.id2);
     this.server.socketsLeave(game.roomID);
     this.gamePongs.delete(game.roomID);
   }

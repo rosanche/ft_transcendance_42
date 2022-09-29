@@ -1,18 +1,25 @@
 import { Button } from "modules/common/components/_ui/Button/Button";
 import { RoundedContainer } from "modules/common/components/_ui/RoundedContainer/RoundedContainer";
-import { Friend } from "modules/profile/types";
+import { ApiFriend, Friend, FriendType } from "modules/profile/types";
 import { FriendItem } from "../FriendItem/FriendItem";
+import { useAddFriendModal } from "../useAddFriendModal/useAddFriendModal";
 
 interface Props {
-  friends: Friend[];
+  friends: ApiFriend[] & FriendType;
 }
 
 export const FriendsContainer = ({ friends }: Props) => {
+  const { showModal } = useAddFriendModal();
+
   return (
     <RoundedContainer
       className="px-10 py-9"
       title="Mes ami(e)s"
-      button={<Button variant="link">Voir tout</Button>}
+      button={
+        <Button variant="link" onClick={showModal}>
+          Ajouter un ami
+        </Button>
+      }
     >
       <div className="flex flex-col">
         {friends?.map((friend) => (
