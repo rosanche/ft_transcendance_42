@@ -2,7 +2,7 @@ import {  Logger, Inject, forwardRef} from "@nestjs/common";
 import {ConnectedSocket , SubscribeMessage ,WebSocketGateway, OnGatewayInit, WsResponse,OnGatewayConnection,OnGatewayDisconnect, WebSocketServer} from "@nestjs/websockets";
 import { Socket, Server } from "socket.io";
 import { Jwt2FAGuard } from '../auth/guard';
-import { User, Channel , Mp, Post} from '@prisma/client';
+import { User, Channel , Mp, Post, Ban} from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuthService } from "../auth/auth.service";
 import * as bcrypt from 'bcrypt';
@@ -136,6 +136,28 @@ export class ChatGateway implements OnGatewayInit {
             }
             console.log(`${cha[i].name} ha oui d'accord c'est toi`);
         }*/
+    }
+
+    async banupdate(ban : Ban[])
+    {
+        let a : boolean = true;
+        ban.forEach(async (Element) => {
+            if (Element.bandef === false && Element.finshBan < Date.now()) {
+                await this.Prisma.ban.update(
+                    {
+                        where: {
+                            id : Element.id
+                        },
+                        data: {
+                            active: false,
+                        }
+                    });
+            } 
+            else {
+                a = false;
+            }
+        });
+        return a;
     }
 
     async  handleDisconnect(client: Socket) {
@@ -328,6 +350,19 @@ export class ChatGateway implements OnGatewayInit {
             let  na : chann;
             for (let i : number = 0; channels[i]; ++i) {
                 console.log(channels[i].admin);
+                const ban  = await this.Prisma.ban.findMany({
+                    where: {
+                        active: true,
+                        Channel: {
+                            some: {
+                                name: channels[i].name
+                            }
+                        },
+                        id: user.id,
+                        muteBan: "Ban"
+                    }
+                });
+            if (!ban)
             if (channels[i].admin.length !== 0)
             na = {id: channels[i].id, name: channels[i].name, private: channels[i].private, admin: (true), owner: (channels[i].createurID === user.id)  ,password: (channels[i].hash !== null)}
             else
@@ -401,10 +436,11 @@ export class ChatGateway implements OnGatewayInit {
                 }
             }
         });
+        
         var re = new Array<Form>();
         let  na : Form;
         for (let i : number = 0; cha.length != i; ++i) {
-                for (let n : number = 0; cha[i].post.length != n; ++n) {
+                for (let n : number = 0; cha[i].post.length != n; ++n) {           
                     na = {channel: cha[i].name, pseudo: cha[i].post[n].createur.pseudo, texte: cha[i].post[n].message}
                     re.push(na);
                 }
@@ -766,7 +802,7 @@ export class ChatGateway implements OnGatewayInit {
         const user = await this.authService.getUserFromSocket(client);
         console.log(`bonjour le monde ${user.pseudo}`);
       //  this.wss.emit('chatToClient', {channel: message.channel, pseudo: user.pseudo, texte: message.texte }); 
-        const ban = await this.Prisma.ban.findMany({
+        const ban  = await this.Prisma.ban.findMany({
             where: {
                 active: true,
                 Channel: {
@@ -787,9 +823,11 @@ export class ChatGateway implements OnGatewayInit {
                 }
             }
         })
+
         if (!cha)
             return null;
-        if (true) {
+           // const test : Boolean = 
+            if  (!ban && await this.banupdate(ban)) {
             
             
            await this.Prisma.post.create({
@@ -1179,7 +1217,7 @@ export class ChatGateway implements OnGatewayInit {
 
    
 
-
+/*
     @SubscribeMessage('message mp')
     async messageMP(client: Socket, chan : Form)
     {
@@ -1256,7 +1294,7 @@ export class ChatGateway implements OnGatewayInit {
             this.wss.to(this.iddd[user2.id]).emit('chatToClient', {channel: user.pseudo, pseudo: user.pseudo, texte: chan.texte});
             return;
     }
-    
+  */  
     //friend action
 
     @SubscribeMessage('dem friend')

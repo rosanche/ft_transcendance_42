@@ -277,6 +277,22 @@ export class UserService {
             profileImage: true,
           },
         },
+        myblocked: {
+          select: {
+            id: true,
+            pseudo: true,
+            legend: true,
+            profileImage: true,
+          },
+        },
+        blocked: {
+          select: {
+            id: true,
+            pseudo: true,
+            legend: true,
+            profileImage: true,
+          },
+        },
         User_channel: {
           select: {
             id: true,
