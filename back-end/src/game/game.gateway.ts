@@ -91,8 +91,9 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     });
     if (delGame)
     {
+      this.cancelGame(delGame)
       this.server.socketsLeave(delGame.roomID);
-      this.gamePongs.delete(delGame.roomID);
+      this.gamePongs.delete(delGame.roomID);    
     }
     this.queue = this.queue.filter(e => e.sock.id != client.id);
     this.queueBonus = this.queueBonus.filter(e => e.sock.id != client.id);
@@ -110,11 +111,6 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
           {
             client.emit("game wait");
             client.join(game.roomID);
-          }
-          else
-          {
-            client.join(game.roomID);
-            this.startGame(game);
           }
         }
         else
@@ -222,16 +218,17 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     }
   }
 
-  timeOutinvitationHandler(game :GamePong, client: Socket) 
+  timeOutinvitationHandler(gameGateway: GameGateway, game :GamePong) 
   {
     if (game && game.idInterval == null)
     {
-      this.cancelGame(game, client);
+      gameGateway.server.to(game.roomID).emit("game cancel");
+      gameGateway.cancelGame(game);
     }
 
   }
 
-  cancelGame(game: GamePong, client: Socket)
+  cancelGame(game: GamePong)
   {
     this.chatGateway.cancelInvitationGame(game.id1, game.id2);
     this.server.socketsLeave(game.roomID);
@@ -254,28 +251,58 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   
 
   @SubscribeMessage('create private game')
-  async handleCreatePrivateGame(client: Socket, id2: number, bonus: boolean){
+  async handleCreatePrivateGame(client: Socket, arg: string[]){
     const id1 = this.mapIdSocket.get(client.id);
-
+    const bonus = (arg[1] == "true" ? true : false);
+    const id2 = Number(arg[0]);
+    if(!id2 )
+    {
+      return;
+    }
+    console.log('create private game', id2, bonus);
     const user1 = await this.userService.findid(id1);
     const user2 = await this.userService.findid(id2);
-    const game = this.createGame(bonus);
+    let game : GamePong;
+    if (bonus == true)
+    { 
+      console.log('create private game true');
+      game = this.createGame(true);
+    }
+    else if (bonus == false)
+    {
+      console.log('create private game false');
+      game = this.createGame(false);
+    }
+    else
+    {
+      client.emit("Error invite", 0);
+      return;
+    }
     game.addPlayer(user1.pseudo, user1.id);
     game.addPlayer(user2.pseudo, user2.id);
+    console.log(game);
     client.join(game.roomID);
     this.invitation.push(game);
     this.chatGateway.InvitationGame(id1, id2);
     client.emit("wait game");
-    setTimeout(this.timeOutinvitationHandler, 100000, game, client);
+    setTimeout(this.timeOutinvitationHandler, 20000, this, game);
   }
 
   @SubscribeMessage('invite')
-  async handleInvite(client: Socket, ID: number){
+  async handleInvite(client: Socket, ID: string){
     const id = this.mapIdSocket.get(client.id);
-    const game = this.searchGame(ID);
+    const idHost = Number(ID);
+    console.log(idHost);
+    if (!idHost)
+    {
+      return;
+    }
+    const game = this.searchGame(idHost);
+    console.log(game);
     if (!game)
     {
       client.emit("Error invite", 1);
+      console.log("Error invite");
       return;
     }
     if (game)
@@ -307,7 +334,6 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   startGame(game :GamePong)
   {
-    //this.chatGateway.wss.emit('chatToClient', {channel : "general", pseudo : game.info.name1, texte : "start a game",});
     const idInterval : NodeJS.Timer = setInterval(this.updateGame, timetick, game, this);
     game.setIdInterval(idInterval);
     this.players.add(game.id1);
@@ -450,12 +476,15 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   searchGame(id: number) : GamePong 
   {
+    let research: GamePong = null
     this.gamePongs.forEach((game) => {
       if (game.id1 == id || game.id2 == id){
-        return game;
+        console.log("searchGame, ", game);
+        research = game;
+        
       }
     });
-    return null;
+    return research;
   }
 
   searchInvite(id: number) : number[]

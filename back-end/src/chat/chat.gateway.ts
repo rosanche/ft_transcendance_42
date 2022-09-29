@@ -1115,6 +1115,7 @@ export class ChatGateway implements OnGatewayInit {
 
     InvitationGame(hostId :number, inviteId: number)
     {
+        console.log('InvitationGame');
         const socketIds = this.getAllSocketID(inviteId);
         socketIds.forEach(sock => {
             this.wss.to(sock).emit("New Invitation Game", hostId)

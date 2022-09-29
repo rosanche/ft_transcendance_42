@@ -14,7 +14,7 @@ interface Props {
 }
 const SocketContextProvider = ({ children }: Props) => {
   const socket = socketio("http://localhost:3000/chat", {
-    autoConnect: true,
+    autoConnect: false,
     auth: {
       token: accessToken,
     },
