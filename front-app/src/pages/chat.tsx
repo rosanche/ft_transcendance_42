@@ -166,7 +166,8 @@ const Chat = () => {
   };
 
   const quit = async () => {
-    await socket.emit("quit", chatName);
+    console.log()
+    await socket.emit("quit", chatName.id);
     const u = await channel.filter((el) => channel.name !== el.name);
     console.log(u);
     await setChannel(u);
@@ -250,8 +251,8 @@ const Chat = () => {
   const joinchannel = async (el: channel) => {
     console.log(el);
     if (el.password === false) {
-      await socket.emit("joins channel", el.name);
-      //const a: channel[] = await channel.filter((b) => b.name !== el.name);
+      await socket.emit("joins channel", el.id);
+      console.log(el);
     } else {
       //setJoin(el);
     }
@@ -346,7 +347,6 @@ const Chat = () => {
     });
 
     socket.on("channels list", (channels: channel[]) => {
-      socket.off("channels list");
       console.log("channels list");
       console.log(channels);
       setChannel(channels);
@@ -781,7 +781,7 @@ const Chat = () => {
                   )}
                   <p>
                     my channels :
-                    {channel.map((el, i) => (
+                    {channel.filter(el => el.user).map((el, i) => (
                       <Button
                         key={i}
                         className="ml-3 px-2 py-1"
@@ -795,7 +795,7 @@ const Chat = () => {
                   </p>
                   channels public :{" "}
                   {channel
-                    .filter((el) => el.users)
+                    .filter((el) => !el.user)
                     .map((el, i) => (
                       <Button
                         key={i}

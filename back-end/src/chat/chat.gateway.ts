@@ -656,7 +656,7 @@ export class ChatGateway implements OnGatewayInit {
    }
 
     @SubscribeMessage('joins channel')
-    async handleRoomJoin(client: Socket, room: string) {
+    async handleRoomJoin(client: Socket, idCha: number) {
        const user = await this.authService.getUserFromSocket(client);
        if (!user)
            return ;
@@ -669,7 +669,7 @@ export class ChatGateway implements OnGatewayInit {
                        }
                    }
                },
-               name: room,
+               id: idCha,
                hash: null,
            },
            select: {
@@ -702,9 +702,7 @@ export class ChatGateway implements OnGatewayInit {
                    }
                }
            })
-           client.join(room);
-           const a : channel =  await {id: channel.id, name: channel.name, private: channel.private , user : true,admin: (false), owner: false, password: false}
-           this.listChannels(client);
+
            //this.wss.to(this.iddd[user.id]).emit('join channel true', a);
            var re = new Array<form>();
             let  na : form;
@@ -712,10 +710,13 @@ export class ChatGateway implements OnGatewayInit {
         for (let i : number = 0; channel.post.length != i; ++i) {
             na = { idSend: channel.post[i].createur.id, idReceive: channel.id, texte: channel.post[i].message}
             re.push(na);
-        this.wss.to(this.iddd[user.id]).emit('message join channel', re)}
+        }
+        client.join(channel.name);
+       await this.listChannels(client);
+        this.wss.to(this.iddd[user.id]).emit('message join channel', re)
         } 
         else {
-           this.wss.to(this.iddd[user.id]).emit('join channel false', room);
+           this.wss.to(this.iddd[user.id]).emit('join channel false', idCha);
        }
        return ; 
    }
@@ -757,7 +758,7 @@ export class ChatGateway implements OnGatewayInit {
    }
 
     @SubscribeMessage('quit')
-    async handleRoomLeave(client: Socket, room: channel) {
+    async handleRoomLeave(client: Socket, idCha: number) {
         const user = await this.authService.getUserFromSocket(client);
         if (!user)
         {
@@ -766,10 +767,11 @@ export class ChatGateway implements OnGatewayInit {
         // console.log("oui");
         const channelup = await this.Prisma.channel.findUnique({
             where: {
-                name: room.name
+                id: idCha
             },
             select:{
                 id: true,
+                name: true,
                 createurID: true,
                 users:{
                     select:{
@@ -788,16 +790,19 @@ export class ChatGateway implements OnGatewayInit {
                     id: channelup.id,
                 }
             })
-            client.leave(room.name);
+            client.leave(channelup.name);
             // console.log(room)
-            this.wss.to(client.id).emit('left chanel', room)
+            
+            this.wss.to(client.id).emit('left chanel', idCha);
+            this.listChannels(client);
+            // this.
             return;
         }
         if (channelup.createurID !== user.id)
         {
             await this.Prisma.channel.update({
                 where: {
-                    name: room.name
+                    id: idCha
                 },
                 data: {
                     users:{ 
@@ -814,12 +819,14 @@ export class ChatGateway implements OnGatewayInit {
                     }
                 },
             });
-            client.leave(room.name);
+            client.leave(channelup.name);
             // console.log(room)
-            this.wss.to(client.id).emit('left chanel', room)   
+            this.wss.to(client.id).emit('left chanel', idCha)   
+            this.wss.to(client.id);
+            this.listChannels(client);
             return;
         }
-        this.wss.to(client.id).emit('owner no left', room);
+        this.wss.to(client.id).emit('owner no left', idCha);
     }
 
     @SubscribeMessage('channelToServer')
