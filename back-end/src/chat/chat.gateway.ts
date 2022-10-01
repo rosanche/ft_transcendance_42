@@ -195,49 +195,6 @@ export class ChatGateway implements OnGatewayInit {
 
     // action channel base
 
-   /* @SubscribeMessage('joins channel password')
-    async handleRoomJoinPassword(client: Socket, ) {
-       const user = await this.authService.getUserFromSocket(client);
-       if (!user || !chat.password)
-           return ;
-        
-
-       const channel = await this.Prisma.channel.findFirst({
-           where: {
-               NOT:{
-                   users: {
-                       some: {
-                           id : user.id
-                       }
-                   },
-                   hash: null,
-               },
-               id: chat.idChannel,
-           }
-       });
-       if (channel !== null && await bcrypt.compare(chat.password, channel.hash))
-       {
-           await this.Prisma.channel.update({
-               where:{
-                   id: channel.id,
-
-               },
-               data:{
-                   users:{
-                       connect:[{id: user.id,}]
-                   }
-               }
-           })
-           client.join(chat.name);
-           this.listChannels(client);
-       }
-       else
-       {
-           this.wss.to(this.iddd[user.id]).emit('join channel false password', chat);
-       }
-       return ; 
-   }*/
-
     @SubscribeMessage('joins channel')
     async handleRoomJoin(client: Socket, chat: pass) {
        const user = await this.authService.getUserFromSocket(client);
