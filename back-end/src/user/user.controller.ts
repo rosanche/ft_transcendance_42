@@ -79,17 +79,20 @@ export class UserController {
     return this.UserService.UserModif(user, dto);
   }
 
-  @Put('me/uploadPP')
+  @Post('me/uploadPP')
   @UseInterceptors(FileInterceptor('file', storage))
   uploaddpp(
     @GetUser() user: User,
-    @UploadedFile() file,
+    @UploadedFile() file ,
     @Request() req: Express.Multer.File,
-  ) {
+  )   {
     console.log(file);
+    console.log("5");
+    //return (of({ImagePath: file.filename}))
+   console.log(user);
     console.log(file);
     console.log(this.UserService.UserUploadedImage(user, file.filename));
-    return this.UserService.UserUploadedImage(user, file.filename);
+    //return this.UserService.UserUploadedImage(user, file.filename);
   }
 
   @Get('me/pp/:image')
