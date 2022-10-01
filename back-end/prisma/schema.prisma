@@ -94,7 +94,7 @@ model Channel {
   id Int @id @default(autoincrement())
   createdAt DateTime @default(now())
   timeBan   Int  ?
-  finshBan  Int ? 
+  finshBan  BigInt ? 
   muteBan   String
   active    Boolean
   bandef    Boolean

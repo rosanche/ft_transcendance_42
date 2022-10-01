@@ -76,6 +76,7 @@ export const FriendItem = ({
 
   const acceptFriendRequest = async () => {
     console.log("$$friend accepted", id);
+    console.log("$$friend connected?", socket.connected);
     socket.emit("accept friend", id);
   };
 
