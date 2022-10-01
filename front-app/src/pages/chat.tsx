@@ -5,13 +5,14 @@ import socketio from "socket.io-client";
 import { useRouter } from "next/router";
 import { useSocketContext } from "modules/common/context/SocketContext";
 
-type Form = {
-  channel: string;
-  pseudo: string;
-  texte: String;
+type form = {
+  idSend: number;
+  idReceive: number;
+  texte: string;
 };
 
 type pass = {
+  idChannel: number;
   name: string;
   password: string;
   private: boolean;
@@ -21,6 +22,7 @@ type channel = {
   id: number;
   name: string;
   private: boolean;
+  user: boolean;
   admin: boolean;
   owner: boolean;
   password: boolean;
@@ -28,8 +30,8 @@ type channel = {
 
 type ban = {
   mute_ban: string;
-  name: string;
-  pseudo: string;
+  idChannel: number;
+  idUser: number;
   time: number;
   motif: string;
 };
@@ -39,80 +41,93 @@ type users = {
   pseudo: string;
   stastu: number;
   blocked: boolean;
-  blocledBY: boolean;
+  myblocked: boolean;
 };
 
 const Chat = () => {
   const socket = useSocketContext();
 
-  const [myMp, setMyMp] = useState<channel[]>([]);
-  const [mp, setMp] = useState<Form>([]);
-  const [cha_mp, setCha_mp] = useState<number>(1);
-  const [frienMode, setFriendMode] = useState<number>(1);
-  const [users, setUsers] = useState<users[]>([]);
-  const [useBlock, setUseBlock] = useState<string[]>([]);
-  const [useBlockBY, setUseBlockBY] = useState<string[]>([]);
-  const [me, setMe] = useState<string>("");
   const [invite, setInvite] = useState<boolean>(false);
   const [newAdmin, setNewAdmin] = useState<boolean>(false);
   const [newOwner, setNewOwner] = useState<boolean>(false);
   const [create, setCreate] = useState<boolean>(false);
+  const [me, setMe] = useState<users>({
+    id: 0,
+    pseudo: "",
+    stastu: 0,
+    blocked: false,
+    myblocked: false,
+  });
+  //const [myMp, setMyMp] = useState<channel[]>([]);
+  const [msg, setMsg] = useState<form[]>([]);
+  const [msgMp, setMsgMp] = useState<form[]>([]);
+  const [users, setUsers] = useState<users[]>([]);
+  const [cha_mp, setCha_mp] = useState<number>(1);
+  const [game, setGame] = useState<number>(0);
+  const [frienMode, setFriendMode] = useState<number>(1);
   const [ban, setBan] = useState<ban>({
     mute_ban: "",
-    name: "",
-    pseudo: "",
+    idChannel: 0,
+    idUser: 0,
     time: 0,
     motif: "",
   });
-  //  const [ads, setAds] =  useState<number>(0);
   const [passj, setPassj] = useState<pass>({
+    idChannel: 0,
     name: "",
     password: "",
     private: false,
   });
-  const [join, setJoin] = useState<channel>({
+
+  const [channel, setChannel] = useState<channel[]>([]);
+  const [chatName, setChatName] = useState<channel>({
+    id: 0,
+    name: "",
+    private: false,
+    user: false,
+    admin: false,
+    owner: false,
+    password: false,
+  });
+
+  const [data, setData] = useState<form>({
+    idSend: 0,
+    idReceive: 0,
+    texte: "",
+  });
+
+  const [isConnected, setIsConnected] = useState(socket.connected);
+  const router = useRouter();
+
+  /*  const [join, setJoin] = useState<channel>({
     id: 0,
     name: "",
     private: false,
     admin: false,
     owner: false,
     password: false,
-  });
-  const [data, setData] = useState<Form>({
-    pseudo: "me",
-    channel: "general",
-    texte: "",
-  });
-  const [msg, setMsg] = useState<Form[]>([]);
-  const [chatName, setChatName] = useState<channel>({
-    id: 0,
-    name: "",
-    private: false,
-    admin: false,
-    password: false,
-  });
-  const [channel, setChannel] = useState<channel[]>([]);
-  const [channelPub, setChannelPub] = useState<channel[]>([]);
-  //const [pre, setPre] =  useState<Form>({pseudo : "", channel: "" ,text: ""});
-  const [isConnected, setIsConnected] = useState(socket.connected);
-  const router = useRouter();
+  });*/
 
   const inviteChan = async (p: ban) => {
     console.log(p);
     socket.emit("invite channel", p);
   };
 
+  const accept_invite = async () => {
+    router.push("http://localhost:3001/game?INVITE=" + game);
+  };
+
   const joinPass = async (passj: pass) => {
     await socket.emit("joins channel password", passj);
     await setPassj({ name: "", password: "", private: false });
-    await setJoin({
+    /* await setJoin({
       id: 0,
       name: "",
       private: false,
       admin: false,
       owner: false,
       password: false,
-    });
+    });*/
   };
 
   const demfriend = async (el: users) => {
@@ -150,11 +165,11 @@ const Chat = () => {
     });
     setData({ pseudo: data.pseudo, channel: "", texte: "" });
     setCha_mp(val);
-    setMp("");
   };
 
-  const quit = async (chat: channel) => {
-    await socket.emit("quit", chat);
+  const quit = async () => {
+    console.log();
+    await socket.emit("quit", chatName.id);
     const u = await channel.filter((el) => channel.name !== el.name);
     console.log(u);
     await setChannel(u);
@@ -171,7 +186,6 @@ const Chat = () => {
     const a: channel = await channel.at(0);
     console.log(a.name);
     await setData({ pseudo: data.pseudo, channel: a.name, texte: "" });
-    setChannelPub([...channelPub, chat]);
   };
   const changefriendmode = async (i: number) => {
     setChatName({
@@ -183,7 +197,6 @@ const Chat = () => {
     });
     setData({ pseudo: data.pseudo, channel: "", texte: "" });
     setFriendMode(i);
-    setMp("");
   };
   const addAdmin = async (cha: ban) => {
     console.log(cha);
@@ -203,15 +216,12 @@ const Chat = () => {
   const Ban = async () => {
     await socket.emit("blockedChannel", ban);
     //const u =  await channel.filter(el => v.name !== el.name);
-    await console.log("ASDFFSFSF");
+    await console.log(ban);
+    await console.log(chatName);
   };
   const test = async () => {
     console.log("A");
   };
-  /*const modifpub = async (ret : channel) => {
-          const tmp = await channel.filter((e)=> ret.name !== e.name);
-          setChannelPub(tmp);
-    }*/
 
   const sendMessage = async () => {
     console.log("ouiiiiiiiii");
@@ -221,7 +231,7 @@ const Chat = () => {
     console.log(msg);
     await socket.emit("channelToServer", data);
 
-    setData({ channel: data.channel, pseudo: data.pseudo, texte: "" });
+    setData({ idSend: data.idSend, idReceive: data.idReceive, texte: "" });
   };
 
   const sendPrivate = async () => {
@@ -236,33 +246,39 @@ const Chat = () => {
 
   const changechannel = async (el: channel) => {
     console.log(el);
-    setData({ channel: el.name, pseudo: data.pseudo, texte: "" });
+    await setData({ idSend: me.id, idReceive: el.id, texte: "" });
+    console.log(data);
     await setChatName(el);
-    if (el.id === -1) setMp(el.name);
-    //console.log(chatName)
   };
 
   const joinchannel = async (el: channel) => {
     console.log(el);
     if (el.password === false) {
-      await socket.emit("joins channel", el.name);
-      const a: channel[] = await channelPub.filter((b) => b.name !== el.name);
-      setChannelPub(a);
+      await socket.emit("joins channel", el.id);
+      console.log(el);
     } else {
-      setJoin(el);
+      setPassj({
+        idChannel: el.id,
+        name: el.name,
+        password: "",
+        private: el.private,
+      });
     }
   };
-  const demParti = (el: Form) => {
+  const demParti = (el: form) => {
     console.log(el);
+    router.push(
+      "http://localhost:3001/game?CREATE=" + el.idSend + "&BONUS=FALSE"
+    );
   };
 
-  const BlockedUser = (el: Form) => {
+  const BlockedUser = (el: form) => {
     //console.log(el)
 
     socket.emit("blockedUser", el);
   };
 
-  const log = (ms: Form) => {
+  const log = (ms: form) => {
     console.log(ms);
     console.log("success");
     setMsg((m) => [...m, ms]);
@@ -272,14 +288,13 @@ const Chat = () => {
     //setData({channel: chatName, pseudo : data.pseudo ,texte: ""});
   };
   useEffect(() => {
-    console.log("AAAAA");
-
+    /*
     socket.on("mp list", (c: channel[]) => {
       console.log("oui 5");
       console.log(c);
-      setMyMp(c);
+     // setMyMp(c);
     });
-
+*/
     socket.on("user list", (c: users[]) => {
       //  setChannel((u)=> [...u,c]);
       console.log("oui 3");
@@ -290,11 +305,12 @@ const Chat = () => {
     socket.on("use info block", (c: string[]) => {
       //  setChannel((u)=> [...u,c]);
       console.log("oui 2");
-      setUseBlock(c);
     });
 
-    socket.on("use info", (c: string) => {
+    socket.on("use info", (c: users) => {
       //  setChannel((u)=> [...u,c]);
+      console.log("nija");
+      console.log(c);
       setMe(c);
     });
 
@@ -311,7 +327,7 @@ const Chat = () => {
       setData({ channel: c.name, pseudo: data.pseudo, texte: "" });
     });
 
-    socket.on("message join channel", (c: Form[]) => {
+    socket.on("message join channel", (c: form[]) => {
       console.log(c);
       console.log("oui");
       const newArrayForm = [...msg, ...c];
@@ -320,7 +336,8 @@ const Chat = () => {
     });
 
     socket.on("new channel pub", (c: channel) => {
-      setChannelPub((a) => [...a, c]);
+      socket.emit("listchannels");
+      //setChannel((a) => [...a, c]);
     });
     socket.on("you ban_mute", (ret: ban) => {
       socket.off("you ban_mute");
@@ -340,7 +357,8 @@ const Chat = () => {
     });
 
     socket.on("channels list", (channels: channel[]) => {
-      socket.off("channels list");
+      console.log("channels list");
+      console.log(channels);
       setChannel(channels);
     });
     ("join channel false password");
@@ -349,17 +367,22 @@ const Chat = () => {
       //socket.off("join channel false password");
     });
 
-    socket.on("channels pub", (channels: channel[]) => {
-      socket.off("channels pub");
-      setChannelPub(channels);
-    });
-
-    socket.on("info channel", (mm: Form[]) => {
+    socket.on("info channel", (mm: form[]) => {
       //socket.off('info channel');
       console.log(mm);
+      console.log("oui 1000");
       setMsg(mm);
     });
-
+    socket.on("info mp", (mm: form[]) => {
+      //socket.off('info channel');
+      console.log(mm);
+      console.log("oui 1000");
+      setMsgMp(mm);
+    });
+    socket.on("New Invitation Game", (id: Number) => {
+      console.log(id);
+      setGame(id);
+    });
     socket.on("left chanel", async (room: channel) => {});
 
     socket.on("connect", () => {
@@ -379,8 +402,12 @@ const Chat = () => {
       setIsConnected(false);
     });
 
-    socket.on("chatToClient", (src: Form) => {
+    socket.on("chatToClient", (src: form) => {
       log(src);
+    });
+
+    socket.on("chatToClientMp", (src: form) => {
+      setMsgMp((m) => [...m, src]);
     });
 
     //   socket.on('user', (user : {name: string, id: }))
@@ -398,6 +425,7 @@ const Chat = () => {
       socket.off("left chanel");
       socket.off("join channel true");
       socket.off("new channel pub");
+      socket.off("chatToClientMp");
     };
   }, []);
 
@@ -409,13 +437,13 @@ const Chat = () => {
         .split("; ")
         .find((row) => row.startsWith("access_token"))
         ?.split("=")[1];
+      socket.connect();
       // console.log(cookieValue);
       socket.auth.token = cookieValue;
       //   console.log(router.query)
       socket.connect();
       socket.emit("channelinit");
       socket.emit("listchannels");
-      socket.emit("pubchannels");
       socket.emit("me info");
       socket.emit("me blocks");
       socket.emit("list users");
@@ -430,6 +458,18 @@ const Chat = () => {
   return (
     <RoundedContainer className="px-14 py-20 mt-16 bg-indigo-200">
       <span>
+        {game != 0 && (
+          <Button
+            className="mb-10  px-2 py-1"
+            variant="contained"
+            color="active"
+            onClick={() => {
+              accept_invite();
+            }}
+          >
+            game
+          </Button>
+        )}
         <Button
           className="mb-10  px-2 py-1"
           variant="contained"
@@ -475,12 +515,12 @@ const Chat = () => {
             </Button>
             {!create && (
               <div>
-                {chatName.name != "" && (
+                {chatName.id != 0 && (
                   <Button
                     className="mb-10  px-2 py-1"
                     variant="contained"
                     color="active"
-                    onClick={() => quit(chatName)}
+                    onClick={() => quit()}
                   >
                     quit
                   </Button>
@@ -623,8 +663,75 @@ const Chat = () => {
                         )}
                       </span>
                     )}
-                    {ban.mute_ban === "mute" && (
+                    {ban.mute_ban !== "" && (
                       <h3>
+                        <Button
+                          className="mb-10  px-2 py-1"
+                          variant="contained"
+                          color="active"
+                          onClick={() =>
+                            setBan({
+                              mute_ban: "ban",
+                              name: chatName.name,
+                              pseudo: ban.time,
+                              time: ban.time,
+                              motif: ban.motif,
+                            })
+                          }
+                        >
+                          ban
+                        </Button>
+                        <Button
+                          className="mb-10  px-2 py-1"
+                          variant="contained"
+                          color="active"
+                          onClick={() =>
+                            setBan({
+                              mute_ban: "mute",
+                              name: chatName.name,
+                              pseudo: ban.time,
+                              time: ban.time,
+                              motif: ban.motif,
+                            })
+                          }
+                        >
+                          mute
+                        </Button>
+                        <input
+                          type="radio"
+                          id="mute"
+                          name="banmute"
+                          //value={ban.mute_ban}
+                          onChange={() => {
+                            console.log("mute");
+                            setBan({
+                              mute_ban: "mute",
+                              name: chatName.name,
+                              pseudo: ban.time,
+                              time: ban.time,
+                              motif: ban.motif,
+                            });
+                          }}
+                        />
+                        <label>mute</label>
+                        <input
+                          type="radio"
+                          id="ban"
+                          name="banmute"
+                          //value={ban.mute_ban}
+                          onChange={() => {
+                            console.log("ban");
+                            setBan({
+                              mute_ban: "ban",
+                              name: chatName.name,
+                              pseudo: ban.time,
+                              time: ban.time,
+                              motif: ban.motif,
+                            });
+                          }}
+                          checked
+                        />
+                        <label>ban</label>
                         <div>
                           {ban.time != 0 && <text>{ban.time}</text>}
                           {ban.time == 0 && <text>def</text>}
@@ -634,13 +741,13 @@ const Chat = () => {
                             name="volume"
                             default={10}
                             value={ban.time}
-                            min="0"
-                            max="100"
+                            min={0}
+                            max={100}
                             onChange={(e) => {
                               setBan({
                                 mute_ban: ban.mute_ban,
-                                name: chatName.name,
-                                pseudo: ban.pseudo,
+                                idChannel: chatName.id,
+                                idUser: 1,
                                 time: e.target.value,
                                 motif: ban.motif,
                               });
@@ -648,23 +755,6 @@ const Chat = () => {
                           />
                         </div>
                         <label name="time mute">time mute </label>
-                        pseudo :
-                        <input
-                          className=" px-2 py-1"
-                          type="text"
-                          value={ban.pseudo}
-                          onChange={(e) => {
-                            setBan({
-                              mute_ban: ban.mute_ban,
-                              name: chatName.name,
-                              pseudo: e.target.value,
-                              time: ban.time,
-                              motif: ban.motif,
-                            });
-                          }}
-                          placeholder="Enter  pseudo"
-                          name="chat"
-                        />
                         motif :
                         <input
                           className=" px-2 py-1"
@@ -673,8 +763,8 @@ const Chat = () => {
                           onChange={(e) => {
                             setBan({
                               mute_ban: ban.mute_ban,
-                              name: chatName.name,
-                              pseudo: ban.pseudo,
+                              idChannel: chatName.id,
+                              idUser: 1,
                               time: ban.time,
                               motif: e.target.value,
                             });
@@ -682,7 +772,7 @@ const Chat = () => {
                           placeholder="Enter motif"
                           name="chat"
                         />
-                        {ban.name != "" && ban.pseudo != "" && ban.time !== 0 && (
+                        {ban.idChannel != 0 && ban.idUser != 0 && (
                           <Button
                             className="ml-3 px-2 py-1 mr-3"
                             variant="contained"
@@ -702,13 +792,13 @@ const Chat = () => {
                       {msg
                         .filter(
                           (el) =>
-                            el.channel === data.channel &&
-                            useBlock.find((u) => u === el.pseudo) === undefined
+                            el.idReceive === data.idReceive &&
+                            users.find((u) => u.myblocked) === undefined
                         )
                         .map((el, i) => (
                           <li key={i}>
-                            {el.pseudo} : {el.texte}
-                            {me !== el.pseudo && (
+                            {el.idSend} : {el.texte}
+                            {me.id !== el.idSend && (
                               <span>
                                 <Button
                                   key={i}
@@ -737,10 +827,11 @@ const Chat = () => {
                         value={data.texte}
                         onChange={(e) => {
                           setData({
-                            channel: data.channel,
-                            pseudo: data.pseudo,
+                            idSend: me.id,
+                            idReceive: data.idReceive,
                             texte: e.target.value,
                           });
+                          console.log(data);
                         }}
                         placeholder="Enter Character Name"
                         onKeyPress={(event) => {
@@ -760,62 +851,69 @@ const Chat = () => {
                   )}
                   <p>
                     my channels :
-                    {channel.map((el, i) => (
+                    {channel
+                      .filter((el) => el.user)
+                      .map((el, i) => (
+                        <Button
+                          key={i}
+                          className="ml-3 px-2 py-1"
+                          variant="contained"
+                          color="active"
+                          onClick={() => changechannel(el)}
+                        >
+                          {el.name}
+                        </Button>
+                      ))}
+                  </p>
+                  channels public :{" "}
+                  {channel
+                    .filter((el) => !el.user)
+                    .map((el, i) => (
                       <Button
                         key={i}
                         className="ml-3 px-2 py-1"
                         variant="contained"
                         color="active"
-                        onClick={() => changechannel(el)}
+                        onClick={() => joinchannel(el)}
                       >
                         {el.name}
                       </Button>
                     ))}
-                  </p>
-                  channels public :{" "}
-                  {channelPub.map((el, i) => (
-                    <Button
-                      key={i}
-                      className="ml-3 px-2 py-1"
-                      variant="contained"
-                      color="active"
-                      onClick={() => joinchannel(el)}
-                    >
-                      {el.name}
-                    </Button>
-                  ))}
                 </div>
                 <div>
-                  {join.password && (
-                    <h3>
-                      {join.name} password :
-                      <input
-                        className=" px-2 py-1"
-                        type="password"
-                        value={passj.password}
-                        onChange={(e) => {
-                          setPassj({
-                            name: join.name,
-                            password: e.target.value,
-                            private: passj.private,
-                          });
-                        }}
-                        placeholder="Enter password"
-                        onKeyPress={(event) => {
-                          event.key === "Enter" && joinPass(passj);
-                        }}
-                        name="chat"
-                      />
-                      <Button
-                        className="ml-3 px-2 py-1"
-                        variant="contained"
-                        color="active"
-                        onClick={() => joinPass(passj)}
-                      >
-                        Envoie
-                      </Button>
-                    </h3>
-                  )}
+                  {
+                    /*join.password*/ passj.idChannel != 0 && (
+                      <h3>
+                        {/*join.name*/} test password :
+                        <input
+                          className=" px-2 py-1"
+                          type="password"
+                          value={passj.password}
+                          onChange={(e) => {
+                            setPassj({
+                              idChannel: passj.idChannel,
+                              name: passj.name,
+                              password: e.target.value,
+                              private: passj.private,
+                            });
+                          }}
+                          placeholder="Enter password"
+                          onKeyPress={(event) => {
+                            event.key === "Enter" && joinPass(passj);
+                          }}
+                          name="chat"
+                        />
+                        <Button
+                          className="ml-3 px-2 py-1"
+                          variant="contained"
+                          color="active"
+                          onClick={() => joinPass(passj)}
+                        >
+                          Envoie
+                        </Button>
+                      </h3>
+                    )
+                  }
                 </div>
               </div>
             )}
@@ -858,6 +956,7 @@ const Chat = () => {
                     name="type"
                     value={passj.texte}
                     onChange={() => {
+                      console.log("mute");
                       setPassj({
                         name: passj.name,
                         password: passj.password,
@@ -915,50 +1014,49 @@ const Chat = () => {
                 placeholder="name channel"
                 name="chat"
               />
-              {passj.name.length >= 1 && mp == "" && (
+              {passj.name.length >= 1 && (
                 <span>
-                  {users
-                    .filter((el) => el.pseudo.startsWith(passj.name) === true)
-                    .map((el, i) => (
-                      <li key={i}>
-                        {
-                          <Button
-                            key={i}
-                            className="ml-3 px-2 py-1"
-                            variant="contained"
-                            color="active"
-                            onClick={() => {
-                              changechannel({
-                                id: -1,
-                                name: el.pseudo,
-                                private: true,
-                                admin: false,
-                                owner: false,
-                                password: false,
-                              });
-                            }}
-                          >
-                            {el.pseudo}
-                          </Button>
-                        }
-                      </li>
-                    ))}
+                  {users.map((el, i) => (
+                    <li key={i}>
+                      {
+                        <Button
+                          key={i}
+                          className="ml-3 px-2 py-1"
+                          variant="contained"
+                          color="active"
+                          onClick={() => {
+                            changechannel({
+                              id: el.id,
+                              name: el.pseudo,
+                              private: true,
+                              user: false,
+                              admin: false,
+                              owner: false,
+                              password: false,
+                            });
+                          }}
+                        >
+                          {el.pseudo}
+                        </Button>
+                      }
+                    </li>
+                  ))}
                 </span>
               )}
             </div>
-            {mp != "" && (
+            {true && (
               <div>
-                {<h1>{data.channel}</h1>}
-                {msg
+                {<h1>{data.idReceive}</h1>}
+                {msgMp
                   .filter(
                     (el) =>
-                      el.channel === data.channel &&
-                      useBlock.find((u) => u === el.pseudo) === undefined
+                      el.idReceive === data.idReceive &&
+                      users.find((u) => u.myblocked) === undefined
                   )
                   .map((el, i) => (
                     <li key={i}>
-                      {el.pseudo} : {el.texte}
-                      {me !== el.pseudo && (
+                      {el.idSend} : {el.texte}
+                      {me.id !== el.idSend && (
                         <span>
                           <Button
                             className="ml-3 px-2 py-1"
@@ -986,8 +1084,8 @@ const Chat = () => {
                   value={data.texte}
                   onChange={(e) => {
                     setData({
-                      channel: data.channel,
-                      pseudo: data.pseudo,
+                      idSend: me.id,
+                      idReceive: data.idReceive,
                       texte: e.target.value,
                     });
                   }}
@@ -1009,21 +1107,32 @@ const Chat = () => {
             )}
             my message private :
             <span>
-              {myMp.map((el, i) => (
-                <Button
-                  key={i}
-                  className="ml-3 px-2 py-1"
-                  variant="contained"
-                  color="active"
-                  onClick={() => {
-                    changechannel(el);
-                    setMp(el.name);
-                    console.log(msg);
-                  }}
-                >
-                  {el.name}
-                </Button>
-              ))}
+              {users
+                .filter(
+                  (a) => msgMp.find((u) => u.idReceive === a.id) != undefined
+                )
+                .map((el, i) => (
+                  <Button
+                    key={i}
+                    className="ml-3 px-2 py-1"
+                    variant="contained"
+                    color="active"
+                    onClick={() => {
+                      changechannel({
+                        id: el.id,
+                        name: el.pseudo,
+                        private: true,
+                        user: false,
+                        admin: false,
+                        owner: false,
+                        password: false,
+                      });
+                      console.log(msg);
+                    }}
+                  >
+                    {el.pseudo}
+                  </Button>
+                ))}
             </span>
           </div>
         )}
@@ -1076,7 +1185,7 @@ const Chat = () => {
                   placeholder="name channel"
                   name="chat"
                 />
-                {passj.name.length >= 1 && mp == "" && (
+                {passj.name.length >= 1 && true && (
                   <span>
                     {users
                       .filter(

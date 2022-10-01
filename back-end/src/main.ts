@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import * as cookieParser from 'cookie-parser';
+import * as bodyParser from 'body-parser';
 
 import {NestExpressApplication} from "@nestjs/platform-express";
 import {join } from 'path'
@@ -16,6 +17,8 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe({
     whitelist: true,
   }));
+  app.use(bodyParser.json({limit: '5mb'}));
+  app.use(bodyParser.urlencoded({limit: '5mb', extended: true}))
   console.log("-- server --")
   app.enableCors({
     origin: 'http://localhost:3001',

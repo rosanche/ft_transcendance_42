@@ -46,7 +46,7 @@ export class UserService {
         },
       },
     });
-    console.log("$$USER bitch", users)
+    //console.log("$$USER bitch", users)
     return users;
   }
 
@@ -299,8 +299,8 @@ export class UserService {
     return user;
   }
 
-  UserUploadedImage(users: any, src: string) {
-    const user = this.Prisma.user.update({
+  async UserUploadedImage(users: any, src: string) {
+    const user = await this.Prisma.user.update({
       where: {
         id: users.id,
       },
@@ -308,6 +308,7 @@ export class UserService {
         profileImage: src,
       },
     });
+    console.log("ouiuiuiu")
     return user;
   }
 

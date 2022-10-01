@@ -72,10 +72,11 @@ export const FriendItem = ({
       socket.off("block user infos");
       socket.off("list status");
     };
-  }, [socket.connected]);
+  }, []);
 
   const acceptFriendRequest = async () => {
     console.log("$$friend accepted", id);
+    console.log("$$friend connected?", socket.connected);
     socket.emit("accept friend", id);
   };
 
