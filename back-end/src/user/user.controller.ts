@@ -50,7 +50,7 @@ export class UserController {
   ) {}
   @Get('all')
   findAll(): Promise<any[]> {
-    console.log("$$ALL ALLA", this.UserService.findAll())
+   // console.log("$$ALL ALLA", this.UserService.findAll())
     return this.UserService.findAll();
   }
 

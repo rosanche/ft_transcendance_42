@@ -67,8 +67,8 @@ const Chat = () => {
   const [frienMode, setFriendMode] = useState<number>(1);
   const [ban, setBan] = useState<ban>({
     mute_ban: "",
-    name: "",
-    pseudo: "",
+    idChannel: 0,
+    idUser: 0,
     time: 0,
     motif: "",
   });
@@ -168,7 +168,7 @@ const Chat = () => {
   };
 
   const quit = async () => {
-    console.log()
+    console.log();
     await socket.emit("quit", chatName.id);
     const u = await channel.filter((el) => channel.name !== el.name);
     console.log(u);
@@ -216,7 +216,8 @@ const Chat = () => {
   const Ban = async () => {
     await socket.emit("blockedChannel", ban);
     //const u =  await channel.filter(el => v.name !== el.name);
-    await console.log("ASDFFSFSF");
+    await console.log(ban);
+    await console.log(chatName);
   };
   const test = async () => {
     console.log("A");
@@ -256,7 +257,12 @@ const Chat = () => {
       await socket.emit("joins channel", el.id);
       console.log(el);
     } else {
-      setPassj({idChannel: el.id, name : el.name, password: "", private: el.private});
+      setPassj({
+        idChannel: el.id,
+        name: el.name,
+        password: "",
+        private: el.private,
+      });
     }
   };
   const demParti = (el: form) => {
@@ -401,7 +407,7 @@ const Chat = () => {
     });
 
     socket.on("chatToClientMp", (src: form) => {
-      setMsgMp((m) => [...m, src])
+      setMsgMp((m) => [...m, src]);
     });
 
     //   socket.on('user', (user : {name: string, id: }))
@@ -657,8 +663,75 @@ const Chat = () => {
                         )}
                       </span>
                     )}
-                    {ban.mute_ban === "mute" && (
+                    {ban.mute_ban !== "" && (
                       <h3>
+                        <Button
+                          className="mb-10  px-2 py-1"
+                          variant="contained"
+                          color="active"
+                          onClick={() =>
+                            setBan({
+                              mute_ban: "ban",
+                              name: chatName.name,
+                              pseudo: ban.time,
+                              time: ban.time,
+                              motif: ban.motif,
+                            })
+                          }
+                        >
+                          ban
+                        </Button>
+                        <Button
+                          className="mb-10  px-2 py-1"
+                          variant="contained"
+                          color="active"
+                          onClick={() =>
+                            setBan({
+                              mute_ban: "mute",
+                              name: chatName.name,
+                              pseudo: ban.time,
+                              time: ban.time,
+                              motif: ban.motif,
+                            })
+                          }
+                        >
+                          mute
+                        </Button>
+                        <input
+                          type="radio"
+                          id="mute"
+                          name="banmute"
+                          //value={ban.mute_ban}
+                          onChange={() => {
+                            console.log("mute");
+                            setBan({
+                              mute_ban: "mute",
+                              name: chatName.name,
+                              pseudo: ban.time,
+                              time: ban.time,
+                              motif: ban.motif,
+                            });
+                          }}
+                        />
+                        <label>mute</label>
+                        <input
+                          type="radio"
+                          id="ban"
+                          name="banmute"
+                          //value={ban.mute_ban}
+                          onChange={() => {
+                            console.log("ban");
+                            setBan({
+                              mute_ban: "ban",
+                              name: chatName.name,
+                              pseudo: ban.time,
+                              time: ban.time,
+                              motif: ban.motif,
+                            });
+                          }}
+                          checked
+                        />
+                        <label>ban</label>
                         <div>
                           {ban.time != 0 && <text>{ban.time}</text>}
                           {ban.time == 0 && <text>def</text>}
@@ -668,13 +741,13 @@ const Chat = () => {
                             name="volume"
                             default={10}
                             value={ban.time}
-                            min="0"
-                            max="100"
+                            min={0}
+                            max={100}
                             onChange={(e) => {
                               setBan({
                                 mute_ban: ban.mute_ban,
-                                name: chatName.name,
-                                pseudo: ban.pseudo,
+                                idChannel: chatName.id,
+                                idUser: 1,
                                 time: e.target.value,
                                 motif: ban.motif,
                               });
@@ -682,23 +755,6 @@ const Chat = () => {
                           />
                         </div>
                         <label name="time mute">time mute </label>
-                        pseudo :
-                        <input
-                          className=" px-2 py-1"
-                          type="text"
-                          value={ban.pseudo}
-                          onChange={(e) => {
-                            setBan({
-                              mute_ban: ban.mute_ban,
-                              name: chatName.name,
-                              pseudo: e.target.value,
-                              time: ban.time,
-                              motif: ban.motif,
-                            });
-                          }}
-                          placeholder="Enter  pseudo"
-                          name="chat"
-                        />
                         motif :
                         <input
                           className=" px-2 py-1"
@@ -707,8 +763,8 @@ const Chat = () => {
                           onChange={(e) => {
                             setBan({
                               mute_ban: ban.mute_ban,
-                              name: chatName.name,
-                              pseudo: ban.pseudo,
+                              idChannel: chatName.id,
+                              idUser: 1,
                               time: ban.time,
                               motif: e.target.value,
                             });
@@ -716,7 +772,7 @@ const Chat = () => {
                           placeholder="Enter motif"
                           name="chat"
                         />
-                        {ban.name != "" && ban.pseudo != "" && ban.time !== 0 && (
+                        {ban.idChannel != 0 && ban.idUser != 0 && (
                           <Button
                             className="ml-3 px-2 py-1 mr-3"
                             variant="contained"
@@ -795,17 +851,19 @@ const Chat = () => {
                   )}
                   <p>
                     my channels :
-                    {channel.filter(el => el.user).map((el, i) => (
-                      <Button
-                        key={i}
-                        className="ml-3 px-2 py-1"
-                        variant="contained"
-                        color="active"
-                        onClick={() => changechannel(el)}
-                      >
-                        {el.name}
-                      </Button>
-                    ))}
+                    {channel
+                      .filter((el) => el.user)
+                      .map((el, i) => (
+                        <Button
+                          key={i}
+                          className="ml-3 px-2 py-1"
+                          variant="contained"
+                          color="active"
+                          onClick={() => changechannel(el)}
+                        >
+                          {el.name}
+                        </Button>
+                      ))}
                   </p>
                   channels public :{" "}
                   {channel
@@ -898,6 +956,7 @@ const Chat = () => {
                     name="type"
                     value={passj.texte}
                     onChange={() => {
+                      console.log("mute");
                       setPassj({
                         name: passj.name,
                         password: passj.password,
@@ -1048,28 +1107,32 @@ const Chat = () => {
             )}
             my message private :
             <span>
-              {users.filter((a)=> msgMp.find(u => u.idReceive === a.id) != undefined).map((el, i) => (
-                <Button
-                  key={i}
-                  className="ml-3 px-2 py-1"
-                  variant="contained"
-                  color="active"
-                  onClick={() => {
-                    changechannel({
-                      id: el.id,
-                      name: el.pseudo,
-                      private: true,
-                      user: false,
-                      admin: false,
-                      owner: false,
-                      password: false,
-                    });
-                    console.log(msg);
-                  }}
-                >
-                  {el.pseudo}
-                </Button>
-              ))}
+              {users
+                .filter(
+                  (a) => msgMp.find((u) => u.idReceive === a.id) != undefined
+                )
+                .map((el, i) => (
+                  <Button
+                    key={i}
+                    className="ml-3 px-2 py-1"
+                    variant="contained"
+                    color="active"
+                    onClick={() => {
+                      changechannel({
+                        id: el.id,
+                        name: el.pseudo,
+                        private: true,
+                        user: false,
+                        admin: false,
+                        owner: false,
+                        password: false,
+                      });
+                      console.log(msg);
+                    }}
+                  >
+                    {el.pseudo}
+                  </Button>
+                ))}
             </span>
           </div>
         )}

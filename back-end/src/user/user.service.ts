@@ -46,7 +46,7 @@ export class UserService {
         },
       },
     });
-    console.log("$$USER bitch", users)
+    //console.log("$$USER bitch", users)
     return users;
   }
 

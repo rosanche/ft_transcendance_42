@@ -10,11 +10,38 @@ import { GameGateway } from "src/game/game.gateway";
 import { UserService } from "src/user/user.service";
 import { form, pass, channel,ban, users} from 'src/chat/chat.gateway';
 import { ChatFriend } from "src/chat/chatFriend";
+import { ChatGateway } from "src/chat/chat.gateway";
 
 @Injectable()
 export class Chat_Commons {
 
     constructor(private Prisma: PrismaService, private  friend: ChatFriend  ,private authService: AuthService, @Inject(forwardRef(() => GameGateway)) private gameGateway: GameGateway){}
+
+    async banupdate(ban : Ban[])
+    {
+        let a : boolean = true;
+        ban.forEach(async (Element) => {
+            const u : number = Date.now()
+            const c : number = Number(Element.finshBan);
+            const v : number = ( u - c);
+            console.log(v);
+            if (Element.bandef === false && Element.finshBan < Date.now()) {
+                await this.Prisma.ban.update(
+                    {
+                        where: {
+                            id : Element.id,
+                        },
+                        data: {
+                            active: false,
+                        }
+                    });
+            } 
+            else {
+                a = false;
+            }
+        });
+        return a;
+    }
 
     async listPostsMyChannels(user : User)
     {
@@ -44,6 +71,23 @@ export class Chat_Commons {
         });
         var re = new Array<form>();
         for (let i : number = 0; cha.length != i; ++i) {
+            const ban : Ban[] = await this.Prisma.ban.findMany({
+                where: {
+                    iduser: user.id,
+                    active: true,
+                    Channel: {
+                        some: {
+                            id: cha[i].id,
+                        }
+                    },
+                    /*id: user.id,*/
+                    muteBan: 'ban',
+                }
+            });
+            console.log(user.id);
+            console.log(ban);
+            console.log("aurevoir");
+                if (!ban || (await this.banupdate(ban)))
                 for (let n : number = 0; cha[i].post.length != n; ++n) {           
                      
                     re.push({idSend: cha[i].post[n].userID, idReceive: cha[i].id, texte: cha[i].post[n].message});
