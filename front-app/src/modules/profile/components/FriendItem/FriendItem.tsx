@@ -28,9 +28,10 @@ interface UsersStatus {
 export const FriendItem = ({
   pseudo,
   type = "friend_request",
+  isBlocked,
   profileImage,
   id,
-}: ApiFriend & { type: FriendType }) => {
+}: ApiFriend & { type: FriendType; isBlocked: boolean }) => {
   const socket = useSocketContext();
   const queryClient = useQueryClient();
   const {
@@ -45,7 +46,10 @@ export const FriendItem = ({
     blocked: "Bloqué(e)",
   };
 
+  console.log("$$Status component", status);
+
   useEffect(() => {
+    console.log("$$connected", socket.connected);
     socket.on("request_friend", () => {
       queryClient.invalidateQueries([enumProfileQueryKeys.MY_PROFILE]);
     });
@@ -54,13 +58,21 @@ export const FriendItem = ({
     });
     socket.on("list status", (usersStatus: UsersStatus[]) => {
       status = usersStatus?.find((user) => user.id === id).status;
+      console.log(
+        "$$Status socket",
+        usersStatus?.find((user) => user.id === id).status
+      );
     });
+
+    console.log("$$emitttt");
+    socket.emit("Get status");
+
     return () => {
       socket.off("request_friend");
       socket.off("block user infos");
       socket.off("list status");
     };
-  }, []);
+  }, [socket.connected]);
 
   const acceptFriendRequest = async () => {
     console.log("$$friend accepted", id);
@@ -79,12 +91,8 @@ export const FriendItem = ({
 
   const refuseFriendRequest = async () => {
     console.log("$$friend refused", id);
-    await socket.emit("refuse friend", id);
+    socket.emit("refuse friend", id);
   };
-  console.log(
-    "$$Bonjour",
-    myfriends?.filter((friend) => friend.id === id)
-  );
 
   return (
     <div className="flex flex-row my-3">
@@ -107,7 +115,7 @@ export const FriendItem = ({
                 "text-green",
               status === "offline" && "text-gray-light",
               (status === "online" || type === "game_request") && "text-pink",
-              status === "blocked" && "text-red"
+              isBlocked && "text-red"
             )}
           >
             {type === "friend"
@@ -134,7 +142,7 @@ export const FriendItem = ({
             variant="icon"
             onClick={blockUser}
             color="active"
-            disabled={status === "blocked"}
+            disabled={isBlocked}
           >
             <IconBlock />
           </Button>

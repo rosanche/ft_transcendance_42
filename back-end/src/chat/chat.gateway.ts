@@ -1165,7 +1165,9 @@ export class ChatGateway implements OnGatewayInit {
     @SubscribeMessage('Get status')
     sendStatus(client: Socket)
     {
-        const listStatus = this.getStatus;
+        console.log("$$GetStatus")
+        const listStatus = this.getStatus();
+        console.log("$$GetStatus2", listStatus)
         client.emit("list status", listStatus);
     }
 
@@ -1190,6 +1192,7 @@ export class ChatGateway implements OnGatewayInit {
                 status.push({id: element, status: "online"});
             }
         });
+        console.log("$$status", status);
         return status;
     }
 

@@ -30,11 +30,17 @@ export const useAddFriendModal = () => {
 
   const searchTerm = watch("searchTerm");
 
-  console.log("$$data almost here2", users, status, users, users
-  ?.filter((value) => value != null)
-  .filter((value) => {
-    return String(value).toLowerCase().includes(searchTerm.toLowerCase());
-  }),);
+  console.log(
+    "$$data almost here2",
+    users,
+    status,
+    users,
+    users
+      ?.filter((value) => value != null)
+      .filter((value) => {
+        return String(value).toLowerCase().includes(searchTerm.toLowerCase());
+      })
+  );
 
   const usersFiltered = useMemo(
     () =>
@@ -56,7 +62,7 @@ export const useAddFriendModal = () => {
             error={errors.searchTerm}
             placeholder="Rechercher un utilisateur..."
           /> */}
-          {usersFiltered?.map(
+          {users?.map(
             (friend) =>
               friend.id !== myId && <FriendItem {...friend} type="friend" />
           )}

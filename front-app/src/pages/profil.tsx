@@ -35,8 +35,7 @@ const Profil = () => {
 
   const friends = user?.myfriends?.map((friend) => ({
     ...friend,
-    status:
-      user?.myblocked?.filter((user) => user.id === friend.id)[0] && "blocked",
+    isBlocked: !!user?.myblocked?.filter((user) => user.id === friend.id)[0],
   }));
 
   return (
