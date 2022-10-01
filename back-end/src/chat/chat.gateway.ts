@@ -1054,28 +1054,21 @@ export class ChatGateway implements OnGatewayInit {
         }
     }
 
-    InvitationGame(hostId :number, inviteId: number)
+    sendAllGameInvitation(id: number)
     {
-        const socketIds = this.getAllSocketID(inviteId);
+        const socketIds = this.getAllSocketID(id);
+        const invitations = this.gameGateway.searchInvite(id);
         socketIds.forEach(sock => {
-            this.wss.to(sock).emit("New Invitation Game", hostId)
+            this.wss.to(sock).emit("list game invitations", invitations);
         });
-    }
-
-    cancelInvitationGame(hostId :number, inviteId: number)
-    {
-        const socketIds = this.getAllSocketID(inviteId);
-        socketIds.forEach(sock => {
-            this.wss.to(sock).emit("Cancel Invitation Game", hostId)
-        });
-
     }
 
     @SubscribeMessage('Get Game Invitation')
     getGameInvitation(client: Socket)
     {
         const id = this.mapIdSocket.get(client.id);
-        client.emit("list invitations", this.getAllInvitationGame(id));
+        const invitations = this.gameGateway.searchInvite(id);
+        client.emit("list game invitations", invitations);
     }
 
     @SubscribeMessage('Get Players')
@@ -1087,11 +1080,8 @@ export class ChatGateway implements OnGatewayInit {
     @SubscribeMessage('Refuse Invitation')
     RefuseInvitation(client: Socket, id: number)
     {
-        //const inviteId = this.mapIdSocket.get(client.id);
         this.gameGateway.refuseGame(id);
-        
     }
-
 
 
     getAllInvitationGame(inviteId: number)
@@ -1111,8 +1101,46 @@ export class ChatGateway implements OnGatewayInit {
         return socketIds;
     }
 
-   
+    @SubscribeMessage('list status')
+    sendStatus(client: Socket)
+    {
+        const listStatus = this.getStatus;
+        client.emit("list status", listStatus);
+    }
 
+    sendAllStatus()
+    {
+        const listStatus = this.getStatus;
+        this.wss.emit("list status", listStatus);
+    }
+
+    getStatus(): {id: number,status: string}[]
+    {
+        const players : Set<number> = this.gameGateway.getPlayingUser();
+        const onlines : Set<number> = this.getOnlineUser();
+        let status : {id: number,status: string}[];
+        onlines.forEach(element => {
+            if(players.has(element))
+            {
+                status.push({id: element, status: "playing"});
+            }
+            else
+            {
+                status.push({id: element, status: "online"});
+            }
+        });
+        return status;
+    }
+
+    getOnlineUser() : Set<number>
+    {
+        let onlines : Set<number>;
+        this.mapIdSocket.forEach(function(val){
+            onlines.add(val);
+        });
+
+        return onlines;
+    }
 
     @SubscribeMessage('message mp')
     async messageMP(client: Socket, chan : Form)

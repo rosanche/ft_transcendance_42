@@ -48,7 +48,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   private mapIdSocket = new Map<string, number>();
   private gamePongs = new Map<string, GamePong>();
   private players = new Set<number>();
-  private invitation : GamePong[] = [];
+
   
 
   @WebSocketServer() server: Server;
@@ -277,7 +277,8 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   cancelGame(game: GamePong, client: Socket)
   {
-    this.chatGateway.cancelInvitationGame(game.id1, game.id2);
+    const id = this.mapIdSocket.get(client.id);
+    this.chatGateway.sendAllGameInvitation(id);
     this.server.socketsLeave(game.roomID);
     this.gamePongs.delete(game.roomID);
   }
@@ -307,8 +308,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     game.addPlayer(user1.pseudo, user1.id);
     game.addPlayer(user2.pseudo, user2.id);
     client.join(game.roomID);
-    this.invitation.push(game);
-    this.chatGateway.InvitationGame(id1, id2);
+    this.chatGateway.sendAllGameInvitation(id2);
     client.emit("wait game");
     setTimeout(this.timeOutinvitationHandler, 100000,this, game, client);
   }
@@ -326,7 +326,8 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     {
       if (game.id2 == id)
       {
-        this.chatGateway.cancelInvitationGame(game.id1, game.id2);
+
+        this.chatGateway.sendAllGameInvitation(game.id2);
         client.join(game.roomID);
         this.startGame(game);
       }
@@ -352,11 +353,11 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   startGame(game :GamePong)
   {
-    //this.chatGateway.wss.emit('chatToClient', {channel : "general", pseudo : game.info.name1, texte : "start a game",});
     const idInterval : NodeJS.Timer = setInterval(this.updateGame, timetick, game, this);
     game.setIdInterval(idInterval);
     this.players.add(game.id1);
     this.players.add(game.id2);
+    this.chatGateway.sendAllStatus();
     this.chatGateway.wss.emit("New Player", game.id1);
     this.chatGateway.wss.emit("New Player", game.id2);
     console.log(this.players);
@@ -454,8 +455,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     
     this.players.delete(game.id1);
     this.players.delete(game.id2);
-    this.chatGateway.wss.emit("Delete Player", game.id1);
-    this.chatGateway.wss.emit("Delete Player", game.id2);
+    this.chatGateway.sendAllStatus();
     const endGame : EndGame ={
     id1 : game.id1,
     id2 : game.id2,
@@ -510,8 +510,8 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   searchInvite(id: number) : number[]
   {
     let ids : number[] = []
-    this.invitation.forEach((game) => {
-      if (game.id2 == id){
+    this.gamePongs.forEach((game) => {
+      if (game.id2 == id && game.idInterval == null){
         ids.push(game.id1);
       }
     });
