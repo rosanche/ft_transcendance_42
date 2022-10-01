@@ -56,6 +56,8 @@ export class GamePong {
   name2 : string;
   id1 : number;
   id2 : number;
+  timeOut1: NodeJS.Timer | null;
+  timeOut2: NodeJS.Timer | null;
   startTime: null | number;
   lastTouch: number;
   spectators: number[];
@@ -73,6 +75,8 @@ export class GamePong {
     this.angleBall = 0;
     this.roomID = roomId;
     this.idInterval = null;
+    this.timeOut1 = null;
+    this.timeOut2 = null;
     this.spectators= [];
     this.info ={
      paddle1Y : (yMax - paddleHeight) / 2,
@@ -396,7 +400,6 @@ export class GamePong {
       {
         this.info.paddle2Y = yMax - (paddleHeight * 2);
       }
-
     }
     else if(!this.isBonusActive(typeBonus[0],2) && this.paddleHeight2 == paddleHeight * 2)
     {
@@ -411,7 +414,6 @@ export class GamePong {
 
   private isBonusActive(type: string, player: number) :boolean
   {
-
     for (const el of this.info.bonus) {
       if (el.type === type && el.owner === player)
       {
