@@ -1070,13 +1070,6 @@ export class ChatGateway implements OnGatewayInit {
         });
 
     }
-    
-
-
-
-    
-
-
 
     @SubscribeMessage('Get Game Invitation')
     getGameInvitation(client: Socket)
@@ -1098,6 +1091,7 @@ export class ChatGateway implements OnGatewayInit {
         this.gameGateway.refuseGame(id);
         
     }
+
 
 
     getAllInvitationGame(inviteId: number)

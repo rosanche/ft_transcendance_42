@@ -104,8 +104,4 @@ export class UserController {
     return [...this.gameGateway.getPlayingUser()];
   }
 
-  @Get('me/games')
-  async getMyGames(@GetUser() user: User) {
-    return await this.UserService.findGameID(user);
-  }
 }

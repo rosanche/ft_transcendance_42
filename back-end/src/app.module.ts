@@ -8,9 +8,10 @@ import { GameModule } from './game/game.module';
 import { FriendModule } from './friend/friend.module';
 import { ChatModule } from './chat/chat.module';
 import { ChannelModule } from './channel/channel.module';
+import { GameHistoryModule } from './game-history/game-history.module';
 
 
 @Module({
-  imports: [ConfigModule.forRoot({isGlobal: true}) ,AuthModule, UserModule, BookmarkModule, PrismaModule, GameModule, FriendModule, ChatModule, ChannelModule]
+  imports: [ConfigModule.forRoot({isGlobal: true}) ,AuthModule, UserModule, BookmarkModule, PrismaModule, GameModule, FriendModule, ChatModule, ChannelModule, GameHistoryModule]
 })
 export class AppModule {}
