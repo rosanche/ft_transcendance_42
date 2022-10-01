@@ -15,7 +15,7 @@ interface Props {
 }
 const SocketContextProvider = ({ children }: Props) => {
   const { accessToken: token } = useAppContextState();
-  //console.log("$$autoconnect", !!accessToken)
+  console.log("$$autoconnect", !!accessToken);
   const socket = socketio("http://localhost:3000/chat", {
     autoConnect: false,
     auth: {

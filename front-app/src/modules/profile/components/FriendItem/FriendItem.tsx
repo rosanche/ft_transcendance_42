@@ -50,6 +50,10 @@ export const FriendItem = ({
 
   useEffect(() => {
     console.log("$$connected", socket.connected);
+    if(!socket.connected)
+    {
+      socket.connect();
+    }
     socket.on("request_friend", () => {
       queryClient.invalidateQueries([enumProfileQueryKeys.MY_PROFILE]);
     });
@@ -57,10 +61,11 @@ export const FriendItem = ({
       queryClient.invalidateQueries([enumProfileQueryKeys.MY_PROFILE]);
     });
     socket.on("list status", (usersStatus: UsersStatus[]) => {
+      
       status = usersStatus?.find((user) => user.id === id).status;
       console.log(
         "$$Status socket",
-        usersStatus?.find((user) => user.id === id).status
+        usersStatus
       );
     });
 
@@ -72,7 +77,7 @@ export const FriendItem = ({
       socket.off("block user infos");
       socket.off("list status");
     };
-  }, []);
+  }, [socket.connected]);
 
   const acceptFriendRequest = async () => {
     console.log("$$friend accepted", id);
@@ -82,6 +87,7 @@ export const FriendItem = ({
 
   const blockUser = async () => {
     console.log("$$user blocked", id);
+    socket.emit("Get status");
     socket.emit("block user", id);
   };
 
