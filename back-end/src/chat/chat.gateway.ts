@@ -1180,8 +1180,10 @@ export class ChatGateway implements OnGatewayInit {
     getStatus(): {id: number,status: string}[]
     {
         const players : Set<number> = this.gameGateway.getPlayingUser();
+        console.log("$players", players);
         const onlines : Set<number> = this.getOnlineUser();
-        let status : {id: number,status: string}[];
+        console.log("$onlines", onlines);
+        let status : {id: number,status: string}[] = [];
         onlines.forEach(element => {
             if(players.has(element))
             {
@@ -1198,8 +1200,9 @@ export class ChatGateway implements OnGatewayInit {
 
     getOnlineUser() : Set<number>
     {
-        let onlines : Set<number>;
-        this.mapIdSocket.forEach(function(val){
+        console.log("mapIdSocket", this.mapIdSocket)
+        let onlines : Set<number> = new Set<number>();
+        this.mapIdSocket.forEach((val,key) => {
             onlines.add(val);
         });
 
