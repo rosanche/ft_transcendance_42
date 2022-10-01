@@ -58,8 +58,9 @@ const Chat = () => {
     blocked: false,
     myblocked: false,
   });
-  const [myMp, setMyMp] = useState<channel[]>([]);
+  //const [myMp, setMyMp] = useState<channel[]>([]);
   const [msg, setMsg] = useState<form[]>([]);
+  const [msgMp, setMsgMp] = useState<form[]>([]);
   const [users, setUsers] = useState<users[]>([]);
   const [cha_mp, setCha_mp] = useState<number>(1);
   const [game, setGame] = useState<number>(0);
@@ -72,6 +73,7 @@ const Chat = () => {
     motif: "",
   });
   const [passj, setPassj] = useState<pass>({
+    idChannel: 0,
     name: "",
     password: "",
     private: false,
@@ -254,7 +256,7 @@ const Chat = () => {
       await socket.emit("joins channel", el.id);
       console.log(el);
     } else {
-      //setJoin(el);
+      setPassj({idChannel: el.id, name : el.name, password: "", private: el.private});
     }
   };
   const demParti = (el: form) => {
@@ -280,12 +282,13 @@ const Chat = () => {
     //setData({channel: chatName, pseudo : data.pseudo ,texte: ""});
   };
   useEffect(() => {
+    /*
     socket.on("mp list", (c: channel[]) => {
       console.log("oui 5");
       console.log(c);
-      setMyMp(c);
+     // setMyMp(c);
     });
-
+*/
     socket.on("user list", (c: users[]) => {
       //  setChannel((u)=> [...u,c]);
       console.log("oui 3");
@@ -327,7 +330,8 @@ const Chat = () => {
     });
 
     socket.on("new channel pub", (c: channel) => {
-      setChannel((a) => [...a, c]);
+      socket.emit("listchannels");
+      //setChannel((a) => [...a, c]);
     });
     socket.on("you ban_mute", (ret: ban) => {
       socket.off("you ban_mute");
@@ -363,6 +367,12 @@ const Chat = () => {
       console.log("oui 1000");
       setMsg(mm);
     });
+    socket.on("info mp", (mm: form[]) => {
+      //socket.off('info channel');
+      console.log(mm);
+      console.log("oui 1000");
+      setMsgMp(mm);
+    });
     socket.on("New Invitation Game", (id: Number) => {
       console.log(id);
       setGame(id);
@@ -390,6 +400,10 @@ const Chat = () => {
       log(src);
     });
 
+    socket.on("chatToClientMp", (src: form) => {
+      setMsgMp((m) => [...m, src])
+    });
+
     //   socket.on('user', (user : {name: string, id: }))
 
     return () => {
@@ -405,6 +419,7 @@ const Chat = () => {
       socket.off("left chanel");
       socket.off("join channel true");
       socket.off("new channel pub");
+      socket.off("chatToClientMp");
     };
   }, []);
 
@@ -423,7 +438,6 @@ const Chat = () => {
       socket.connect();
       socket.emit("channelinit");
       socket.emit("listchannels");
-      socket.emit("pubchannels");
       socket.emit("me info");
       socket.emit("me blocks");
       socket.emit("list users");
@@ -810,7 +824,7 @@ const Chat = () => {
                 </div>
                 <div>
                   {
-                    /*join.password*/ true && (
+                    /*join.password*/ passj.idChannel != 0 && (
                       <h3>
                         {/*join.name*/} test password :
                         <input
@@ -819,7 +833,8 @@ const Chat = () => {
                           value={passj.password}
                           onChange={(e) => {
                             setPassj({
-                              name: join.name,
+                              idChannel: passj.idChannel,
+                              name: passj.name,
                               password: e.target.value,
                               private: passj.private,
                             });
@@ -952,9 +967,10 @@ const Chat = () => {
                           color="active"
                           onClick={() => {
                             changechannel({
-                              id: -1,
+                              id: el.id,
                               name: el.pseudo,
                               private: true,
+                              user: false,
                               admin: false,
                               owner: false,
                               password: false,
@@ -971,17 +987,17 @@ const Chat = () => {
             </div>
             {true && (
               <div>
-                {<h1>{data.channel}</h1>}
-                {msg
+                {<h1>{data.idReceive}</h1>}
+                {msgMp
                   .filter(
                     (el) =>
-                      el.idReceive === data.id &&
+                      el.idReceive === data.idReceive &&
                       users.find((u) => u.myblocked) === undefined
                   )
                   .map((el, i) => (
                     <li key={i}>
-                      {el.pseudo} : {el.texte}
-                      {me.id !== el.id && (
+                      {el.idSend} : {el.texte}
+                      {me.id !== el.idSend && (
                         <span>
                           <Button
                             className="ml-3 px-2 py-1"
@@ -1009,8 +1025,8 @@ const Chat = () => {
                   value={data.texte}
                   onChange={(e) => {
                     setData({
-                      idSend: data.id,
-                      idReceive: me.id,
+                      idSend: me.id,
+                      idReceive: data.idReceive,
                       texte: e.target.value,
                     });
                   }}
@@ -1032,18 +1048,26 @@ const Chat = () => {
             )}
             my message private :
             <span>
-              {myMp.map((el, i) => (
+              {users.filter((a)=> msgMp.find(u => u.idReceive === a.id) != undefined).map((el, i) => (
                 <Button
                   key={i}
                   className="ml-3 px-2 py-1"
                   variant="contained"
                   color="active"
                   onClick={() => {
-                    changechannel(el);
+                    changechannel({
+                      id: el.id,
+                      name: el.pseudo,
+                      private: true,
+                      user: false,
+                      admin: false,
+                      owner: false,
+                      password: false,
+                    });
                     console.log(msg);
                   }}
                 >
-                  {el.name}
+                  {el.pseudo}
                 </Button>
               ))}
             </span>
