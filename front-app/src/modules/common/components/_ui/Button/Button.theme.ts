@@ -8,6 +8,7 @@ type ButtonTheme = {
     [key in ButtonColor]: {
       default: string;
       loading?: string;
+      disabled?: string;
     };
   };
 };
@@ -45,11 +46,11 @@ const BUTTON_THEME: ButtonTheme = {
     },
   },
   icon: {
-    base:
-      'inline-flex justify-center items-center items-center relative rounded-md font-headings font-bold text-sm text-white border-solid appearance-none hover:text-pink',
+    base: "inline-flex justify-center items-center items-center relative rounded-md font-headings font-bold text-sm text-white border-solid appearance-none hover:text-pink",
     active: {
-      default: 'hover:text-pink',
-      loading: 'cursor-default pointer-events-none',
+      default: "hover:text-pink",
+      loading: "cursor-default pointer-events-none",
+      disabled: "text-pink",
     },
   },
   none: {

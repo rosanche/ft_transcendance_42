@@ -46,7 +46,7 @@ const Profil = () => {
           <div className="flex relative rounded-full border border-gray-100 w-44 h-44 shadow-sm">
             <Image
               layout="fill"
-              src="/assets/img/ping-pong.png"
+              src={user?.profileImage || "/assets/img/42.png"}
               className="rounded-full border border-gray-100 shadow-sm"
             />
           </div>

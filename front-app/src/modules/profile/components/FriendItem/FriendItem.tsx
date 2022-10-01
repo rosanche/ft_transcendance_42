@@ -25,7 +25,7 @@ export const FriendItem = ({
   const socket = useSocketContext();
   const queryClient = useQueryClient();
   const {
-    data: { myfriends },
+    data: { myfriends, friendReqSend },
   } = useMyProfileQuery();
 
   const state = {
@@ -118,13 +118,23 @@ export const FriendItem = ({
         </div>
       ) : (
         <div className="flex space-x-2">
-          {status !== "blocked" && (
-            <Button variant="icon" onClick={blockUser}>
-              <IconBlock />
-            </Button>
-          )}
+          <Button
+            variant="icon"
+            onClick={blockUser}
+            color="active"
+            disabled={status === "blocked"}
+          >
+            <IconBlock />
+          </Button>
           {!myfriends?.filter((friend) => friend.id === id)[0] && (
-            <Button variant="icon" onClick={addFriend}>
+            <Button
+              variant="icon"
+              onClick={addFriend}
+              color="active"
+              disabled={
+                !!friendReqSend?.filter((friend) => friend.id === id)[0]
+              }
+            >
               <IconAddFriend />
             </Button>
           )}

@@ -8,18 +8,18 @@ import { useGenerate2Fa } from "modules/profile/mutation/useGenerate2Fa.mutation
 import { useMyProfileQuery } from "modules/profile/queries/useMyProfileQuery";
 import { useUsersQuery } from "modules/profile/queries/useUsersQuery";
 import Image from "next/image";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { FriendItem } from "../FriendItem/FriendItem";
 
 interface FormData {
-  search: string;
+  searchTerm: string;
 }
 
 export const useAddFriendModal = () => {
-  const { formState, register } = useForm<FormData>({
+  const { formState, register, watch } = useForm<FormData>({
     defaultValues: {
-      search: "",
+      searchTerm: "",
     },
   });
   const { errors } = formState;
@@ -28,19 +28,35 @@ export const useAddFriendModal = () => {
     data: { id: myId },
   } = useMyProfileQuery();
 
-  console.log("$$data almost here2", users, status, users);
-  // useEffect(() => {}, []);
+  const searchTerm = watch("searchTerm");
+
+  console.log("$$data almost here2", users, status, users, users
+  ?.filter((value) => value != null)
+  .filter((value) => {
+    return String(value).toLowerCase().includes(searchTerm.toLowerCase());
+  }),);
+
+  const usersFiltered = useMemo(
+    () =>
+      users
+        ?.filter((value) => value != null)
+        .filter((value) => {
+          return String(value).toLowerCase().includes(searchTerm.toLowerCase());
+        }),
+    [searchTerm]
+  );
 
   const UsersList = () => (
     <div className="flex flex-col">
       {!isLoading ? (
         <>
-          <TextField
+          {/* <TextField
             id="Rechercher un ami"
-            {...register("search")}
-            error={errors.search}
-          />
-          {users?.map(
+            {...register("searchTerm")}
+            error={errors.searchTerm}
+            placeholder="Rechercher un utilisateur..."
+          /> */}
+          {usersFiltered?.map(
             (friend) =>
               friend.id !== myId && <FriendItem {...friend} type="friend" />
           )}

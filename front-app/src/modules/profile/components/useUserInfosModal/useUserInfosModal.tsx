@@ -1,9 +1,11 @@
+import { useChangePseudoMutation } from "modules/auth/queries/useChangePseudo.mutation";
 import { useContentModal } from "modules/common/components/modals/useContentModal/useContentModal";
 import { Button } from "modules/common/components/_ui/Button/Button";
 import { TextField } from "modules/common/components/_ui/TextField/TextField";
 import { useAppContextState } from "modules/common/context/AppContext";
 import { useActivate2Fa } from "modules/profile/mutation/useActivate2Fa.mutation";
 import { useGenerate2Fa } from "modules/profile/mutation/useGenerate2Fa.mutation";
+import { useMyProfileQuery } from "modules/profile/queries/useMyProfileQuery";
 import Image from "next/image";
 import { useCallback, useEffect } from "react";
 import { useForm } from "react-hook-form";
@@ -14,32 +16,37 @@ interface FormData {
 }
 
 export const useUserInfosModal = () => {
-  const { handleSubmit, formState, register } = useForm<FormData>({
-    defaultValues: {
-      username: "",
-      otp: "",
-    },
-  });
+  const { data: user } = useMyProfileQuery();
+  const { handleSubmit, formState, register, control, setValue } =
+    useForm<FormData>({
+      mode: "onTouched",
+      defaultValues: {
+        username: "",
+        otp: "",
+      },
+    });
+
+  useEffect(() => {
+    setValue("username", user?.pseudo);
+  }, [user?.pseudo]);
+
+  console.log("$$pseudoooo", user?.pseudo);
   const { errors } = formState;
 
   const {
     mutate: generateQrCode,
     data: QrCode,
     status: sta,
-    isLoading: isGenerateQrCodeLoading,
+    isLoading: isGeneratingQrCode,
   } = useGenerate2Fa();
-  const { mutateAsync: activate2Fa, data: fa, status: fas } = useActivate2Fa();
 
-  console.log("$$2fa", fa, fas);
+  const { mutateAsync: activate2Fa, isLoading: isActivating2Fa } =
+    useActivate2Fa();
 
-  // console.log("$$qrCode", sta);
+  const { mutate: changePseudo, isLoading: isChangingPseudo } =
+    useChangePseudoMutation();
 
   const { doubleFaEnabled } = useAppContextState();
-
-  console.log("$$doubleFaEnabled", doubleFaEnabled);
-  // useEffect(() => {
-  //   mutateAsync();
-  // }, []);
 
   const UserInfos = () => (
     <div className="flex items-center flex-col space-y-8">
@@ -47,7 +54,7 @@ export const useUserInfosModal = () => {
         <div className="flex relative rounded-full border border-gray-100 w-24 h-24 shadow-sm mb-3">
           <Image
             layout="fill"
-            src="/assets/img/ping-pong.png"
+            src={user?.profileImage || "/assets/img/42.png"}
             className="rounded-full border border-gray-100 shadow-sm"
           />
         </div>
@@ -55,16 +62,17 @@ export const useUserInfosModal = () => {
       </div>
       <form
         onSubmit={handleSubmit(({ username }) => {
-          activate2Fa(username);
+          changePseudo(username);
         })}
         className="flex flex-row gap-3"
       >
         <TextField
-          id="email"
+          id="username"
           {...register("username")}
           error={errors.username}
+          control={control}
         />
-        <Button variant="contained" color="active">
+        <Button variant="contained" color="active" isLoading={isChangingPseudo}>
           Valider
         </Button>
       </form>
@@ -79,7 +87,11 @@ export const useUserInfosModal = () => {
           <Image width={120} height={120} src={QrCode} className="rounded-3x" />
           <div>
             <TextField id="otp" {...register("otp")} error={errors.username} />
-            <Button variant="contained" color="active">
+            <Button
+              variant="contained"
+              color="active"
+              isLoading={isActivating2Fa}
+            >
               Activer
             </Button>
           </div>
@@ -94,12 +106,11 @@ export const useUserInfosModal = () => {
               variant="contained"
               color="active"
               onClick={() => generateQrCode()}
-              isLoading={isGenerateQrCodeLoading}
+              isLoading={isGeneratingQrCode}
             >
               Activer
             </Button>
           )}
-          {/* {QrCod && <QrCode url={QrCod} /> } */}
         </div>
       )}
     </div>
