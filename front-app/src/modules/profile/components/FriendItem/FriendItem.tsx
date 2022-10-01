@@ -11,13 +11,22 @@ import { Button } from "modules/common/components/_ui/Button/Button";
 import { useSocketContext } from "modules/common/context/SocketContext";
 import { enumProfileQueryKeys } from "modules/profile/queries/keys";
 import { useMyProfileQuery } from "modules/profile/queries/useMyProfileQuery";
-import { ApiFriend, Friend, FriendType } from "modules/profile/types";
+import {
+  ApiFriend,
+  Friend,
+  FriendType,
+  UserStatus,
+} from "modules/profile/types";
 import Image from "next/image";
 import { useEffect } from "react";
 
+interface UsersStatus {
+  id: number;
+  status: UserStatus;
+}
+
 export const FriendItem = ({
   pseudo,
-  status,
   type = "friend_request",
   profileImage,
   id,
@@ -27,6 +36,7 @@ export const FriendItem = ({
   const {
     data: { myfriends, friendReqSend },
   } = useMyProfileQuery();
+  let status = "offline";
 
   const state = {
     online: "En ligne",
@@ -37,16 +47,18 @@ export const FriendItem = ({
 
   useEffect(() => {
     socket.on("request_friend", () => {
-      console.log("$$passsssss");
       queryClient.invalidateQueries([enumProfileQueryKeys.MY_PROFILE]);
     });
     socket.on("block user infos", () => {
-      console.log("$$passsssss");
       queryClient.invalidateQueries([enumProfileQueryKeys.MY_PROFILE]);
+    });
+    socket.on("list status", (usersStatus: UsersStatus[]) => {
+      status = usersStatus?.find((user) => user.id === id).status;
     });
     return () => {
       socket.off("request_friend");
       socket.off("block user infos");
+      socket.off("list status");
     };
   }, []);
 

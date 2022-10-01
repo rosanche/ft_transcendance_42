@@ -220,18 +220,12 @@ export class UserService {
 
   UserModif(users: any, dto: UserUpdateDto) {
     if (dto.pseudo) users.pseudo = dto.pseudo;
-    if (dto.firstName) users.firstName = dto.firstName;
-    if (dto.lastName) users.lastName = dto.lastName;
-    if (dto.legend) users.legend = dto.legend;
     const user = this.Prisma.user.update({
       where: {
         id: users.id,
       },
       data: {
         pseudo: users.pseudo,
-        lastName: users.lastName,
-        firstName: users.firstName,
-        legend: users.legend,
       },
     });
     return user;

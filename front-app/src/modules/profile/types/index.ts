@@ -28,7 +28,6 @@ export interface ApiFriend {
 export interface Friend {
   // imgUrl: string;
   username: string;
-  status: "online" | "offline" | "playing" | "blocked";
 }
-
+export type UserStatus = "online" | "offline" | "playing" | "blocked";
 export type FriendType = "friend_request" | "game_request" | "friend";
