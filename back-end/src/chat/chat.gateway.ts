@@ -1162,7 +1162,7 @@ export class ChatGateway implements OnGatewayInit {
         return socketIds;
     }
 
-    @SubscribeMessage('list status')
+    @SubscribeMessage('Get status')
     sendStatus(client: Socket)
     {
         const listStatus = this.getStatus;
