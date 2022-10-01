@@ -1123,6 +1123,15 @@ export class ChatGateway implements OnGatewayInit {
         });
     }
 
+    cancelInvitationGame(hostId :number, inviteId: number)
+    {
+        const socketIds = this.getAllSocketID(inviteId);
+        socketIds.forEach(sock => {
+            this.wss.to(sock).emit("Cancel Invitation Game", hostId)
+        });
+
+    }
+
     @SubscribeMessage('Get Game Invitation')
     getGameInvitation(client: Socket) : number[]
     {
