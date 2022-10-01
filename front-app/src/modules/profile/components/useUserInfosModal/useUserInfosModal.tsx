@@ -74,8 +74,9 @@ export const useUserInfosModal = () => {
     // accept: {
     //   acceptedTypes: "image/png, image/jpg, image/jpeg, application/pdf",
     // },
-    onDropAccepted: (file) => {
-      file && uploadImgProfile(file);
+    onDropAccepted: (file: File[]) => {
+      console.log("$$file", file);
+      file && uploadImgProfile(file?.[0]);
       // onFileLoaded && onFileLoaded(file?.[0]); put the putation here
     },
     onDropRejected: (fileRejections) => {
