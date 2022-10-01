@@ -1,3 +1,4 @@
+import { useChangeImgProfileMutation } from "modules/auth/queries/useChangeImgProfile.mutation";
 import { useChangePseudoMutation } from "modules/auth/queries/useChangePseudo.mutation";
 import { useContentModal } from "modules/common/components/modals/useContentModal/useContentModal";
 import { Button } from "modules/common/components/_ui/Button/Button";
@@ -8,11 +9,14 @@ import { useGenerate2Fa } from "modules/profile/mutation/useGenerate2Fa.mutation
 import { useMyProfileQuery } from "modules/profile/queries/useMyProfileQuery";
 import Image from "next/image";
 import { useCallback, useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useDropzone } from "react-dropzone";
+
+import { useController, useForm } from "react-hook-form";
 
 interface FormData {
   username: string;
   otp: string;
+  file: string;
 }
 
 export const useUserInfosModal = () => {
@@ -23,6 +27,7 @@ export const useUserInfosModal = () => {
       defaultValues: {
         username: "",
         otp: "",
+        file: "",
       },
     });
 
@@ -40,8 +45,43 @@ export const useUserInfosModal = () => {
     isLoading: isGeneratingQrCode,
   } = useGenerate2Fa();
 
+  const {
+    mutate: uploadImgProfile,
+    status,
+    isLoading: isUploadingImg,
+  } = useChangeImgProfileMutation();
+
+  console.log("$$big status", status);
+
   const { mutateAsync: activate2Fa, isLoading: isActivating2Fa } =
     useActivate2Fa();
+
+  const {
+    field: { onChange },
+    fieldState: { error },
+  } = useController({
+    name: "file",
+    control,
+  });
+
+  const changeFile = (file?: File) => {
+    file && onChange(file);
+  };
+
+  const { open: openFileDialogHandler } = useDropzone({
+    multiple: false,
+    noClick: true,
+    // accept: {
+    //   acceptedTypes: "image/png, image/jpg, image/jpeg, application/pdf",
+    // },
+    onDropAccepted: (file) => {
+      file && uploadImgProfile(file);
+      // onFileLoaded && onFileLoaded(file?.[0]); put the putation here
+    },
+    onDropRejected: (fileRejections) => {
+      changeFile(fileRejections?.[0]?.file);
+    },
+  });
 
   const { mutate: changePseudo, isLoading: isChangingPseudo } =
     useChangePseudoMutation();
@@ -58,7 +98,13 @@ export const useUserInfosModal = () => {
             className="rounded-full border border-gray-100 shadow-sm"
           />
         </div>
-        <Button variant="link">Modifier</Button>
+        <Button
+          variant="link"
+          onClick={openFileDialogHandler}
+          isLoading={isUploadingImg}
+        >
+          Modifier
+        </Button>
       </div>
       <form
         onSubmit={handleSubmit(({ username }) => {
