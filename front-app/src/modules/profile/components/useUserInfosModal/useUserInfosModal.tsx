@@ -96,6 +96,7 @@ export const useUserInfosModal = () => {
           <Image
             layout="fill"
             src={user?.profileImage || "/assets/img/42.png"}
+            priority={true}
             className="rounded-full border border-gray-100 shadow-sm"
           />
         </div>

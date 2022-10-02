@@ -10,6 +10,7 @@ export class GameHistoryService {
     return await this.Prisma.game.findMany(
       {
         select: {
+          id: true,
           id_1: true,
           id_2: true,
           score_1: true,
@@ -33,6 +34,7 @@ export class GameHistoryService {
         ],
       },
       select: {
+        id: true,
         id_1: true,
         id_2: true,
         score_1: true,

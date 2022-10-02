@@ -10,11 +10,12 @@ import { useUserInfosModal } from "modules/profile/components/useUserInfosModal/
 import { NotificationsContainer } from "modules/profile/components/NotificationsContainer/NotificationsContainer";
 import { useSocketContext } from "modules/common/context/SocketContext";
 import { GameHistoryContainer } from "modules/profile/components/GameHistoryContainer/GameHistoryContainer";
+import { useGameHistoryQuery } from "modules/profile/queries/useGameHistoryQuery";
 
 const Profil = () => {
   const router = useRouter();
   const { data: user, isProfilLoading } = useMyProfileQuery();
-  const { data: games, isGameHistoryLoading } = useMyProfileQuery();
+  const { data: games, isGameHistoryLoading } = useGameHistoryQuery();
   const { doubleFaEnabled } = useAppContextState();
   const socket = useSocketContext();
 
@@ -48,6 +49,7 @@ const Profil = () => {
             <Image
               layout="fill"
               src={user?.profileImage || "/assets/img/42.png"}
+              priority={true}
               className="rounded-full border border-gray-100 shadow-sm"
             />
           </div>

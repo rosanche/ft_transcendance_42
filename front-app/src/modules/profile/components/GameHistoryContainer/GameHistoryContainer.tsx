@@ -16,7 +16,7 @@ export const GameHistoryContainer = ({ games }: Props) => {
     >
       <div className="flex flex-col">
         {games?.map((game) => (
-          <GameHistoryItem {...game} />
+          <GameHistoryItem key={game.id} {...game} />
         ))}
       </div>
     </RoundedContainer>
