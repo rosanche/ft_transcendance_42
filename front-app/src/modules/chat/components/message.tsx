@@ -9,13 +9,15 @@ interface Props {
   button?: ReactNode;
 }
 
-export const messageTest: React.FC<PropsWithChildren<Props>> = ()  => {
-  return <Button
-  className="ml-[0.5rem] w-[rem4.5]"
-  variant="contained"
-  color="active"
-  onClick={() => {}}
->
-  dd
-</Button>;
+export const messageTest = () => {
+  return (
+    <Button
+      className="ml-[0.5rem] w-[rem4.5]"
+      variant="contained"
+      color="active"
+      onClick={() => {}}
+    >
+      dd
+    </Button>
+  );
 };

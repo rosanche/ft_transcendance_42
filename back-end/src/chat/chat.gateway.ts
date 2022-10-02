@@ -150,7 +150,8 @@ export class ChatGateway implements OnGatewayInit {
                         muteBan: "ban"
                     }
                 });
-                if (!ban)
+                
+                if (ban.length === 0 || await this.commons.banupdate(ban))
                     client.join(channels[i].name);
                 re.push({id: channels[i].id, 
                         name: channels[i].name, 
@@ -371,6 +372,7 @@ export class ChatGateway implements OnGatewayInit {
                 iduser: user.id,
             }
         }); 
+        console.log("yo");
         if  (!ban || (await this.commons.banupdate(ban))) {
                 await this.creatPost(user.id, cha.id, 0, message.texte);
                 this.wss.to(cha.name).emit('chatToClient', message);
@@ -404,6 +406,34 @@ export class ChatGateway implements OnGatewayInit {
          })
          this.wss.to(client.id).emit('invite sucess');
          this.wss.to(this.iddd[user.id]).emit('join channel true');
+    }
+
+    @SubscribeMessage('list user channel')
+    async listUserchanel(client: Socket, idChannel : number)
+    {  
+        const user = await this.authService.getUserFromSocket(client);
+        if (!user)
+            return;
+            console.log(idChannel);
+        const Channel = await await this.verifChanneladmin(idChannel, user.id);
+        if (!Channel)
+            return;
+            const chanel_user = await this.Prisma.channel.findFirst({
+                where:{
+                    id: Channel.id
+                },
+                select:{
+                    users:{
+                    select:{
+                        id : true,
+                        }
+                    }
+                }
+            }) 
+            var a = Array<number>();
+            await chanel_user.users.forEach(e => a.push(e.id))
+            this.wss.emit('cha users', a);
+        //return a;
     }
 
     @SubscribeMessage('blockedChannel')
@@ -551,6 +581,7 @@ export class ChatGateway implements OnGatewayInit {
             }
         this.wss.to(client.id).emit("use info block", re)
     }
+
 
     @SubscribeMessage('block user')
     async blockedUser(client: Socket, src : number) {

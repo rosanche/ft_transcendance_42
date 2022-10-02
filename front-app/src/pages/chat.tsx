@@ -4,6 +4,8 @@ import { Button } from "modules/common/components/_ui/Button/Button";
 import socketio from "socket.io-client";
 import { useRouter } from "next/router";
 import { useSocketContext } from "modules/common/context/SocketContext";
+import { messageTest } from "modules/chat/components/message";
+import { testChat } from "modules/chat/components/testChat";
 
 type form = {
   idSend: number;
@@ -215,6 +217,8 @@ const Chat = () => {
   };
   const Ban = async () => {
     await socket.emit("blockedChannel", ban);
+    console.log(`a ouai c'est toi ${ban.idChannel}`);
+    await socket.emit("list user channel", ban.idChannel);
     //const u =  await channel.filter(el => v.name !== el.name);
     await console.log(ban);
     await console.log(chatName);
@@ -295,6 +299,14 @@ const Chat = () => {
      // setMyMp(c);
     });
 */
+
+    socket.on("cha users", (c: number[]) => {
+      //  setChannel((u)=> [...u,c]);
+      console.log("oui 3");
+      //setUsers(c);
+      console.log(c);
+    });
+
     socket.on("user list", (c: users[]) => {
       //  setChannel((u)=> [...u,c]);
       console.log("oui 3");
@@ -403,6 +415,7 @@ const Chat = () => {
     });
 
     socket.on("chatToClient", (src: form) => {
+      console.log("AAAAAAAAAAAAAAAAa");
       log(src);
     });
 
@@ -457,6 +470,8 @@ const Chat = () => {
 
   return (
     <RoundedContainer className="px-14 py-20 mt-16 bg-indigo-200">
+      <testChat />
+      <messageTest />
       <span>
         {game != 0 && (
           <Button

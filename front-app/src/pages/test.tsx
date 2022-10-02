@@ -46,13 +46,13 @@ const test = () => {
     <Page titre="test" className="W-full">
       <div className="flex flex-1 flex-row h-5/6">
         <RoundedContainer className="flex flex-1  mu-3 items-start mb-9">
-          <span className="text-white">dddddddddddddd</span>
+          <span className="text-white">ddddddddddijdddd</span>
         </RoundedContainer>
         <div className="flex flex-1  flex-col justify-between w-full">
           <span className="text-white">Kelly</span>
           <div className="flex justify-end h-8   mr-5 mb-10">
             <input className="rounded-lg ml-5 " type="text"></input>
-            <messageTest/>
+            <messageTest />
             <Button
               className="ml-[0.5rem] w-[rem4.5]"
               variant="contained"
