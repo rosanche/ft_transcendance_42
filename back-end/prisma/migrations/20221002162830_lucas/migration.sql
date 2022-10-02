@@ -53,7 +53,7 @@ CREATE TABLE "ban" (
     "id" SERIAL NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "timeBan" INTEGER,
-    "finshBan" INTEGER,
+    "finshBan" BIGINT,
     "muteBan" TEXT NOT NULL,
     "active" BOOLEAN NOT NULL,
     "bandef" BOOLEAN NOT NULL,

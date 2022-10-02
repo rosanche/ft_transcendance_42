@@ -50,10 +50,10 @@ export const FriendItem = ({
 
   useEffect(() => {
     console.log("$$connected", socket.connected);
-    if(!socket.connected)
-    {
+    if (!socket.connected) {
       socket.connect();
     }
+    console.log("$$connected", socket.connected);
     socket.on("request_friend", () => {
       queryClient.invalidateQueries([enumProfileQueryKeys.MY_PROFILE]);
     });
@@ -61,12 +61,8 @@ export const FriendItem = ({
       queryClient.invalidateQueries([enumProfileQueryKeys.MY_PROFILE]);
     });
     socket.on("list status", (usersStatus: UsersStatus[]) => {
-      
       status = usersStatus?.find((user) => user.id === id).status;
-      console.log(
-        "$$Status socket",
-        usersStatus
-      );
+      console.log("$$Status socket", usersStatus);
     });
 
     console.log("$$emitttt");

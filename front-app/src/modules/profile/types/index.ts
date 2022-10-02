@@ -31,3 +31,11 @@ export interface Friend {
 }
 export type UserStatus = "online" | "offline" | "playing" | "blocked";
 export type FriendType = "friend_request" | "game_request" | "friend";
+
+export interface ApiGame {
+  id_1: number;
+  score_1: number;
+  score_2: number;
+  id_2: number;
+  winner: number;
+}
