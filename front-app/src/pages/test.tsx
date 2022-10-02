@@ -6,6 +6,7 @@ import { useRouter } from "next/router";
 import Image from "next/image";
 import { Page } from "modules/common/components/_ui/Page/Page";
 import { IconMessage } from "modules/common/components/_icons/icons";
+import { messageTest } from "modules/chat/components/message";
 
 type Form = {
   channel: string;

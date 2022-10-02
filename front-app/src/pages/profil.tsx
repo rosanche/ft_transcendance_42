@@ -20,6 +20,24 @@ const Profil = () => {
 
   const { showModal } = useUserInfosModal();
 
+  console.log(
+    "$$friends, blocked",
+    user?.myfriends,
+    user?.myblocked,
+    user?.myfriends?.map((friend) => ({
+      ...friend,
+      status:
+        user?.myblocked?.filter((user) => user.id === friend.id)[0] &&
+        "blocked",
+    })),
+    user?.myblocked?.filter((user) => user.id === 2)
+  );
+
+  const friends = user?.myfriends?.map((friend) => ({
+    ...friend,
+    isBlocked: !!user?.myblocked?.filter((user) => user.id === friend.id)[0],
+  }));
+
   return (
     <Page title="Profil" isLoading={isLoading}>
       <div className="grid grid-flow-col space-x-3">
@@ -27,7 +45,7 @@ const Profil = () => {
           <div className="flex relative rounded-full border border-gray-100 w-44 h-44 shadow-sm">
             <Image
               layout="fill"
-              src="/assets/img/ping-pong.png"
+              src={user?.profileImage || "/assets/img/42.png"}
               className="rounded-full border border-gray-100 shadow-sm"
             />
           </div>
@@ -41,7 +59,7 @@ const Profil = () => {
             Modifier
           </Button>
         </div>
-        <FriendsContainer friends={user?.myfriends} />
+        <FriendsContainer friends={friends} />
         <NotificationsContainer friends={user?.friendReqReceive} />
       </div>
     </Page>

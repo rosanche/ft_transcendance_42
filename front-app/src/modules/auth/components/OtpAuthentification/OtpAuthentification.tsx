@@ -1,4 +1,4 @@
-import { useAuthenticate2Fa } from "modules/auth/queries/useAuthenticate2Fa.mutation";
+import { useAuthenticate2Fa } from "modules/auth/queries/useChangePseudo.mutation";
 import { Icon42Logo } from "modules/common/components/_icons/icons";
 import { Button } from "modules/common/components/_ui/Button/Button";
 import { TextField } from "modules/common/components/_ui/TextField/TextField";

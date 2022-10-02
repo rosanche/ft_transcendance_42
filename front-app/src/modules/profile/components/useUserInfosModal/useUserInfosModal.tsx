@@ -1,45 +1,93 @@
+import { useChangeImgProfileMutation } from "modules/auth/queries/useChangeImgProfile.mutation";
+import { useChangePseudoMutation } from "modules/auth/queries/useChangePseudo.mutation";
 import { useContentModal } from "modules/common/components/modals/useContentModal/useContentModal";
 import { Button } from "modules/common/components/_ui/Button/Button";
 import { TextField } from "modules/common/components/_ui/TextField/TextField";
 import { useAppContextState } from "modules/common/context/AppContext";
 import { useActivate2Fa } from "modules/profile/mutation/useActivate2Fa.mutation";
 import { useGenerate2Fa } from "modules/profile/mutation/useGenerate2Fa.mutation";
+import { useMyProfileQuery } from "modules/profile/queries/useMyProfileQuery";
 import Image from "next/image";
 import { useCallback, useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useDropzone } from "react-dropzone";
+
+import { useController, useForm } from "react-hook-form";
 
 interface FormData {
   username: string;
   otp: string;
+  file: string;
 }
 
 export const useUserInfosModal = () => {
-  const { handleSubmit, formState, register } = useForm<FormData>({
-    defaultValues: {
-      username: "",
-      otp: "",
-    },
-  });
+  const { data: user } = useMyProfileQuery();
+  const { handleSubmit, formState, register, control, setValue } =
+    useForm<FormData>({
+      mode: "onTouched",
+      defaultValues: {
+        username: "",
+        otp: "",
+        file: "",
+      },
+    });
+
+  useEffect(() => {
+    setValue("username", user?.pseudo);
+  }, [user?.pseudo]);
+
+  console.log("$$pseudoooo", user?.pseudo);
   const { errors } = formState;
 
   const {
     mutate: generateQrCode,
     data: QrCode,
     status: sta,
-    isLoading: isGenerateQrCodeLoading,
+    isLoading: isGeneratingQrCode,
   } = useGenerate2Fa();
-  const { mutateAsync: activate2Fa, data: fa, status: fas } = useActivate2Fa();
 
-  console.log("$$2fa", fa, fas);
+  const {
+    mutate: uploadImgProfile,
+    status,
+    isLoading: isUploadingImg,
+  } = useChangeImgProfileMutation();
 
-  // console.log("$$qrCode", sta);
+  console.log("$$big status", status);
+
+  const { mutateAsync: activate2Fa, isLoading: isActivating2Fa } =
+    useActivate2Fa();
+
+  const {
+    field: { onChange },
+    fieldState: { error },
+  } = useController({
+    name: "file",
+    control,
+  });
+
+  const changeFile = (file?: File) => {
+    file && onChange(file);
+  };
+
+  const { open: openFileDialogHandler } = useDropzone({
+    multiple: false,
+    noClick: true,
+    // accept: {
+    //   acceptedTypes: "image/png, image/jpg, image/jpeg, application/pdf",
+    // },
+    onDropAccepted: (file: File[]) => {
+      console.log("$$file", file);
+      file && uploadImgProfile(file?.[0]);
+      // onFileLoaded && onFileLoaded(file?.[0]); put the putation here
+    },
+    onDropRejected: (fileRejections) => {
+      changeFile(fileRejections?.[0]?.file);
+    },
+  });
+
+  const { mutate: changePseudo, isLoading: isChangingPseudo } =
+    useChangePseudoMutation();
 
   const { doubleFaEnabled } = useAppContextState();
-
-  console.log("$$doubleFaEnabled", doubleFaEnabled);
-  // useEffect(() => {
-  //   mutateAsync();
-  // }, []);
 
   const UserInfos = () => (
     <div className="flex items-center flex-col space-y-8">
@@ -47,24 +95,31 @@ export const useUserInfosModal = () => {
         <div className="flex relative rounded-full border border-gray-100 w-24 h-24 shadow-sm mb-3">
           <Image
             layout="fill"
-            src="/assets/img/ping-pong.png"
+            src={user?.profileImage || "/assets/img/42.png"}
             className="rounded-full border border-gray-100 shadow-sm"
           />
         </div>
-        <Button variant="link">Modifier</Button>
+        <Button
+          variant="link"
+          onClick={openFileDialogHandler}
+          isLoading={isUploadingImg}
+        >
+          Modifier
+        </Button>
       </div>
       <form
         onSubmit={handleSubmit(({ username }) => {
-          activate2Fa(username);
+          changePseudo(username);
         })}
         className="flex flex-row gap-3"
       >
         <TextField
-          id="email"
+          id="username"
           {...register("username")}
           error={errors.username}
+          control={control}
         />
-        <Button variant="contained" color="active">
+        <Button variant="contained" color="active" isLoading={isChangingPseudo}>
           Valider
         </Button>
       </form>
@@ -79,7 +134,11 @@ export const useUserInfosModal = () => {
           <Image width={120} height={120} src={QrCode} className="rounded-3x" />
           <div>
             <TextField id="otp" {...register("otp")} error={errors.username} />
-            <Button variant="contained" color="active">
+            <Button
+              variant="contained"
+              color="active"
+              isLoading={isActivating2Fa}
+            >
               Activer
             </Button>
           </div>
@@ -94,12 +153,11 @@ export const useUserInfosModal = () => {
               variant="contained"
               color="active"
               onClick={() => generateQrCode()}
-              isLoading={isGenerateQrCodeLoading}
+              isLoading={isGeneratingQrCode}
             >
               Activer
             </Button>
           )}
-          {/* {QrCod && <QrCode url={QrCod} /> } */}
         </div>
       )}
     </div>

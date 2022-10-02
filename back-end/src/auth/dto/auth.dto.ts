@@ -23,17 +23,7 @@ export class AuthInDto {
 
 export class UserUpdateDto {
     @IsString()
-    password: string;
-    @IsString()
     pseudo: string;
-    @IsString()
-    firstName: string;
-    @IsString()
-    lastName: string;
-    @IsString()
-    legend: string;
-    @IsString()
-    image: string;
 }
 
 export class FriendDto {

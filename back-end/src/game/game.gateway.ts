@@ -5,7 +5,7 @@ import { Server, Socket } from 'socket.io';
 import {v4 as uuidv4} from "uuid"
 import {GamePong} from "./GamePong"
 import { AuthService } from '../auth/auth.service';
-import { User } from "@prisma/client";
+import { User, Game } from "@prisma/client";
 import { UserService } from '../user/user.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { ChatGateway } from "src/chat/chat.gateway";
@@ -48,7 +48,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   private mapIdSocket = new Map<string, number>();
   private gamePongs = new Map<string, GamePong>();
   private players = new Set<number>();
-  private invitation : GamePong[] = [];
+
   
 
   @WebSocketServer() server: Server;
@@ -84,28 +84,42 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     this.logger.log(`Socket ${client.id} disconnect on the server`);
     let id = this.mapIdSocket.get(client.id);
     let delGame: GamePong = null;
-    this.gamePongs.forEach((game) => {
-      if ((game.id1 == id) && (game.idInterval === null)){
-        delGame = game;
-      }
-    });
-    if (delGame)
+    if (this.getAllSocketID(id).length <= 1)
     {
-      this.cancelGame(delGame)
-      this.server.socketsLeave(delGame.roomID);
-      this.gamePongs.delete(delGame.roomID);    
+      this.gamePongs.forEach((game) => {
+        if ((game.id1 == id) || (game.id2 == id)){
+          delGame = game;
+        }
+      });
+      if (delGame && this.getAllSocketID(id).length <= 1)
+      {
+        if ((delGame.idInterval === null)){
+          this.server.socketsLeave(delGame.roomID);
+          this.gamePongs.delete(delGame.roomID);
+        }
+        else
+        {
+          if (id == delGame.id1)
+          {
+            delGame.timeOut1 = setTimeout(this.timeOutDeconnectionHandler, 5000, this, delGame, delGame.id2);
+          }
+          else
+          {
+            delGame.timeOut2 = setTimeout(this.timeOutDeconnectionHandler, 5000, this, delGame, delGame.id1);
+          }
+        }
+      }
+      this.queue = this.queue.filter(e => e.sock.id != client.id);
+      this.queueBonus = this.queueBonus.filter(e => e.sock.id != client.id);
     }
-    this.queue = this.queue.filter(e => e.sock.id != client.id);
-    this.queueBonus = this.queueBonus.filter(e => e.sock.id != client.id);
     this.mapIdSocket.delete(client.id);
-
   }
 
   handleUserID(client: Socket, user: User){
     this.logger.log(`Socket ${client.id} connect on the server and real id is ${user.id}`);
     this.gamePongs.forEach((game) => {
       if ((game.id1 == user.id || game.id2 == user.id)){
-        if (game.idInterval !== null)
+        if (game.idInterval == null)
         {
           if (game.id1 == user.id)
           {
@@ -115,6 +129,22 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         }
         else
         {
+          if (user.id == game.id1)
+          {
+            if (game.timeOut1 != null)
+            {
+              clearTimeout(game.timeOut1);
+              game.timeOut1 = null;
+            }
+          }
+          else
+          {
+            if (game.timeOut2 != null)
+            {
+              clearTimeout(game.timeOut2);
+              game.timeOut2 = null;
+            }
+          }
           client.emit("game start");
           client.join(game.roomID);
         }
@@ -218,19 +248,37 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     }
   }
 
-  timeOutinvitationHandler(gameGateway: GameGateway, game :GamePong) 
+  timeOutDeconnectionHandler(gameGateway :GameGateway,  game :GamePong, winnerId: number) 
+  {
+    if (game)
+    {
+      if (winnerId == game.id1)
+      {
+        game.info.score1 = 11;
+        game.info.score2 = 0;
+      }
+      else
+      {
+        game.info.score1 = 0;
+        game.info.score2 = 11;
+      }
+      gameGateway.stopGame(game, winnerId);
+    }
+  }
+
+  timeOutinvitationHandler(gameGateway :GameGateway, game :GamePong, client: Socket) 
   {
     if (game && game.idInterval == null)
     {
-      gameGateway.server.to(game.roomID).emit("game cancel");
-      gameGateway.cancelGame(game);
+      gameGateway.cancelGame(game, client);
     }
 
   }
 
-  cancelGame(game: GamePong)
+  cancelGame(game: GamePong, client: Socket)
   {
-    this.chatGateway.cancelInvitationGame(game.id1, game.id2);
+    const id = this.mapIdSocket.get(client.id);
+    this.chatGateway.sendAllGameInvitation(id);
     this.server.socketsLeave(game.roomID);
     this.gamePongs.delete(game.roomID);
   }
@@ -282,10 +330,9 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     game.addPlayer(user2.pseudo, user2.id);
     console.log(game);
     client.join(game.roomID);
-    this.invitation.push(game);
-    this.chatGateway.InvitationGame(id1, id2);
+    this.chatGateway.sendAllGameInvitation(id2);
     client.emit("wait game");
-    setTimeout(this.timeOutinvitationHandler, 20000, this, game);
+    setTimeout(this.timeOutinvitationHandler, 100000,this, game, client);
   }
 
   @SubscribeMessage('invite')
@@ -309,6 +356,8 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     {
       if (game.id2 == id)
       {
+
+        this.chatGateway.sendAllGameInvitation(game.id2);
         client.join(game.roomID);
         this.startGame(game);
       }
@@ -338,6 +387,9 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     game.setIdInterval(idInterval);
     this.players.add(game.id1);
     this.players.add(game.id2);
+    this.chatGateway.sendAllStatus();
+    this.chatGateway.wss.emit("New Player", game.id1);
+    this.chatGateway.wss.emit("New Player", game.id2);
     console.log(this.players);
     console.log(game.roomID);
     this.server.to(game.roomID).emit("game start");
@@ -421,7 +473,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         },
       }
     });
-    this.prisma.game.create({
+    let game_info : Game = await this.prisma.game.create({
       data: {
       id_1: game.id1,
       id_2: game.id2,
@@ -433,6 +485,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     
     this.players.delete(game.id1);
     this.players.delete(game.id2);
+    this.chatGateway.sendAllStatus();
     const endGame : EndGame ={
     id1 : game.id1,
     id2 : game.id2,
@@ -490,8 +543,8 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   searchInvite(id: number) : number[]
   {
     let ids : number[] = []
-    this.invitation.forEach((game) => {
-      if (game.id2 == id){
+    this.gamePongs.forEach((game) => {
+      if (game.id2 == id && game.idInterval == null){
         ids.push(game.id1);
       }
     });
@@ -506,7 +559,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
 
   getAllSocketID(id: number) : string[]
-    {
+  {
         let socketIds : string[] = [];
         this.mapIdSocket.forEach(function(val, key){
             if(val == id)
@@ -515,7 +568,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
             }
           });
         return socketIds;
-    }
+  }
 };
 
 

@@ -4,5 +4,16 @@ import IconGame from "./game";
 import IconMessage from "./message";
 import IconAccept from "./accept";
 import IconRefuse from "./refuse";
+import IconAddFriend from "./addFriend";
+import IconBlock from "./block";
 
-export { IconCross, Icon42Logo, IconGame, IconMessage, IconAccept, IconRefuse };
+export {
+  IconCross,
+  Icon42Logo,
+  IconGame,
+  IconMessage,
+  IconAccept,
+  IconRefuse,
+  IconAddFriend,
+  IconBlock,
+};

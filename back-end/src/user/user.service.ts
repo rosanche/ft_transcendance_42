@@ -8,7 +8,7 @@ export class UserService {
   constructor(private Prisma: PrismaService) {}
 
   async findAll(): Promise<any[]> {
-    const user = await this.Prisma.user.findMany({
+    const users = await this.Prisma.user.findMany({
       select: {
         id: true,
         pseudo: true,
@@ -46,7 +46,8 @@ export class UserService {
         },
       },
     });
-    return user;
+    //console.log("$$USER bitch", users)
+    return users;
   }
 
   async findid(nbr: number) {
@@ -219,18 +220,12 @@ export class UserService {
 
   UserModif(users: any, dto: UserUpdateDto) {
     if (dto.pseudo) users.pseudo = dto.pseudo;
-    if (dto.firstName) users.firstName = dto.firstName;
-    if (dto.lastName) users.lastName = dto.lastName;
-    if (dto.legend) users.legend = dto.legend;
     const user = this.Prisma.user.update({
       where: {
         id: users.id,
       },
       data: {
         pseudo: users.pseudo,
-        lastName: users.lastName,
-        firstName: users.firstName,
-        legend: users.legend,
       },
     });
     return user;
@@ -277,6 +272,22 @@ export class UserService {
             profileImage: true,
           },
         },
+        myblocked: {
+          select: {
+            id: true,
+            pseudo: true,
+            legend: true,
+            profileImage: true,
+          },
+        },
+        blocked: {
+          select: {
+            id: true,
+            pseudo: true,
+            legend: true,
+            profileImage: true,
+          },
+        },
         User_channel: {
           select: {
             id: true,
@@ -288,8 +299,8 @@ export class UserService {
     return user;
   }
 
-  UserUploadedImage(users: any, src: string) {
-    const user = this.Prisma.user.update({
+  async UserUploadedImage(users: any, src: string) {
+    const user = await this.Prisma.user.update({
       where: {
         id: users.id,
       },
@@ -297,6 +308,7 @@ export class UserService {
         profileImage: src,
       },
     });
+    console.log("ouiuiuiu")
     return user;
   }
 
