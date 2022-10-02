@@ -1,2 +1,0 @@
--- AlterTable
-ALTER TABLE "ban" ALTER COLUMN "finshBan" SET DATA TYPE BIGINT;
