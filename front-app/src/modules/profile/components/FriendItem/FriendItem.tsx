@@ -18,7 +18,7 @@ import {
   UserStatus,
 } from "modules/profile/types";
 import Image from "next/image";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 interface UsersStatus {
   id: number;
@@ -37,7 +37,7 @@ export const FriendItem = ({
   const {
     data: { myfriends, friendReqSend },
   } = useMyProfileQuery();
-  let status = "offline";
+  const [status, setStatus] = useState("offline");
 
   const state = {
     online: "En ligne",
@@ -50,6 +50,10 @@ export const FriendItem = ({
 
   useEffect(() => {
     console.log("$$connected", socket.connected);
+    if (!socket.connected) {
+      socket.connect();
+    }
+    console.log("$$connected", socket.connected);
     socket.on("request_friend", () => {
       queryClient.invalidateQueries([enumProfileQueryKeys.MY_PROFILE]);
     });
@@ -57,11 +61,9 @@ export const FriendItem = ({
       queryClient.invalidateQueries([enumProfileQueryKeys.MY_PROFILE]);
     });
     socket.on("list status", (usersStatus: UsersStatus[]) => {
-      status = usersStatus?.find((user) => user.id === id).status;
-      console.log(
-        "$$Status socket",
-        usersStatus?.find((user) => user.id === id).status
-      );
+      setStatus(usersStatus?.find((user) => user.id === id).status);
+      console.log("$$Status socket", usersStatus);
+      console.log("$$Status user", status);
     });
 
     console.log("$$emitttt");
@@ -82,6 +84,7 @@ export const FriendItem = ({
 
   const blockUser = async () => {
     console.log("$$user blocked", id);
+    socket.emit("Get status");
     socket.emit("block user", id);
   };
 
@@ -104,6 +107,7 @@ export const FriendItem = ({
             layout="fill"
             // objectFit="contain"
             src={profileImage || "/assets/img/42.png"}
+            priority={true}
             className="rounded-full"
           />
         </div>
@@ -119,7 +123,7 @@ export const FriendItem = ({
               isBlocked && "text-red"
             )}
           >
-            {type === "friend"
+            {type === "friend" || "friend_resume"
               ? state[status]
               : type === "friend_request"
               ? "Demande d'ami"
@@ -128,7 +132,9 @@ export const FriendItem = ({
         </div>
       </div>
 
-      {type === "friend_request" ? (
+      {type === "friend_resume" ? (
+        <></>
+      ) : type === "friend_request" ? (
         <div className="flex ml-2 space-x-1">
           <Button variant="icon" onClick={acceptFriendRequest}>
             <IconAccept />

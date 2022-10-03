@@ -7,7 +7,18 @@ export class GameHistoryService {
   constructor(private Prisma: PrismaService) {}
 
   async getAllGame() {
-    return await this.Prisma.game.findMany();
+    return await this.Prisma.game.findMany(
+      {
+        select: {
+          id: true,
+          id_1: true,
+          id_2: true,
+          score_1: true,
+          score_2: true,
+          winner: true
+        }
+      }
+    );
   }
 
   async findGameID(user: User) {
@@ -22,6 +33,14 @@ export class GameHistoryService {
           },
         ],
       },
+      select: {
+        id: true,
+        id_1: true,
+        id_2: true,
+        score_1: true,
+        score_2: true,
+        winner: true
+      }
     });
   }
 }

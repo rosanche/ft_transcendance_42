@@ -24,9 +24,7 @@ export const useAddFriendModal = () => {
   });
   const { errors } = formState;
   const { data: users, isLoading, status } = useUsersQuery();
-  const {
-    data: { id: myId },
-  } = useMyProfileQuery();
+  const { data: profil } = useMyProfileQuery();
 
   const searchTerm = watch("searchTerm");
 
@@ -64,7 +62,9 @@ export const useAddFriendModal = () => {
           /> */}
           {users?.map(
             (friend) =>
-              friend.id !== myId && <FriendItem {...friend} type="friend" />
+              friend.id !== profil?.id && (
+                <FriendItem {...friend} type="friend" />
+              )
           )}
         </>
       ) : (

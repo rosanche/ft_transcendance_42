@@ -21,7 +21,7 @@ async function bootstrap() {
   app.use(bodyParser.urlencoded({limit: '5mb', extended: true}))
   console.log("-- server --")
   app.enableCors({
-    origin: 'http://localhost:3001',
+    origin: `http://${configService.get("HOST")}:3001`,
     credentials: true
   })
   await app.listen(PORT);

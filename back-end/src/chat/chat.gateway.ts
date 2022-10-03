@@ -75,7 +75,12 @@ export class ChatGateway implements OnGatewayInit {
         if (user)
         {
             this.iddd.delete(user.id);
+            if (this.getAllSocketID(user.id).length <= 1)
+            {
+                this.sendAllStatus();
+            }
             this.mapIdSocket.delete(client.id);
+            
         }
     }
 
@@ -85,6 +90,10 @@ export class ChatGateway implements OnGatewayInit {
             this.logger.log(`Socket ${client.id} connect on the server with pseudo ${user.pseudo}`);
             this.iddd[user.id] = client.id;
             this.mapIdSocket.set(client.id, user.id);
+            if (this.getAllSocketID(user.id).length == 1)
+            {
+                this.sendAllStatus();
+            }
         }
         else
         {
@@ -676,7 +685,7 @@ export class ChatGateway implements OnGatewayInit {
                     this.listChannels(client);
                 }
             }
-            return
+            return;
     }
 
     sendAllGameInvitation(id: number)
@@ -686,6 +695,7 @@ export class ChatGateway implements OnGatewayInit {
         socketIds.forEach(sock => {
             this.wss.to(sock).emit("list game invitations", invitations);
         });
+        return;
     }
 
     @SubscribeMessage('Get Game Invitation')
@@ -694,6 +704,7 @@ export class ChatGateway implements OnGatewayInit {
         const id = this.mapIdSocket.get(client.id);
         const invitations = this.gameGateway.searchInvite(id);
         client.emit("list game invitations", invitations);
+        return;
     }
 
     @SubscribeMessage('Get Players')
@@ -706,6 +717,7 @@ export class ChatGateway implements OnGatewayInit {
     RefuseInvitation(client: Socket, id: number)
     {
         this.gameGateway.refuseGame(id);
+        return;
     }
 
 
@@ -733,19 +745,23 @@ export class ChatGateway implements OnGatewayInit {
         const listStatus = this.getStatus();
         console.log("$$GetStatus2", listStatus)
         client.emit("list status", listStatus);
+        return;
     }
 
     sendAllStatus()
     {
-        const listStatus = this.getStatus;
+        const listStatus = this.getStatus();
         this.wss.emit("list status", listStatus);
+        return;
     }
 
     getStatus(): {id: number,status: string}[]
     {
         const players : Set<number> = this.gameGateway.getPlayingUser();
+        console.log("$players", players);
         const onlines : Set<number> = this.getOnlineUser();
-        let status : {id: number,status: string}[];
+        console.log("$onlines", onlines);
+        let status : {id: number,status: string}[] = [];
         onlines.forEach(element => {
             if(players.has(element))
             {
@@ -762,8 +778,9 @@ export class ChatGateway implements OnGatewayInit {
 
     getOnlineUser() : Set<number>
     {
-        let onlines : Set<number>;
-        this.mapIdSocket.forEach(function(val){
+        console.log("mapIdSocket", this.mapIdSocket)
+        let onlines : Set<number> = new Set<number>();
+        this.mapIdSocket.forEach((val,key) => {
             onlines.add(val);
         });
 

@@ -9,10 +9,13 @@ import { useAppContextState } from "modules/common/context/AppContext";
 import { useUserInfosModal } from "modules/profile/components/useUserInfosModal/useUserInfosModal";
 import { NotificationsContainer } from "modules/profile/components/NotificationsContainer/NotificationsContainer";
 import { useSocketContext } from "modules/common/context/SocketContext";
+import { GameHistoryContainer } from "modules/profile/components/GameHistoryContainer/GameHistoryContainer";
+import { useGameHistoryQuery } from "modules/profile/queries/useGameHistoryQuery";
 
 const Profil = () => {
   const router = useRouter();
-  const { data: user, isLoading } = useMyProfileQuery();
+  const { data: user, isProfilLoading } = useMyProfileQuery();
+  const { data: games, isGameHistoryLoading } = useGameHistoryQuery();
   const { doubleFaEnabled } = useAppContextState();
   const socket = useSocketContext();
 
@@ -39,13 +42,14 @@ const Profil = () => {
   }));
 
   return (
-    <Page title="Profil" isLoading={isLoading}>
+    <Page title="Profil" isLoading={isProfilLoading || isGameHistoryLoading}>
       <div className="grid grid-flow-col space-x-3">
         <div className="flex flex-col items-center  mb-16 space-y-4">
           <div className="flex relative rounded-full border border-gray-100 w-44 h-44 shadow-sm">
             <Image
               layout="fill"
               src={user?.profileImage || "/assets/img/42.png"}
+              priority={true}
               className="rounded-full border border-gray-100 shadow-sm"
             />
           </div>
@@ -61,6 +65,7 @@ const Profil = () => {
         </div>
         <FriendsContainer friends={friends} />
         <NotificationsContainer friends={user?.friendReqReceive} />
+        <GameHistoryContainer games={games} />
       </div>
     </Page>
   );

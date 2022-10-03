@@ -66,7 +66,7 @@ export class AuthController {
         const access_token = await this.authService.login(user);
         res.cookie('access_token', access_token.access_token);
 
-        res.redirect(`http://localhost:3001/connexion?2faEnabled=${req.user['isTwoFactorAuthenticationEnabled']}`);
+        res.redirect(`http://${this.config.get("HOST")}:${this.config.get("NEXT_PORT")}/connexion?2faEnabled=${req.user['isTwoFactorAuthenticationEnabled']}`);
     }
 
     //2FA Auth
