@@ -10,7 +10,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google')
 {
     constructor(config: ConfigService, private prisma: PrismaService)
     {
-        const url =  `http://localhost:${config.get("NESTJS_PORT")}/auth/google/redirect`
+        const url =  `http://${config.get("HOST")}:${config.get("NESTJS_PORT")}/auth/google/redirect`
         super({
             clientID : config.get("GOOGLE_ID"),
             clientSecret : config.get("GOOGLE_SECRET"),

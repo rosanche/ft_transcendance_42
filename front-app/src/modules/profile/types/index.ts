@@ -30,4 +30,17 @@ export interface Friend {
   username: string;
 }
 export type UserStatus = "online" | "offline" | "playing" | "blocked";
-export type FriendType = "friend_request" | "game_request" | "friend";
+export type FriendType =
+  | "friend_request"
+  | "game_request"
+  | "friend"
+  | "friend_resume";
+
+export interface ApiGame {
+  id: number;
+  id_1: number;
+  score_1: number;
+  score_2: number;
+  id_2: number;
+  winner: number;
+}

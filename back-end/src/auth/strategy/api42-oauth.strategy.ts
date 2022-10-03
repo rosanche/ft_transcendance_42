@@ -9,7 +9,7 @@ export class API42Strategy extends PassportStrategy(Strategy)
 {
     constructor(config: ConfigService, private prisma: PrismaService)
     {
-        const url =  `http://localhost:${config.get("NESTJS_PORT")}/auth/42api/redirect`
+        const url =  `http://${config.get("HOST")}:${config.get("NESTJS_PORT")}/auth/42api/redirect`
         super({
             clientID : config.get("42API_ID"),
             clientSecret : config.get("42API_SECRET"),

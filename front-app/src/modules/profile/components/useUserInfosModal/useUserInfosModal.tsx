@@ -100,6 +100,7 @@ export const useUserInfosModal = () => {
                 `http://localhost:3000/${user?.profileImage}`) ||
               "/assets/img/42.png"
             }
+            priority={true}
             className="rounded-full border border-gray-100 shadow-sm"
           />
         </div>

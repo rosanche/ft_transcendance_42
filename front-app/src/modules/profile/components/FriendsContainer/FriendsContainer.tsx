@@ -23,7 +23,7 @@ export const FriendsContainer = ({ friends }: Props) => {
     >
       <div className="flex flex-col">
         {friends?.map((friend) => (
-          <FriendItem {...friend} type="friend" />
+          <FriendItem {...friend} type="friend" isBlocked={false} />
         ))}
       </div>
     </RoundedContainer>
