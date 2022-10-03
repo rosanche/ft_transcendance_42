@@ -46,7 +46,7 @@ export const FriendItem = ({
     blocked: "Bloqué(e)",
   };
 
-  console.log("$$Status component", status);
+  console.log("$$Status component", status, socket.connected);
 
   useEffect(() => {
     console.log("$$connected", socket.connected);
@@ -66,7 +66,7 @@ export const FriendItem = ({
       console.log("$$Status user", status);
     });
 
-    console.log("$$emitttt");
+    console.log("$$Status emitttt");
     socket.emit("Get status");
 
     return () => {

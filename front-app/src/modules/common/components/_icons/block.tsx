@@ -1,6 +1,6 @@
 import * as React from "react";
 
-const IconCross = (props) => (
+const IconBlock = (props) => (
   <svg
     width={26}
     height={26}
@@ -20,4 +20,4 @@ const IconCross = (props) => (
   </svg>
 );
 
-export default IconCross;
+export default IconBlock;

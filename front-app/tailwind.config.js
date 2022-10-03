@@ -22,14 +22,14 @@ module.exports = {
           DEFAULT: "#FF04A9",
           hover: "#C70B8A",
         },
-        purple: "#A192DD",
+        purple: { DEFAULT: "#A192DD", shiny: "#3817C2" },
         green: "#63C89B",
         gray: {
           light: "#A9ACBB",
           dark: "#242832",
         },
-        black: "#21212C",
-        red: "FF4E36"
+        black: { DEFAULT: "#21212C", dark: "#1B1A21" },
+        red: "FF4E36",
       },
       gradientColorStops: {
         eerieblack: "#17191B",
