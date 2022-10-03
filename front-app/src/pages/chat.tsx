@@ -4,6 +4,18 @@ import { Button } from "modules/common/components/_ui/Button/Button";
 import socketio from "socket.io-client";
 import { useRouter } from "next/router";
 import { useSocketContext } from "modules/common/context/SocketContext";
+import { UserMp } from "modules/chat/components/Menu/Messagemp";
+
+import { MessagesChannel } from "modules/chat/components/Messages/MessagesChannel";
+import { MessagesMp } from "modules/chat/components/Messages/MessagesMp";
+import { Channel } from "modules/chat/components/Channel/Channel";
+import { Page } from "modules/common/components/_ui/Page/Page";
+import { IconMessage } from "modules/common/components/_icons/icons";
+import Image from "next/image";
+import {
+  IconAddFriend,
+  IconBlock,
+} from "modules/common/components/_icons/icons";
 
 type form = {
   idSend: number;
@@ -62,7 +74,7 @@ const Chat = () => {
   const [msg, setMsg] = useState<form[]>([]);
   const [msgMp, setMsgMp] = useState<form[]>([]);
   const [users, setUsers] = useState<users[]>([]);
-  const [cha_mp, setCha_mp] = useState<number>(1);
+  const [cha_mp, setCha_mp] = useState<string>("default");
   const [game, setGame] = useState<number>(0);
   const [frienMode, setFriendMode] = useState<number>(1);
   const [ban, setBan] = useState<ban>({
@@ -82,7 +94,7 @@ const Chat = () => {
   const [channel, setChannel] = useState<channel[]>([]);
   const [chatName, setChatName] = useState<channel>({
     id: 0,
-    name: "",
+    name: "default",
     private: false,
     user: false,
     admin: false,
@@ -155,7 +167,7 @@ const Chat = () => {
     await socket.emit("refuse friend", el.id);
   };
 
-  const changeChaMp = async (val: number) => {
+  const changeChaMp = async (val: string) => {
     setChatName({
       id: 0,
       name: "",
@@ -215,6 +227,8 @@ const Chat = () => {
   };
   const Ban = async () => {
     await socket.emit("blockedChannel", ban);
+    console.log(`a ouai c'est toi ${ban.idChannel}`);
+    await socket.emit("list user channel", ban.idChannel);
     //const u =  await channel.filter(el => v.name !== el.name);
     await console.log(ban);
     await console.log(chatName);
@@ -224,14 +238,18 @@ const Chat = () => {
   };
 
   const sendMessage = async () => {
-    console.log("ouiiiiiiiii");
+    if (cha_mp === "channel") {
+      console.log("ouiiiiiiiii");
 
-    console.log("UN JOUR PEUT ETRE");
-    console.log(data);
-    console.log(msg);
-    await socket.emit("channelToServer", data);
+      console.log("UN JOUR PEUT ETRE");
+      console.log(data);
+      console.log(msg);
+      await socket.emit("channelToServer", data);
 
-    setData({ idSend: data.idSend, idReceive: data.idReceive, texte: "" });
+      setData({ idSend: data.idSend, idReceive: data.idReceive, texte: "" });
+    } else if (cha_mp === "message private") {
+      sendPrivate();
+    }
   };
 
   const sendPrivate = async () => {
@@ -265,6 +283,7 @@ const Chat = () => {
       });
     }
   };
+
   const demParti = (el: form) => {
     console.log(el);
     router.push(
@@ -295,6 +314,14 @@ const Chat = () => {
      // setMyMp(c);
     });
 */
+
+    socket.on("cha users", (c: number[]) => {
+      //  setChannel((u)=> [...u,c]);
+      console.log("oui 3");
+      //setUsers(c);
+      console.log(c);
+    });
+
     socket.on("user list", (c: users[]) => {
       //  setChannel((u)=> [...u,c]);
       console.log("oui 3");
@@ -370,6 +397,7 @@ const Chat = () => {
     socket.on("info channel", (mm: form[]) => {
       //socket.off('info channel');
       console.log(mm);
+
       console.log("oui 1000");
       setMsg(mm);
     });
@@ -403,6 +431,7 @@ const Chat = () => {
     });
 
     socket.on("chatToClient", (src: form) => {
+      console.log("AAAAAAAAAAAAAAAAa");
       log(src);
     });
 
@@ -417,9 +446,6 @@ const Chat = () => {
       socket.off("channels list");
       socket.off("info channel");
       socket.off("channels pub");
-      socket.off("connect");
-      socket.off("user info");
-      socket.off("auth error");
       socket.off("disconnect");
       socket.off("chatToClient");
       socket.off("left chanel");
@@ -438,7 +464,7 @@ const Chat = () => {
         .find((row) => row.startsWith("access_token"))
         ?.split("=")[1];
       socket.connect();
-      // console.log(cookieValue);
+      // console.log(cookieValue);Message
       socket.auth.token = cookieValue;
       //   console.log(router.query)
       socket.connect();
@@ -454,851 +480,209 @@ const Chat = () => {
       socket.disconnect();
     };
   }, []);
-
   return (
-    <RoundedContainer className="px-14 py-20 mt-16 bg-indigo-200">
-      <span>
-        {game != 0 && (
-          <Button
-            className="mb-10  px-2 py-1"
-            variant="contained"
-            color="active"
-            onClick={() => {
-              accept_invite();
-            }}
-          >
-            game
-          </Button>
-        )}
-        <Button
-          className="mb-10  px-2 py-1"
-          variant="contained"
-          color="active"
-          onClick={() => {
-            changeChaMp(1);
-          }}
-        >
-          channel
-        </Button>
-        <Button
-          className="mb-10  px-2 py-1"
-          variant="contained"
-          color="active"
-          onClick={() => {
-            changeChaMp(2);
-          }}
-        >
-          message private
-        </Button>
-        <Button
-          className="mb-10  px-2 py-1"
-          variant="contained"
-          color="active"
-          onClick={() => {
-            changeChaMp(3);
-          }}
-        >
-          friend
-        </Button>
-      </span>
-      <div>
-        {cha_mp == 1 && (
-          <div>
-            <h1>{chatName.name}</h1>
+    <Page title="chat" width=" w-2/3">
+      <div className="flex flex-1 flex-row h-5/6 scroll-smooth max-h-scren ">
+        <RoundedContainer className="flex-none w-1/3  mu-3 items-start mb-9">
+          <span className="text-white font-medium text-2xl text-center leading-[3rem]">
+            {cha_mp}
+          </span>
+          <span className=" flex-initial justify-center">
             <Button
-              className="mb-10  px-2 py-1"
+              className="ml-1 text-lg"
+              variant="link"
+              disabled={false}
+              color=""
+              onClick={() => changeChaMp("channel")}
+            >
+              channel
+            </Button>
+            <Button
+              className="ml-2 text-lg"
+              variant="link"
+              disabled={false}
+              onClick={() => changeChaMp("message private")}
+            >
+              message private
+            </Button>
+          </span>
+          {
+            cha_mp == "message private" && <text>sss</text>
+            /*
+            users
+              ?.filter(
+                (a) => msgMp.find((u) => u.idReceive === a.id) != undefined
+              )
+              .map((el, i) => (
+                <Button
+                  key={i}
+                  className=""
+                  variant="link"
+                  color=""
+                  onClick={() => {
+                    changechannel(el);
+                  }}
+                >
+                  <UserMp key={i} user={el} />
+                </Button>
+                ))*/
+          }
+          {cha_mp == "channel" &&
+            channel?.map((el, i) => (
+              <Button
+                key={i}
+                className=""
+                variant="link"
+                color=""
+                onClick={() => {
+                  changechannel(el);
+                }}
+              >
+                <Channel key={i} info={el} />
+              </Button>
+            ))}
+        </RoundedContainer>
+        <div className="flex flex-1 flex-col ml-8 w-2/3 justify-between ">
+          <span className="text-white font-medium text-2xl text-center leading-[3rem]">
+            {chatName.name}
+            {chatName.admin && !chatName.owner && (
+              <span className="ml-1">(admin)</span>
+            )}
+            {chatName.admin && chatName.owner && (
+              <span className="ml-1">
+                (owner)
+                <Button variant="icon" color="active">
+                  <IconBlock />
+                </Button>
+                <Button variant="icon" color="active">
+                  <IconBlock />
+                </Button>
+                <Button variant="icon" color="active">
+                  <IconBlock />
+                </Button>
+                <Button variant="icon" color="active">
+                  <IconBlock />
+                </Button>
+              </span>
+            )}
+          </span>
+          <RoundedContainer className="flex overflow-auto overscroll-contain h-3/4  mu-3  mb-9">
+            {cha_mp === "channel" && (
+              <MessagesChannel
+                key="channel"
+                msg={msg}
+                idme={me.id}
+                idCourant={chatName.id}
+              />
+            )}
+            {
+              cha_mp === "message private" && (
+                <MessagesMp
+                  key="mp"
+                  msgMp={msgMp}
+                  idme={me.id}
+                  idCourant={chatName.id}
+                />
+              )
+              /*
+            cha_mp === "message private" &&
+            msgMp
+              .filter((e) => e.idReceive == chatName.id)
+              .map((el, i) => (
+                <div className="m-1.5">
+                  {el.idSend != me.id && (
+                    <div className="flex justify-start">
+                      <OtherMessage key={i} message={el} />
+                    </div>
+                  )}
+                  {el.idSend == me.id && (
+                    <div className="flex justify-end">
+                      <MyMessage key={i} message={el} />
+                    </div>
+                  )*
+                </div>
+                  ))*/
+            }
+          </RoundedContainer>
+          <div className="flex flex-row  h-8 mb-10">
+            <input
+              className="rounded-lg flex w-full"
+              type="text"
+              value={data.texte}
+              onChange={(e) => {
+                setData({
+                  idSend: me.id,
+                  idReceive: data.idReceive,
+                  texte: e.target.value,
+                });
+                console.log(data);
+              }}
+              placeholder="Enter Character Name"
+              onKeyPress={(event) => {
+                event.key === "Enter" && sendMessage();
+              }}
+            ></input>
+            <Button
+              className="ml-4 text-center items-center  align-middle"
               variant="contained"
               color="active"
-              onClick={() => setCreate(!create)}
+              icon={<IconMessage />}
+              onClick={() => sendMessage()}
             >
-              create
+              envoie
             </Button>
-            {!create && (
-              <div>
-                {chatName.id != 0 && (
-                  <Button
-                    className="mb-10  px-2 py-1"
-                    variant="contained"
-                    color="active"
-                    onClick={() => quit()}
-                  >
-                    quit
-                  </Button>
-                )}
-                {newOwner && (
-                  <h3>
-                    new owner :
-                    <input
-                      className=" px-2 py-1"
-                      type="text"
-                      value={ban.pseudo}
-                      onChange={(e) => {
-                        setBan({
-                          mute_ban: "",
-                          name: chatName.name,
-                          pseudo: e.target.value,
-                          time: ban.time,
-                          motif: "",
-                        });
-                      }}
-                      placeholder="Enter new owner"
-                      name="chat"
-                    />
-                    {ban.pseudo !== "" && (
-                      <Button
-                        className="mb-10  px-2 py-1"
-                        variant="contained"
-                        color="active"
-                        onClick={() => changeOwner(ban)}
-                      >
-                        envoie
-                      </Button>
-                    )}
-                  </h3>
-                )}
-
-                {chatName.admin && (
-                  <div>
-                    {chatName.owner && (
-                      <Button
-                        className="mb-10  px-2 py-1"
-                        variant="contained"
-                        color="active"
-                        onClick={() => setNewAdmin(!newAdmin)}
-                      >
-                        add admin
-                      </Button>
-                    )}
-                    {newAdmin && (
-                      <h3>
-                        new admin :
-                        <input
-                          className=" px-2 py-1"
-                          type="text"
-                          value={ban.pseudo}
-                          onChange={(e) => {
-                            setBan({
-                              mute_ban: "",
-                              name: chatName.name,
-                              pseudo: e.target.value,
-                              time: ban.time,
-                              motif: "",
-                            });
-                          }}
-                          placeholder="Enter new owner"
-                          name="chat"
-                        />
-                        {ban.pseudo !== "" && (
-                          <Button
-                            className="mb-10  px-2 py-1"
-                            variant="contained"
-                            color="active"
-                            onClick={() => addAdmin(ban)}
-                          >
-                            envoie
-                          </Button>
-                        )}
-                      </h3>
-                    )}
-                    <Button
-                      className="mb-10  px-2 py-1"
-                      variant="contained"
-                      color="active"
-                      onClick={() => log(data)}
-                    >
-                      blocked
-                    </Button>
-                    <Button
-                      className="mb-10  px-2 py-1"
-                      variant="contained"
-                      color="active"
-                      onClick={() =>
-                        setBan({
-                          mute_ban: "mute",
-                          name: chatName.name,
-                          pseudo: ban.pseudo,
-                          time: ban.time,
-                          motif: ban.motif,
-                        })
-                      }
-                    >
-                      mute
-                    </Button>
-                    <Button
-                      className="mb-10  px-2 py-1"
-                      variant="contained"
-                      color="active"
-                      onClick={() => setInvite(!invite)}
-                    >
-                      invite user
-                    </Button>
-                    {invite && (
-                      <span>
-                        pseudo :
-                        <input
-                          className=" px-2 py-1"
-                          type="text"
-                          value={ban.pseudo}
-                          onChange={(e) => {
-                            setBan({
-                              mute_ban: ban.mute_ban,
-                              name: chatName.name,
-                              pseudo: e.target.value,
-                              time: ban.time,
-                              motif: ban.motif,
-                            });
-                          }}
-                          placeholder="Enter  pseudo"
-                          name="chat"
-                        />
-                        {ban.pseudo && (
-                          <Button
-                            className="mb-10  px-2 py-1"
-                            variant="contained"
-                            color="active"
-                            onClick={() => inviteChan(ban)}
-                          >
-                            envoie
-                          </Button>
-                        )}
-                      </span>
-                    )}
-                    {ban.mute_ban !== "" && (
-                      <h3>
-                        <Button
-                          className="mb-10  px-2 py-1"
-                          variant="contained"
-                          color="active"
-                          onClick={() =>
-                            setBan({
-                              mute_ban: "ban",
-                              name: chatName.name,
-                              pseudo: ban.time,
-                              time: ban.time,
-                              motif: ban.motif,
-                            })
-                          }
-                        >
-                          ban
-                        </Button>
-                        <Button
-                          className="mb-10  px-2 py-1"
-                          variant="contained"
-                          color="active"
-                          onClick={() =>
-                            setBan({
-                              mute_ban: "mute",
-                              name: chatName.name,
-                              pseudo: ban.time,
-                              time: ban.time,
-                              motif: ban.motif,
-                            })
-                          }
-                        >
-                          mute
-                        </Button>
-                        <input
-                          type="radio"
-                          id="mute"
-                          name="banmute"
-                          //value={ban.mute_ban}
-                          onChange={() => {
-                            console.log("mute");
-                            setBan({
-                              mute_ban: "mute",
-                              name: chatName.name,
-                              pseudo: ban.time,
-                              time: ban.time,
-                              motif: ban.motif,
-                            });
-                          }}
-                        />
-                        <label>mute</label>
-                        <input
-                          type="radio"
-                          id="ban"
-                          name="banmute"
-                          //value={ban.mute_ban}
-                          onChange={() => {
-                            console.log("ban");
-                            setBan({
-                              mute_ban: "ban",
-                              name: chatName.name,
-                              pseudo: ban.time,
-                              time: ban.time,
-                              motif: ban.motif,
-                            });
-                          }}
-                          checked
-                        />
-                        <label>ban</label>
-                        <div>
-                          {ban.time != 0 && <text>{ban.time}</text>}
-                          {ban.time == 0 && <text>def</text>}
-                          <input
-                            type="range"
-                            id="volume"
-                            name="volume"
-                            default={10}
-                            value={ban.time}
-                            min={0}
-                            max={100}
-                            onChange={(e) => {
-                              setBan({
-                                mute_ban: ban.mute_ban,
-                                idChannel: chatName.id,
-                                idUser: 1,
-                                time: e.target.value,
-                                motif: ban.motif,
-                              });
-                            }}
-                          />
-                        </div>
-                        <label name="time mute">time mute </label>
-                        motif :
-                        <input
-                          className=" px-2 py-1"
-                          type="text"
-                          value={ban.motif}
-                          onChange={(e) => {
-                            setBan({
-                              mute_ban: ban.mute_ban,
-                              idChannel: chatName.id,
-                              idUser: 1,
-                              time: ban.time,
-                              motif: e.target.value,
-                            });
-                          }}
-                          placeholder="Enter motif"
-                          name="chat"
-                        />
-                        {ban.idChannel != 0 && ban.idUser != 0 && (
-                          <Button
-                            className="ml-3 px-2 py-1 mr-3"
-                            variant="contained"
-                            color="active"
-                            onClick={() => Ban()}
-                          >
-                            envoie
-                          </Button>
-                        )}
-                      </h3>
-                    )}
-                  </div>
-                )}
-                <div>
-                  {chatName.name != "" && (
-                    <p>
-                      {msg
-                        .filter(
-                          (el) =>
-                            el.idReceive === data.idReceive &&
-                            users.find((u) => u.myblocked) === undefined
-                        )
-                        .map((el, i) => (
-                          <li key={i}>
-                            {el.idSend} : {el.texte}
-                            {me.id !== el.idSend && (
-                              <span>
-                                <Button
-                                  key={i}
-                                  className="ml-3 px-2 py-1"
-                                  variant="contained"
-                                  color="active"
-                                  onClick={() => BlockedUser(el)}
-                                >
-                                  !
-                                </Button>
-                                <Button
-                                  className="ml-3 px-2 py-1"
-                                  variant="contained"
-                                  color="active"
-                                  onClick={() => demParti(el)}
-                                >
-                                  ?
-                                </Button>
-                              </span>
-                            )}
-                          </li>
-                        ))}
-                      <input
-                        className=" px-2 py-1"
-                        type="text"
-                        value={data.texte}
-                        onChange={(e) => {
-                          setData({
-                            idSend: me.id,
-                            idReceive: data.idReceive,
-                            texte: e.target.value,
-                          });
-                          console.log(data);
-                        }}
-                        placeholder="Enter Character Name"
-                        onKeyPress={(event) => {
-                          event.key === "Enter" && sendMessage();
-                        }}
-                        name="chat"
-                      />
-                      <Button
-                        className="ml-3 px-2 py-1"
-                        variant="contained"
-                        color="active"
-                        onClick={() => sendMessage()}
-                      >
-                        Envoie
-                      </Button>
-                    </p>
-                  )}
-                  <p>
-                    my channels :
-                    {channel
-                      .filter((el) => el.user)
-                      .map((el, i) => (
-                        <Button
-                          key={i}
-                          className="ml-3 px-2 py-1"
-                          variant="contained"
-                          color="active"
-                          onClick={() => changechannel(el)}
-                        >
-                          {el.name}
-                        </Button>
-                      ))}
-                  </p>
-                  channels public :{" "}
-                  {channel
-                    .filter((el) => !el.user)
-                    .map((el, i) => (
-                      <Button
-                        key={i}
-                        className="ml-3 px-2 py-1"
-                        variant="contained"
-                        color="active"
-                        onClick={() => joinchannel(el)}
-                      >
-                        {el.name}
-                      </Button>
-                    ))}
-                </div>
-                <div>
-                  {
-                    /*join.password*/ passj.idChannel != 0 && (
-                      <h3>
-                        {/*join.name*/} test password :
-                        <input
-                          className=" px-2 py-1"
-                          type="password"
-                          value={passj.password}
-                          onChange={(e) => {
-                            setPassj({
-                              idChannel: passj.idChannel,
-                              name: passj.name,
-                              password: e.target.value,
-                              private: passj.private,
-                            });
-                          }}
-                          placeholder="Enter password"
-                          onKeyPress={(event) => {
-                            event.key === "Enter" && joinPass(passj);
-                          }}
-                          name="chat"
-                        />
-                        <Button
-                          className="ml-3 px-2 py-1"
-                          variant="contained"
-                          color="active"
-                          onClick={() => joinPass(passj)}
-                        >
-                          Envoie
-                        </Button>
-                      </h3>
-                    )
-                  }
-                </div>
-              </div>
-            )}
-            {create && (
-              <div>
-                password:{" "}
-                <input
-                  className=" px-2 py-1"
-                  type="password"
-                  value={passj.password}
-                  onChange={(e) => {
-                    setPassj({
-                      name: passj.name,
-                      password: e.target.value,
-                      private: passj.private,
-                    });
-                  }}
-                  placeholder="Enter password"
-                  name="chat"
-                />
-                name:{" "}
-                <input
-                  className=" px-2 py-1"
-                  type="text"
-                  value={passj.texte}
-                  onChange={(e) => {
-                    setPassj({
-                      name: e.target.value,
-                      password: passj.password,
-                      private: passj.private,
-                    });
-                  }}
-                  placeholder="name channel"
-                  name="chat"
-                />
-                <div>
-                  <input
-                    type="radio"
-                    id="private"
-                    name="type"
-                    value={passj.texte}
-                    onChange={() => {
-                      console.log("mute");
-                      setPassj({
-                        name: passj.name,
-                        password: passj.password,
-                        private: true,
-                      });
-                    }}
-                  />
-                  <label>private</label>
-
-                  <input
-                    type="radio"
-                    id="public"
-                    name="type"
-                    value={passj.texte}
-                    onChange={() => {
-                      setPassj({
-                        name: passj.name,
-                        password: passj.password,
-                        private: false,
-                      });
-                    }}
-                    checked
-                  />
-                  <label>public</label>
-                </div>
-                {passj.name != "" && (
-                  <Button
-                    className="ml-3 px-2 py-1"
-                    variant="contained"
-                    color="active"
-                    onClick={() => creatCha(passj)}
-                  >
-                    Envoie
-                  </Button>
-                )}
-              </div>
-            )}
           </div>
-        )}
-        {cha_mp == 2 && (
-          <div>
+        </div>
+      </div>
+    </Page>
+  );
+  /*
+  return (
+    <Page titre="chat" className="W-full">
+      <div className="flex flex-1 flex-row h-5/6">
+        <RoundedContainer className="flex flex-1  mu-3 items-start mb-9">
+          <span className="text-white">ddddddddddijdddd</span>
+          {channel.map((el, i) => {
             <div>
-              search users:{" "}
-              <input
-                className=" px-2 py-1"
-                type="text"
-                value={passj.texte}
-                onChange={(e) => {
-                  setPassj({
-                    name: e.target.value,
-                    password: passj.password,
-                    private: passj.private,
-                  });
-                }}
-                placeholder="name channel"
-                name="chat"
-              />
-              {passj.name.length >= 1 && (
-                <span>
-                  {users.map((el, i) => (
-                    <li key={i}>
-                      {
-                        <Button
-                          key={i}
-                          className="ml-3 px-2 py-1"
-                          variant="contained"
-                          color="active"
-                          onClick={() => {
-                            changechannel({
-                              id: el.id,
-                              name: el.pseudo,
-                              private: true,
-                              user: false,
-                              admin: false,
-                              owner: false,
-                              password: false,
-                            });
-                          }}
-                        >
-                          {el.pseudo}
-                        </Button>
-                      }
-                    </li>
-                  ))}
-                </span>
-              )}
-            </div>
+              <Message idSend={1} idReceive={el.idChannel} texte={el.name} />
+            </div>;
+          })}
+        </RoundedContainer>
+        <div className="flex flex-1  flex-col justify-between w-full">
+          <span className="text-white">Kelly</span>
+          <div className="flex justify-end h-8   mr-5 mb-10">
+            <input className="rounded-lg ml-5 " type="text"></input>
             {true && (
               <div>
-                {<h1>{data.idReceive}</h1>}
-                {msgMp
+                {msg
                   .filter(
                     (el) =>
                       el.idReceive === data.idReceive &&
                       users.find((u) => u.myblocked) === undefined
                   )
                   .map((el, i) => (
-                    <li key={i}>
-                      {el.idSend} : {el.texte}
-                      {me.id !== el.idSend && (
-                        <span>
-                          <Button
-                            className="ml-3 px-2 py-1"
-                            variant="contained"
-                            color="active"
-                            onClick={() => BlockedUser(el)}
-                          >
-                            !
-                          </Button>
-                          <Button
-                            className="ml-3 px-2 py-1"
-                            variant="contained"
-                            color="active"
-                            onClick={() => demParti(el)}
-                          >
-                            ?
-                          </Button>
-                        </span>
-                      )}
-                    </li>
+                    <Message
+                      idSend={el.idSend}
+                      idReceive={el.idReceive}
+                      texte={el.texte}
+                    />
                   ))}
-                <input
-                  className=" px-2 py-1"
-                  type="text"
-                  value={data.texte}
-                  onChange={(e) => {
-                    setData({
-                      idSend: me.id,
-                      idReceive: data.idReceive,
-                      texte: e.target.value,
-                    });
-                  }}
-                  placeholder="message..."
-                  onKeyPress={(event) => {
-                    event.key === "Enter" && sendPrivate();
-                  }}
-                  name="chat"
-                />
-                <Button
-                  className="ml-3 px-2 py-1"
-                  variant="contained"
-                  color="active"
-                  onClick={() => sendPrivate()}
-                >
-                  Envoie
-                </Button>
               </div>
             )}
-            my message private :
-            <span>
-              {users
-                .filter(
-                  (a) => msgMp.find((u) => u.idReceive === a.id) != undefined
-                )
-                .map((el, i) => (
-                  <Button
-                    key={i}
-                    className="ml-3 px-2 py-1"
-                    variant="contained"
-                    color="active"
-                    onClick={() => {
-                      changechannel({
-                        id: el.id,
-                        name: el.pseudo,
-                        private: true,
-                        user: false,
-                        admin: false,
-                        owner: false,
-                        password: false,
-                      });
-                      console.log(msg);
-                    }}
-                  >
-                    {el.pseudo}
-                  </Button>
-                ))}
-            </span>
+            <Button
+              className="ml-[0.5rem] w-[rem4.5]"
+              variant="contained"
+              color="active"
+              onClick={() => {}}
+            >
+              envoie
+            </Button>
           </div>
-        )}
-        {cha_mp == 3 && (
-          <div>
-            <Button
-              className="mb-10  px-2 py-1"
-              variant="contained"
-              color="active"
-              onClick={() => {
-                changefriendmode(1);
-              }}
-            >
-              my friend
-            </Button>
-            <Button
-              className="mb-10  px-2 py-1"
-              variant="contained"
-              color="active"
-              onClick={() => {
-                changefriendmode(2);
-              }}
-            >
-              attend
-            </Button>
-            <Button
-              className="mb-10  px-2 py-1"
-              variant="contained"
-              color="active"
-              onClick={() => {
-                changefriendmode(3);
-              }}
-            >
-              demande friend
-            </Button>
-            {frienMode === 3 && (
-              <div>
-                search users:{" "}
-                <input
-                  className=" px-2 py-1"
-                  type="text"
-                  value={passj.texte}
-                  onChange={(e) => {
-                    setPassj({
-                      name: e.target.value,
-                      password: passj.password,
-                      private: passj.private,
-                    });
-                  }}
-                  placeholder="name channel"
-                  name="chat"
-                />
-                {passj.name.length >= 1 && true && (
-                  <span>
-                    {users
-                      .filter(
-                        (el) =>
-                          el.pseudo.startsWith(passj.name) === true &&
-                          el.stastu === 0
-                      )
-                      .map((el, i) => (
-                        <li key={i}>
-                          {
-                            <Button
-                              key={i}
-                              className="ml-3 px-2 py-1"
-                              variant="contained"
-                              color="active"
-                              onClick={() => {
-                                demfriend(el);
-                              }}
-                            >
-                              {el.pseudo}
-                            </Button>
-                          }
-                        </li>
-                      ))}
-                  </span>
-                )}
-              </div>
-            )}
-            {frienMode === 1 && (
-              <div>
-                {
-                  <span>
-                    {users
-                      .filter((el) => el.stastu === 1)
-                      .map((el, i) => (
-                        <li key={i}>
-                          {
-                            <Button
-                              key={i}
-                              className="ml-3 px-2 py-1"
-                              variant="contained"
-                              color="active"
-                              onClick={() => {
-                                supfriend(el);
-                              }}
-                            >
-                              {el.pseudo}
-                            </Button>
-                          }
-                        </li>
-                      ))}
-                  </span>
-                }
-              </div>
-            )}
-            {frienMode === 2 && (
-              <div>
-                {
-                  <span>
-                    {users
-                      .filter((el) => el.stastu === 2 || el.stastu === 3)
-                      .map((el, i) => (
-                        <li key={i}>
-                          {
-                            <span>
-                              <Button
-                                key={i}
-                                className="ml-3 px-2 py-1"
-                                variant="contained"
-                                color="active"
-                                onClick={() => {
-                                  supdemfirend(el);
-                                }}
-                              >
-                                sup demande {el.pseudo}
-                              </Button>
-
-                              <Button
-                                key={i}
-                                className="ml-3 px-2 py-1"
-                                variant="contained"
-                                color="active"
-                                onClick={() => {
-                                  acceptfriend(el);
-                                }}
-                              >
-                                acpt {el.pseudo}
-                              </Button>
-
-                              <Button
-                                key={i}
-                                className="ml-3 px-2 py-1"
-                                variant="contained"
-                                color="active"
-                                onClick={() => {
-                                  refusefriend(el);
-                                }}
-                              >
-                                refuse {el.pseudo}
-                              </Button>
-                            </span>
-                          }
-                        </li>
-                      ))}
-                  </span>
-                }
-              </div>
-            )}
-          </div>
-        )}
+        </div>
       </div>
-    </RoundedContainer>
+    </Page>
   );
+                  */
 };
 
 export default Chat;
