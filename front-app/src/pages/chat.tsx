@@ -481,7 +481,6 @@ const Chat = () => {
         <div className="flex flex-1 flex-row h-5/6">
           <RoundedContainer className="flex w-1/3 flex-1 mu-3 items-start mb-9">
             <span className="text-white">ffff</span>
-            <Message idSend={1} idReceive={1} texte="ouiuiuiuiu" />
             {channel?.map((el, i) => (
               <Channel key={i} info={el} />
             ))}
@@ -499,9 +498,11 @@ const Chat = () => {
                 />
 */}
               </div>
-              <span className="text-white">
-                <Message idSend={1} idReceive={1} texte="ouiuiuiuiu" />
-              </span>
+              {msg.map((el, i) => (
+                <span className="text-white">
+                  <Message key={i} message={el} />
+                </span>
+              ))}
             </RoundedContainer>
             <div className="flex flex-row  h-8 mb-10">
               <input className="rounded-lg flex " type="text"></input>

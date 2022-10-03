@@ -1,18 +1,23 @@
 import { ReactNode } from "react";
 import { Button } from "modules/common/components/_ui/Button/Button";
 import { RoundedContainer } from "modules/common/components/_ui/RoundedContainer/RoundedContainer";
+//import  {form } from "pages/chat";
+
+type form = {
+  idSend: number;
+  idReceive: number;
+  texte: string;
+};
 
 interface Props {
-  idSend?: number;
-  idReceive: number;
-  texte: number;
+  message: form;
 }
 
 export const Message = (a: Props) => {
   return (
     <RoundedContainer className="bg=pink">
       <span>
-        {a.idSend} : {a.texte}
+        {a.message?.idSend} : {a.message?.texte}
       </span>
     </RoundedContainer>
     /*
