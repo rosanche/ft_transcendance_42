@@ -18,7 +18,7 @@ import {
   UserStatus,
 } from "modules/profile/types";
 import Image from "next/image";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 interface UsersStatus {
   id: number;
@@ -37,7 +37,7 @@ export const FriendItem = ({
   const {
     data: { myfriends, friendReqSend },
   } = useMyProfileQuery();
-  let status = "offline";
+  const [status, setStatus] = useState<UserStatus>("offline");
 
   const state = {
     online: "En ligne",
@@ -46,12 +46,11 @@ export const FriendItem = ({
     blocked: "Bloqué(e)",
   };
 
-  console.log("$$Status component", status);
+  console.log("$$Status component", status, socket.connected);
 
   useEffect(() => {
     console.log("$$connected", socket.connected);
-    if(!socket.connected)
-    {
+    if (!socket.connected) {
       socket.connect();
     }
     socket.on("request_friend", () => {
@@ -61,15 +60,22 @@ export const FriendItem = ({
       queryClient.invalidateQueries([enumProfileQueryKeys.MY_PROFILE]);
     });
     socket.on("list status", (usersStatus: UsersStatus[]) => {
-      
-      status = usersStatus?.find((user) => user.id === id).status;
       console.log(
-        "$$Status socket",
-        usersStatus
+        "$$Status SOCKETTT",
+        usersStatus,
+        id,
+        usersStatus?.find((user) => user.id === id).status
+      );
+      setStatus(usersStatus?.find((user) => user.id === id).status);
+      console.log(
+        "$$Status SOCKETTT",
+        usersStatus,
+        id,
+        usersStatus?.find((user) => user.id === id).status
       );
     });
 
-    console.log("$$emitttt");
+    console.log("$$Status emitttt");
     socket.emit("Get status");
 
     return () => {
@@ -77,7 +83,7 @@ export const FriendItem = ({
       socket.off("block user infos");
       socket.off("list status");
     };
-  }, [socket.connected]);
+  }, [socket]);
 
   const acceptFriendRequest = async () => {
     console.log("$$friend accepted", id);
@@ -109,7 +115,9 @@ export const FriendItem = ({
             height={30}
             layout="fill"
             // objectFit="contain"
-            src={profileImage || "/assets/img/42.png"}
+            src={
+              profileImage && `http://localhost:3000/${profileImage}` || "/assets/img/42.png"
+            }
             className="rounded-full"
           />
         </div>

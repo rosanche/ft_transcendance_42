@@ -781,7 +781,6 @@ export class ChatGateway implements OnGatewayInit {
         const listStatus = this.getStatus();
         console.log("$$GetStatus2", listStatus)
         client.emit("list status", listStatus);
-        return;
     }
 
     sendAllStatus()

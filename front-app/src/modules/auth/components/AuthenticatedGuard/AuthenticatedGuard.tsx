@@ -1,4 +1,5 @@
 import { useAppContextState } from "modules/common/context/AppContext";
+import { useSideBarContext } from "modules/common/context/SidebarContext";
 import { EnumRoutes } from "modules/common/routes";
 import { useRouter } from "next/router";
 import { PropsWithChildren, useEffect } from "react";
@@ -9,12 +10,15 @@ export const AuthenticatedGuard: React.FC<PropsWithChildren> = ({
   const router = useRouter();
 
   const { accessToken, doubleFaEnabled } = useAppContextState();
+  // const { page, changePage } = useSideBarContext();
 
   useEffect(() => {
     if (!accessToken && !doubleFaEnabled) {
-      router.replace(EnumRoutes.LOGIN);
+      router.pathname !== EnumRoutes.LOGIN && router.replace(EnumRoutes.LOGIN);
+    } else if (router.pathname === "/connexion") { router.replace(EnumRoutes.PROFIL);
     }
   }, [accessToken, router, doubleFaEnabled]);
+
 
   return <>{children}</>;
 };

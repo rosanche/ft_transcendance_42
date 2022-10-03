@@ -9,12 +9,17 @@ import { useAppContextState } from "modules/common/context/AppContext";
 import { useUserInfosModal } from "modules/profile/components/useUserInfosModal/useUserInfosModal";
 import { NotificationsContainer } from "modules/profile/components/NotificationsContainer/NotificationsContainer";
 import { useSocketContext } from "modules/common/context/SocketContext";
+import { useSideBarContext } from "modules/common/context/SidebarContext";
 
 const Profil = () => {
   const router = useRouter();
   const { data: user, isLoading } = useMyProfileQuery();
   const { doubleFaEnabled } = useAppContextState();
   const socket = useSocketContext();
+
+  // const { changePage } = useSideBarContext();
+
+  // useEffect()
 
   console.log("$$date", user);
 
@@ -45,7 +50,11 @@ const Profil = () => {
           <div className="flex relative rounded-full border border-gray-100 w-44 h-44 shadow-sm">
             <Image
               layout="fill"
-              src={user?.profileImage || "/assets/img/42.png"}
+              src={
+                (user?.profileImage &&
+                  `http://localhost:3000/${user?.profileImage}`) ||
+                "/assets/img/42.png"
+              }
               className="rounded-full border border-gray-100 shadow-sm"
             />
           </div>

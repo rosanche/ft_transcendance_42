@@ -6,6 +6,7 @@ import IconAccept from "./accept";
 import IconRefuse from "./refuse";
 import IconAddFriend from "./addFriend";
 import IconBlock from "./block";
+import IconProfil from "./profil";
 
 export {
   IconCross,
@@ -16,4 +17,5 @@ export {
   IconRefuse,
   IconAddFriend,
   IconBlock,
+  IconProfil,
 };

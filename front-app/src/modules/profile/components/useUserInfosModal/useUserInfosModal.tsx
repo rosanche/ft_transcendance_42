@@ -51,7 +51,7 @@ export const useUserInfosModal = () => {
     isLoading: isUploadingImg,
   } = useChangeImgProfileMutation();
 
-  console.log("$$big status", status);
+  // console.log("$$big status", status);
 
   const { mutateAsync: activate2Fa, isLoading: isActivating2Fa } =
     useActivate2Fa();
@@ -95,7 +95,11 @@ export const useUserInfosModal = () => {
         <div className="flex relative rounded-full border border-gray-100 w-24 h-24 shadow-sm mb-3">
           <Image
             layout="fill"
-            src={user?.profileImage || "/assets/img/42.png"}
+            src={
+              (user?.profileImage &&
+                `http://localhost:3000/${user?.profileImage}`) ||
+              "/assets/img/42.png"
+            }
             className="rounded-full border border-gray-100 shadow-sm"
           />
         </div>
