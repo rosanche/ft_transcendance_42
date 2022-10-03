@@ -18,15 +18,8 @@ interface Props {
 
 export const Channel = (a: Props) => {
   return (
-    <RoundedContainer className="bg=pink">
-      <Button
-        className=""
-        variant="contained"
-        color="active"
-        onClick={() => {}}
-      >
-        <span>{a.info.name}</span>
-      </Button>
+    <RoundedContainer>
+        <span className="text-white">{a.info.name}</span>
     </RoundedContainer>
   );
 };

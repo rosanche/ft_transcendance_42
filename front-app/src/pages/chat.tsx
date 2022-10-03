@@ -4,11 +4,18 @@ import { Button } from "modules/common/components/_ui/Button/Button";
 import socketio from "socket.io-client";
 import { useRouter } from "next/router";
 import { useSocketContext } from "modules/common/context/SocketContext";
-import { Message } from "modules/chat/components/Message/Message";
+import { UserMp } from "modules/chat/components/Menu/Messagemp";
+
+import { MessagesChannel } from "modules/chat/components/Messages/MessagesChannel";
+import { MessagesMp } from "modules/chat/components/Messages/MessagesMp";
 import { Channel } from "modules/chat/components/Channel/Channel";
 import { Page } from "modules/common/components/_ui/Page/Page";
 import { IconMessage } from "modules/common/components/_icons/icons";
 import Image from "next/image";
+import {
+  IconAddFriend,
+  IconBlock,
+} from "modules/common/components/_icons/icons";
 
 type form = {
   idSend: number;
@@ -67,7 +74,7 @@ const Chat = () => {
   const [msg, setMsg] = useState<form[]>([]);
   const [msgMp, setMsgMp] = useState<form[]>([]);
   const [users, setUsers] = useState<users[]>([]);
-  const [cha_mp, setCha_mp] = useState<number>(1);
+  const [cha_mp, setCha_mp] = useState<string>("default");
   const [game, setGame] = useState<number>(0);
   const [frienMode, setFriendMode] = useState<number>(1);
   const [ban, setBan] = useState<ban>({
@@ -87,7 +94,7 @@ const Chat = () => {
   const [channel, setChannel] = useState<channel[]>([]);
   const [chatName, setChatName] = useState<channel>({
     id: 0,
-    name: "",
+    name: "default",
     private: false,
     user: false,
     admin: false,
@@ -160,7 +167,7 @@ const Chat = () => {
     await socket.emit("refuse friend", el.id);
   };
 
-  const changeChaMp = async (val: number) => {
+  const changeChaMp = async (val: string) => {
     setChatName({
       id: 0,
       name: "",
@@ -231,14 +238,18 @@ const Chat = () => {
   };
 
   const sendMessage = async () => {
-    console.log("ouiiiiiiiii");
+    if (cha_mp === "channel") {
+      console.log("ouiiiiiiiii");
 
-    console.log("UN JOUR PEUT ETRE");
-    console.log(data);
-    console.log(msg);
-    await socket.emit("channelToServer", data);
+      console.log("UN JOUR PEUT ETRE");
+      console.log(data);
+      console.log(msg);
+      await socket.emit("channelToServer", data);
 
-    setData({ idSend: data.idSend, idReceive: data.idReceive, texte: "" });
+      setData({ idSend: data.idSend, idReceive: data.idReceive, texte: "" });
+    } else if (cha_mp === "message private") {
+      sendPrivate();
+    }
   };
 
   const sendPrivate = async () => {
@@ -272,6 +283,7 @@ const Chat = () => {
       });
     }
   };
+
   const demParti = (el: form) => {
     console.log(el);
     router.push(
@@ -385,6 +397,7 @@ const Chat = () => {
     socket.on("info channel", (mm: form[]) => {
       //socket.off('info channel');
       console.log(mm);
+
       console.log("oui 1000");
       setMsg(mm);
     });
@@ -433,9 +446,6 @@ const Chat = () => {
       socket.off("channels list");
       socket.off("info channel");
       socket.off("channels pub");
-      socket.off("connect");
-      socket.off("user info");
-      socket.off("auth error");
       socket.off("disconnect");
       socket.off("chatToClient");
       socket.off("left chanel");
@@ -454,7 +464,7 @@ const Chat = () => {
         .find((row) => row.startsWith("access_token"))
         ?.split("=")[1];
       socket.connect();
-      // console.log(cookieValue);
+      // console.log(cookieValue);Message
       socket.auth.token = cookieValue;
       //   console.log(router.query)
       socket.connect();
@@ -471,51 +481,156 @@ const Chat = () => {
     };
   }, []);
   return (
-    <Page titre="chat" className="">
-      <div className="flex flex-1 flex-col">
-        <div className="text-center m-4 ">
-          <span className="text-white font-bold text-4xl leading-[3rem]">
-            Chat
+    <Page title="chat" width=" w-2/3">
+      <div className="flex flex-1 flex-row h-5/6 scroll-smooth max-h-scren ">
+        <RoundedContainer className="flex-none w-1/3  mu-3 items-start mb-9">
+          <span className="text-white font-medium text-2xl text-center leading-[3rem]">
+            {cha_mp}
           </span>
-        </div>
-        <div className="flex flex-1 flex-row h-5/6">
-          <RoundedContainer className="flex w-1/3 flex-1 mu-3 items-start mb-9">
-            <span className="text-white">ffff</span>
-            {channel?.map((el, i) => (
-              <Channel key={i} info={el} />
-            ))}
-          </RoundedContainer>
-          <div className="flex flex-1 flex-col ml-8 w-2/3 justify-between ">
-            <span className="text-white font-medium text-xl text-center leading-[3rem]">
-              Kelly
-            </span>
-            <RoundedContainer className="flex flex-1 mu-3 items-start mb-9">
-              <div className="w-7 h-7 shadow-sm mt-2 relative">
-                {/*<Image
-                  layout="fill"
-                  src={"/assets/img/ljulien.jpg"}
-                  className="rounded-full"
-                />
-*/}
-              </div>
-              {msg.map((el, i) => (
-                <span className="text-white">
-                  <Message key={i} message={el} />
-                </span>
-              ))}
-            </RoundedContainer>
-            <div className="flex flex-row  h-8 mb-10">
-              <input className="rounded-lg flex " type="text"></input>
+          <span className=" flex-initial justify-center">
+            <Button
+              className="ml-1 text-lg"
+              variant="link"
+              disabled={false}
+              color=""
+              onClick={() => changeChaMp("channel")}
+            >
+              channel
+            </Button>
+            <Button
+              className="ml-2 text-lg"
+              variant="link"
+              disabled={false}
+              onClick={() => changeChaMp("message private")}
+            >
+              message private
+            </Button>
+          </span>
+          {
+            cha_mp == "message private" && <text>sss</text>
+            /*
+            users
+              ?.filter(
+                (a) => msgMp.find((u) => u.idReceive === a.id) != undefined
+              )
+              .map((el, i) => (
+                <Button
+                  key={i}
+                  className=""
+                  variant="link"
+                  color=""
+                  onClick={() => {
+                    changechannel(el);
+                  }}
+                >
+                  <UserMp key={i} user={el} />
+                </Button>
+                ))*/
+          }
+          {cha_mp == "channel" &&
+            channel?.map((el, i) => (
               <Button
-                className="ml-4 text-center items-center  align-middle"
-                variant="contained"
-                color="active"
-                icon={<IconMessage />}
-                onClick={() => console.log(channel)}
+                key={i}
+                className=""
+                variant="link"
+                color=""
+                onClick={() => {
+                  changechannel(el);
+                }}
               >
-                envoie
+                <Channel key={i} info={el} />
               </Button>
-            </div>
+            ))}
+        </RoundedContainer>
+        <div className="flex flex-1 flex-col ml-8 w-2/3 justify-between ">
+          <span className="text-white font-medium text-2xl text-center leading-[3rem]">
+            {chatName.name}
+            {chatName.admin && !chatName.owner && (
+              <span className="ml-1">(admin)</span>
+            )}
+            {chatName.admin && chatName.owner && (
+              <span className="ml-1">
+                (owner)
+                <Button variant="icon" color="active">
+                  <IconBlock />
+                </Button>
+                <Button variant="icon" color="active">
+                  <IconBlock />
+                </Button>
+                <Button variant="icon" color="active">
+                  <IconBlock />
+                </Button>
+                <Button variant="icon" color="active">
+                  <IconBlock />
+                </Button>
+              </span>
+            )}
+          </span>
+          <RoundedContainer className="flex overflow-auto overscroll-contain h-3/4  mu-3  mb-9">
+            {cha_mp === "channel" && (
+              <MessagesChannel
+                key="channel"
+                msg={msg}
+                idme={me.id}
+                idCourant={chatName.id}
+              />
+            )}
+            {
+              cha_mp === "message private" && (
+                <MessagesMp
+                  key="mp"
+                  msgMp={msgMp}
+                  idme={me.id}
+                  idCourant={chatName.id}
+                />
+              )
+              /*
+            cha_mp === "message private" &&
+            msgMp
+              .filter((e) => e.idReceive == chatName.id)
+              .map((el, i) => (
+                <div className="m-1.5">
+                  {el.idSend != me.id && (
+                    <div className="flex justify-start">
+                      <OtherMessage key={i} message={el} />
+                    </div>
+                  )}
+                  {el.idSend == me.id && (
+                    <div className="flex justify-end">
+                      <MyMessage key={i} message={el} />
+                    </div>
+                  )*
+                </div>
+                  ))*/
+            }
+          </RoundedContainer>
+          <div className="flex flex-row  h-8 mb-10">
+            <input
+              className="rounded-lg flex w-full"
+              type="text"
+              value={data.texte}
+              onChange={(e) => {
+                setData({
+                  idSend: me.id,
+                  idReceive: data.idReceive,
+                  texte: e.target.value,
+                });
+                console.log(data);
+              }}
+              placeholder="Enter Character Name"
+              onKeyPress={(event) => {
+                event.key === "Enter" && sendMessage();
+              }}
+            ></input>
+            <Button
+              className="ml-4 text-center items-center  align-middle"
+              variant="contained"
+              color="active"
+              icon={<IconMessage />}
+              onClick={() => sendMessage()}
+            >
+              envoie
+            </Button>
           </div>
         </div>
       </div>
