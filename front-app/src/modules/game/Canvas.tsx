@@ -206,6 +206,8 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
       setIsWaiting(false);
     });
 
+    socket.emit("move", { move: 0 });
+
     //   socket.on('user', (user : {name: string, id: }))
 
     return () => {

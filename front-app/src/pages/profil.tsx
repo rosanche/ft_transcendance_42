@@ -43,7 +43,7 @@ const Profil = () => {
 
   return (
     <Page title="Profil" isLoading={isProfilLoading || isGameHistoryLoading}>
-      <div className="grid grid-flow-col space-x-3">
+      <div className="grid grid-flow-col max-h-1/3 space-x-3">
         <div className="flex flex-col items-center  mb-16 space-y-4">
           <div className="flex relative rounded-full border border-gray-100 w-44 h-44 shadow-sm">
             <Image
@@ -65,7 +65,7 @@ const Profil = () => {
         </div>
         <FriendsContainer friends={friends} />
         <NotificationsContainer friends={user?.friendReqReceive} />
-        <GameHistoryContainer games={games} />
+        <GameHistoryContainer games={games} id={user?.id} />
       </div>
     </Page>
   );

@@ -1,6 +1,9 @@
+import { Spinner } from "modules/common/components/_ui/Spinner/Spinner";
 import { useUsersQuery } from "modules/profile/queries/useUsersQuery";
-import { ApiGame } from "modules/profile/types";
+import { ApiFriend, ApiGame } from "modules/profile/types";
 import { FriendItem } from "../FriendItem/FriendItem";
+import { useState, useEffect } from "react";
+import { UserItem } from "../UserItem/UserItem";
 
 export const GameHistoryItem = ({
   id,
@@ -11,45 +14,59 @@ export const GameHistoryItem = ({
   winner,
 }: ApiGame) => {
   const { data: users, isLoading, status } = useUsersQuery();
+  const [user1, setUser1] = useState(null);
+  const [user2, setUser2] = useState(null);
 
-  const user1 = users[id_1 - 1];
-  const user2 = users[id_2 - 1];
-  const color1 = winner == 1 ? "text-amber-300" : "text-rose-700";
-  const color2 = winner == 2 ? "text-amber-300" : "text-rose-700";
+  useEffect(() => {
+    if (!isLoading) {
+      console.log("usertest", users);
+      setUser1(
+        users.find((el: ApiFriend) => {
+          return el.id == id_1;
+        })
+      );
+      console.log("user1test", user1);
+      console.log("user2test", user1);
+      setUser2(
+        users.find((el: ApiFriend) => {
+          return el.id == id_2;
+        })
+      );
+    }
+  }, [isLoading, users]);
+
+  const color1 = winner === id_1 ? "text-amber-300" : "text-rose-700";
+  const color2 = winner === id_2 ? "text-amber-300" : "text-rose-700";
 
   return (
-    <div className="flex flex-row justify-center items-center">
-      <FriendItem
-        className="m-2 flex-grow"
-        {...user1}
-        type="friend_resume"
-        isBlocked={false}
-      />
-      <div className="flex-none place-items-center">
-        <span
-          className={
-            color1 + " text-3xl  font-bold  text-align: center m-1 ml-3"
-          }
-        >
-          {score_1 + " "}
-        </span>
-        <span className="text-white text-3xl  font-bold  text-align: center">
-          :
-        </span>
-        <span
-          className={
-            color2 + " text-3xl  font-bold  text-align: center m-1 mr-3"
-          }
-        >
-          {" " + score_2}
-        </span>
-      </div>
-      <FriendItem
-        className="m-2 flex-grow"
-        {...user2}
-        type="friend_resume"
-        isBlocked={false}
-      />
+    <div className="relative  flex-inline flex flex-row justify-center items-center">
+      {!isLoading ? (
+        <>
+          <UserItem className="m-2 flex-none " {...user1} />
+          <div className=" flex-none place-items-center ">
+            <span
+              className={
+                color1 + " text-3xl  font-bold  text-align: center m-1 ml-3"
+              }
+            >
+              {score_1 + " "}
+            </span>
+            <span className="text-white text-3xl  font-bold  text-align: center">
+              :
+            </span>
+            <span
+              className={
+                color2 + " text-3xl  font-bold  text-align: center m-1 mr-3"
+              }
+            >
+              {" " + score_2}
+            </span>
+          </div>
+          <UserItem className="m-2 flex-none " {...user2} reverse={true} />
+        </>
+      ) : (
+        <Spinner />
+      )}
     </div>
   );
 };

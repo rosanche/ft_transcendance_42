@@ -80,8 +80,7 @@ export class ChatGateway implements OnGatewayInit {
             {
                 this.sendAllStatus();
             }
-            this.mapIdSocket.delete(client.id);
-            
+            this.mapIdSocket.delete(client.id);         
         }
     }
 
@@ -95,6 +94,10 @@ export class ChatGateway implements OnGatewayInit {
             {
                 this.sendAllStatus();
             }
+        }
+        else
+        {
+            client.disconnect();
         }
      }
      

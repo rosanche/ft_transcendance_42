@@ -388,8 +388,6 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     this.players.add(game.id1);
     this.players.add(game.id2);
     this.chatGateway.sendAllStatus();
-    this.chatGateway.wss.emit("New Player", game.id1);
-    this.chatGateway.wss.emit("New Player", game.id2);
     console.log(this.players);
     console.log(game.roomID);
     this.server.to(game.roomID).emit("game start");
@@ -510,9 +508,9 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     else
     {
       if (info.score1 > info.score2)
-      {gateway.stopGame(game, 1);}
+      {gateway.stopGame(game, game.id1);}
       else
-      {gateway.stopGame(game, 2);}
+      {gateway.stopGame(game, game.id2);}
     }
   }
 
