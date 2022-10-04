@@ -35,7 +35,7 @@ export const NotificationsContainer = ({ friends }: Props) => {
     >
       <div className="flex flex-col">
         {friends?.map((friend) => (
-          <FriendItem {...friend} type="friend_request" />
+          <FriendItem {...friend} key={friend.id} type="friend_request" />
         ))}
       </div>
     </RoundedContainer>

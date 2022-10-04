@@ -41,15 +41,11 @@ export const useUserInfosModal = () => {
   const {
     mutate: generateQrCode,
     data: QrCode,
-    status: sta,
     isLoading: isGeneratingQrCode,
   } = useGenerate2Fa();
 
-  const {
-    mutate: uploadImgProfile,
-    status,
-    isLoading: isUploadingImg,
-  } = useChangeImgProfileMutation();
+  const { mutate: uploadImgProfile, isLoading: isUploadingImg } =
+    useChangeImgProfileMutation();
 
   // console.log("$$big status", status);
 
@@ -89,17 +85,18 @@ export const useUserInfosModal = () => {
 
   const { doubleFaEnabled } = useAppContextState();
 
+  const urlImage =
+    user?.profileImage &&
+    `http://localhost:3000/users/me/pp/${user?.profileImage}`;
+
   const UserInfos = () => (
     <div className="flex items-center flex-col space-y-8">
       <div>
         <div className="flex relative rounded-full border border-gray-100 w-24 h-24 shadow-sm mb-3">
           <Image
             layout="fill"
-            src={
-              (user?.profileImage &&
-                `http://localhost:3000/${user?.profileImage}`) ||
-              "/assets/img/42.png"
-            }
+            loader={() => urlImage || "/assets/img/42.png"}
+            src={urlImage || "/assets/img/42.png"}
             priority={true}
             className="rounded-full border border-gray-100 shadow-sm"
           />
