@@ -153,6 +153,12 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
         if (queryRef.current !== null) {
           socket.emit("join", queryRef.current);
         }
+        //SPECTATOR=(ID)
+        queryRef.current = queryParams.get("SPECTATOR");
+        console.log(queryRef.current);
+        if (queryRef.current !== null) {
+          socket.emit("spectate", queryRef.current);
+        }
         //INVITE=(ID DU HOST)
         queryRef.current = queryParams.get("INVITE");
         console.log(queryRef.current);

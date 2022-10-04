@@ -248,6 +248,23 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     }
   }
 
+  @SubscribeMessage('spectate')
+  async handleSpectate(client: Socket, ID: string){
+    const id = Number(ID);
+    if (!id)
+    {
+      return;
+    }
+    const game = this.searchGame(id);
+    
+    if (game)
+    {
+        client.join(game.roomID);
+        client.emit("game start");
+    }
+  }
+
+
   timeOutDeconnectionHandler(gameGateway :GameGateway,  game :GamePong, winnerId: number) 
   {
     if (game)
