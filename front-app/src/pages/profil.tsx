@@ -17,10 +17,7 @@ const Profil = () => {
   const router = useRouter();
   const { data: user, isProfilLoading } = useMyProfileQuery();
   const { data: games, isGameHistoryLoading } = useGameHistoryQuery();
-  const { doubleFaEnabled } = useAppContextState();
-  const socket = useSocketContext();
-
-  console.log("$$date", user);
+  const { doubleFaEnabled } = useAppContextState();  console.log("$$date", user);
 
   const { showModal } = useUserInfosModal();
 

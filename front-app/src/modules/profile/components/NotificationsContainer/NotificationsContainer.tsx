@@ -8,10 +8,12 @@ interface Props {
 }
 
 export const NotificationsContainer = ({ friends }: Props) => {
+
+
   return (
     <RoundedContainer
       className="px-10 py-9 justu"
-      title="Mes ami(e)s"
+      title="Mes notifs"
       button={<Button variant="link">Voir tout</Button>}
     >
       <div className="flex flex-col">
