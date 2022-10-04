@@ -1,6 +1,5 @@
 import React from "react";
 import Image from "next/image";
-import { useRouter } from "next/router";
 import { Page } from "modules/common/components/_ui/Page/Page";
 import { useMyProfileQuery } from "modules/profile/queries/useMyProfileQuery";
 import { Button } from "modules/common/components/_ui/Button/Button";
@@ -8,13 +7,20 @@ import { FriendsContainer } from "modules/profile/components/FriendsContainer/Fr
 import { useAppContextState } from "modules/common/context/AppContext";
 import { useUserInfosModal } from "modules/profile/components/useUserInfosModal/useUserInfosModal";
 import { NotificationsContainer } from "modules/profile/components/NotificationsContainer/NotificationsContainer";
-import { useSocketContext } from "modules/common/context/SocketContext";
-import { useSideBarContext } from "modules/common/context/SidebarContext";
 import { GameHistoryContainer } from "modules/profile/components/GameHistoryContainer/GameHistoryContainer";
-import { useGameHistoryQuery } from "modules/profile/queries/useGameHistoryQuery";
+import Cookies from "js-cookie";
+import { CookieKeys } from "modules/common/types";
+import Router, { useRouter } from "next/router";
+import { EnumRoutes } from "modules/common/routes";
 
 const Profil = () => {
-  const { data: user, isLoading: isProfilLoading } = useMyProfileQuery();
+  const router = useRouter();
+  const { data: user, isLoading: isProfilLoading } = useMyProfileQuery({
+    onError: () => {
+      Cookies.remove(CookieKeys.ACCESS_TOKEN);
+      // router.push(EnumRoutes.LOGIN);
+    },
+  });
   const { doubleFaEnabled } = useAppContextState();
   console.log("$$date", user);
 
@@ -38,6 +44,11 @@ const Profil = () => {
     isBlocked: !!user?.myblocked?.filter((user) => user.id === friend.id)[0],
   }));
 
+  const urlImage =
+    user?.profileImage &&
+    `http://localhost:3000/users/me/pp/${user?.profileImage}`;
+  console.log("$$usersssss", user);
+
   return (
     <Page title="Profil" isLoading={isProfilLoading}>
       <div className="grid grid-flow-col max-h-1/3 space-x-3">
@@ -45,11 +56,8 @@ const Profil = () => {
           <div className="flex relative rounded-full border border-gray-100 w-44 h-44 shadow-sm">
             <Image
               layout="fill"
-              src={
-                (user?.profileImage &&
-                  `http://localhost:3000/${user?.profileImage}`) ||
-                "/assets/img/42.png"
-              }
+              loader={() => urlImage || "/assets/img/42.png"}
+              src={urlImage || "/assets/img/42.png"}
               priority={true}
               className="rounded-full border border-gray-100 shadow-sm"
             />

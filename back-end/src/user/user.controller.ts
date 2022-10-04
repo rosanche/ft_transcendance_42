@@ -91,7 +91,7 @@ export class UserController {
     //return (of({ImagePath: file.filename}))
    console.log(user);
     console.log(file);
-   this.UserService.UserUploadedImage(user, "uploads/profileimage/"+ file.filename);
+   this.UserService.UserUploadedImage(user, file.filename);
     //return this.UserService.UserUploadedImage(user, file.filename);
   }
 
