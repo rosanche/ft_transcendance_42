@@ -7,6 +7,7 @@ import { useSocketContext } from "modules/common/context/SocketContext";
 import { UserMp } from "modules/chat/components/Menu/Messagemp";
 
 import { MessagesChannel } from "modules/chat/components/Messages/MessagesChannel";
+
 import { MessagesMp } from "modules/chat/components/Messages/MessagesMp";
 import { Channel } from "modules/chat/components/Channel/Channel";
 import { Page } from "modules/common/components/_ui/Page/Page";
@@ -16,6 +17,10 @@ import {
   IconAddFriend,
   IconBlock,
 } from "modules/common/components/_icons/icons";
+import { useChannelContext } from "modules/chat/context/ChannelContext";
+import { MenuMessagesChannel } from "modules/chat/components/Menu/MenuMessageChannel";
+import { MenuMessagesMp } from "modules/chat/components/Menu/MenuMessageMp";
+import { TitreChannel } from "modules/chat/components/Titre/TitreChannel";
 
 type form = {
   idSend: number;
@@ -58,7 +63,7 @@ type users = {
 
 const Chat = () => {
   const socket = useSocketContext();
-
+  const [channel, setChannel] = useState<users[]>([]);
   const [invite, setInvite] = useState<boolean>(false);
   const [newAdmin, setNewAdmin] = useState<boolean>(false);
   const [newOwner, setNewOwner] = useState<boolean>(false);
@@ -91,16 +96,7 @@ const Chat = () => {
     private: false,
   });
 
-  const [channel, setChannel] = useState<channel[]>([]);
-  const [chatName, setChatName] = useState<channel>({
-    id: 0,
-    name: "default",
-    private: false,
-    user: false,
-    admin: false,
-    owner: false,
-    password: false,
-  });
+  const { chatName, changeChatName } = useChannelContext();
 
   const [data, setData] = useState<form>({
     idSend: 0,
@@ -168,7 +164,7 @@ const Chat = () => {
   };
 
   const changeChaMp = async (val: string) => {
-    setChatName({
+    changeChatName({
       id: 0,
       name: "",
       private: false,
@@ -187,7 +183,7 @@ const Chat = () => {
     await setChannel(u);
 
     console.log(channel);
-    await setChatName({
+    await changeChatName({
       id: 0,
       name: "",
       private: false,
@@ -200,7 +196,7 @@ const Chat = () => {
     await setData({ pseudo: data.pseudo, channel: a.name, texte: "" });
   };
   const changefriendmode = async (i: number) => {
-    setChatName({
+    changeChatName({
       id: 0,
       name: "",
       private: false,
@@ -225,6 +221,7 @@ const Chat = () => {
     socket.emit("creatcha", cha);
     setPassj({ name: "", password: "", private: false });
   };
+
   const Ban = async () => {
     await socket.emit("blockedChannel", ban);
     console.log(`a ouai c'est toi ${ban.idChannel}`);
@@ -233,6 +230,7 @@ const Chat = () => {
     await console.log(ban);
     await console.log(chatName);
   };
+
   const test = async () => {
     console.log("A");
   };
@@ -242,31 +240,29 @@ const Chat = () => {
       console.log("ouiiiiiiiii");
 
       console.log("UN JOUR PEUT ETRE");
-      console.log(data);
-      console.log(msg);
+      await setData({
+        idSend: data.idSend,
+        idReceive: chatName.id,
+        texte: data.texte,
+      });
       await socket.emit("channelToServer", data);
 
-      setData({ idSend: data.idSend, idReceive: data.idReceive, texte: "" });
+      setData({ idSend: data.idSend, idReceive: chatName.id, texte: "" });
     } else if (cha_mp === "message private") {
       sendPrivate();
     }
   };
 
   const sendPrivate = async () => {
-    //console.log("ouiiiiiiiii")
-
-    //console.log("UN JOUR PEUT ETRE")
     console.log(data);
     await socket.emit("message mp", data);
-
-    //  setData({channel: data.channel, pseudo : data.pseudo ,texte: ""});
   };
 
   const changechannel = async (el: channel) => {
     console.log(el);
     await setData({ idSend: me.id, idReceive: el.id, texte: "" });
     console.log(data);
-    await setChatName(el);
+    await changeChatName(el);
   };
 
   const joinchannel = async (el: channel) => {
@@ -301,10 +297,6 @@ const Chat = () => {
     console.log(ms);
     console.log("success");
     setMsg((m) => [...m, ms]);
-    //setChannel([...channel,  ms.text])
-
-    //   setMsg([...msg, data]);
-    //setData({channel: chatName, pseudo : data.pseudo ,texte: ""});
   };
   useEffect(() => {
     /*
@@ -340,15 +332,17 @@ const Chat = () => {
       console.log(c);
       setMe(c);
     });
-
+    const test = async () => {
+      console.log("A");
+    };
     socket.on("owner no left", (c: channel) => {
       //  setChannel((u)=> [...u,c]);
-      setChatName(c);
+      changeChatName(c);
       setNewOwner(true);
     });
     socket.on("my new channel pub", (c: channel) => {
       setChannel((u) => [...u, c]);
-      setChatName(c);
+      changeChatName(c);
       setCreate(false);
       console.log(c);
       setData({ channel: c.name, pseudo: data.pseudo, texte: "" });
@@ -506,66 +500,13 @@ const Chat = () => {
               message private
             </Button>
           </span>
-          {
-            cha_mp == "message private" && <text>sss</text>
-            /*
-            users
-              ?.filter(
-                (a) => msgMp.find((u) => u.idReceive === a.id) != undefined
-              )
-              .map((el, i) => (
-                <Button
-                  key={i}
-                  className=""
-                  variant="link"
-                  color=""
-                  onClick={() => {
-                    changechannel(el);
-                  }}
-                >
-                  <UserMp key={i} user={el} />
-                </Button>
-                ))*/
-          }
-          {cha_mp == "channel" &&
-            channel?.map((el, i) => (
-              <Button
-                key={i}
-                className=""
-                variant="link"
-                color=""
-                onClick={() => {
-                  changechannel(el);
-                }}
-              >
-                <Channel key={i} info={el} />
-              </Button>
-            ))}
+          {cha_mp == "message private" && (
+            <MenuMessagesMp users={users} msgMp={msgMp} />
+          )}
+          {cha_mp == "channel" && <MenuMessagesChannel channels={channel} />}
         </RoundedContainer>
         <div className="flex flex-1 flex-col ml-8 w-2/3 justify-between ">
-          <span className="text-white font-medium text-2xl text-center leading-[3rem]">
-            {chatName.name}
-            {chatName.admin && !chatName.owner && (
-              <span className="ml-1">(admin)</span>
-            )}
-            {chatName.admin && chatName.owner && (
-              <span className="ml-1">
-                (owner)
-                <Button variant="icon" color="active">
-                  <IconBlock />
-                </Button>
-                <Button variant="icon" color="active">
-                  <IconBlock />
-                </Button>
-                <Button variant="icon" color="active">
-                  <IconBlock />
-                </Button>
-                <Button variant="icon" color="active">
-                  <IconBlock />
-                </Button>
-              </span>
-            )}
-          </span>
+          <TitreChannel />
           <RoundedContainer className="flex overflow-auto overscroll-contain h-3/4  mu-3  mb-9">
             {cha_mp === "channel" && (
               <MessagesChannel
@@ -612,7 +553,7 @@ const Chat = () => {
               onChange={(e) => {
                 setData({
                   idSend: me.id,
-                  idReceive: data.idReceive,
+                  idReceive: chatName.id,
                   texte: e.target.value,
                 });
                 console.log(data);

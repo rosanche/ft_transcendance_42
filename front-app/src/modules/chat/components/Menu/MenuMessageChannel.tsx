@@ -8,43 +8,38 @@ import {
   MyMessage,
 } from "modules/chat/components/Message/Message";
 import { UserMp } from "modules/chat/components/Menu/Messagemp";
+import { useChannelContext } from "modules/chat/context/ChannelContext";
+import { Channel } from "modules/chat/components/Channel/Channel";
 
-type form = {
-  idSend: number;
-  idReceive: number;
-  texte: string;
-};
-
-type user = {
+type Channel = {
   id: number;
-  pseudo: string;
-  stastu: number;
-  blocked: boolean;
-  myblocked: boolean;
+  name: string;
+  private: boolean;
+  user: boolean;
+  admin: boolean;
+  owner: boolean;
+  password: boolean;
 };
 
 interface Props {
   key: string;
-  msg: form[];
-  idCourant: number;
-  idme: number;
+  channels: Channel[];
 }
 
 export const MenuMessagesChannel = (a: Props) => {
+  const { chatName, changeChatName } = useChannelContext();
   //const { data: users, isLoading, status } = useUsersQuery();
-  return users
-    ?.filter((a) => msgMp.find((u) => u.idReceive === a.id) != undefined)
-    .map((el, i) => (
-      <Button
-        key={i}
-        className=""
-        variant="link"
-        color=""
-        onClick={() => {
-          changechannel(el);
-        }}
-      >
-        <UserMp key={i} user={el} />
-      </Button>
-    ));
+  return a.channels?.map((el, i) => (
+    <Button
+      key={i}
+      className=""
+      variant="link"
+      color=""
+      onClick={() => {
+        changeChatName(el);
+      }}
+    >
+      <Channel key={i} info={el} />
+    </Button>
+  ));
 };

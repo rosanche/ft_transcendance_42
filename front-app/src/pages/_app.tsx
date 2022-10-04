@@ -7,7 +7,9 @@ import { TransitionGroup } from "react-transition-group";
 import "styles/index.css";
 import { SocketContextProvider } from "modules/common/context/SocketContext";
 import { SideBar } from "modules/common/components/_ui/SideBar/SideBar";
-import { SideBarContextProvider } from "modules/common/context/SidebarContext";
+import { SideBarContextProvider } from "modules/common/context/SideBarContext";
+import { ChannelContextProvider } from "modules/chat/context/ChannelContext";
+
 require("typeface-dm-sans");
 
 const queryClient = new QueryClient();
@@ -24,7 +26,9 @@ function MyApp({ Component, pageProps }) {
               <SideBarContextProvider>
                 <AuthenticatedGuard>
                   <SideBar>
-                    <Component {...pageProps} />
+                    <ChannelContextProvider>
+                      <Component {...pageProps} />
+                    </ChannelContextProvider>
                   </SideBar>
                 </AuthenticatedGuard>
               </SideBarContextProvider>
