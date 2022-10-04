@@ -8,6 +8,7 @@ interface Props {
 }
 
 export const Page: React.FC<PropsWithChildren<Props>> = ({
+  width = "",
   title,
   isLoading = false,
   children,
@@ -16,7 +17,7 @@ export const Page: React.FC<PropsWithChildren<Props>> = ({
     <div className="flex flex-1 flex-col items-center">
       {title && <HeaderTitle title={title} />}
 
-      <div className="flex flex-1 flex-col content-around justify-center">
+      <div className={"flex flex-1 flex-col content-around justify-center " + width }>
         {isLoading ? (
           <Spinner className="text-white h-8 w-8 mb-10" />
         ) : (

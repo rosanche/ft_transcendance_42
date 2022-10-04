@@ -87,7 +87,7 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
   const [isGame, setIsGame] = useState(false);
   const [isWaiting, setIsWaiting] = useState(false);
   const [isEndGame, setIsEndGame] = useState(false);
-  const [lastPong, setLastPong] = useState(null);
+  const [isCreate, setIsCreate] = useState(false);
 
   const keyDownHandler = (event: KeyboardEvent) => {
     event.preventDefault();
@@ -146,6 +146,7 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
     socket.on("user info", (user: { id: number; pseudo: string }) => {
       console.log(user);
       if (typeof window != "undefined") {
+        setIsCreate(false);
         const queryParams = new URLSearchParams(window.location.search);
         //ID=(ROOMID)
         queryRef.current = queryParams.get("ID");
@@ -161,17 +162,15 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
         }
         //INVITE=(ID DU HOST)
         queryRef.current = queryParams.get("INVITE");
-        console.log(queryRef.current);
+        console.log(Number(queryRef.current));
         if (queryRef.current !== null) {
           socket.emit("invite", queryRef.current);
         }
         //CREATE=(ID DU INVITE)
         queryRef.current = queryParams.get("CREATE");
-        console.log(queryRef.current);
-        const bonus = queryParams.get("BONUS");
-        console.log(bonus);
-        if (queryRef.current !== null && bonus !== null) {
-          socket.emit("create private game", queryRef.current, bonus);
+        console.log("id:", queryRef.current);
+        if (queryRef.current !== null) {
+          setIsCreate(true);
         }
       }
     });
@@ -184,10 +183,6 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
       setIsConnected(false);
       setIsGame(false);
       setIsWaiting(false);
-    });
-
-    socket.on("pong", () => {
-      setLastPong(new Date().toISOString());
     });
 
     socket.on("data", (data: PongState) => {
@@ -427,8 +422,12 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
             color="active"
             isLoading={isWaiting}
             onClick={() => {
-              socket.emit("queue", true);
-              setIsWaiting(true);
+              if (isCreate) {
+                socket.emit("create private game", queryRef.current, true);
+              } else {
+                socket.emit("queue", true);
+                setIsWaiting(true);
+              }
             }}
           >
             Power-Up
@@ -438,8 +437,14 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
             color="active"
             isLoading={isWaiting}
             onClick={() => {
-              socket.emit("queue", false);
-              setIsWaiting(true);
+              if (isCreate) {
+                console.log("create private game");
+                socket.emit("create private game", queryRef.current, false);
+              } else {
+                console.log("queue");
+                socket.emit("queue", false);
+                setIsWaiting(true);
+              }
             }}
           >
             Classique
