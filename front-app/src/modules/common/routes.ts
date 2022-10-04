@@ -3,4 +3,5 @@ export enum EnumRoutes {
   PROFIL = "/profil",
   GAME = "/game",
   CHAT = "/chat",
+  USERS = "/users",
 }
