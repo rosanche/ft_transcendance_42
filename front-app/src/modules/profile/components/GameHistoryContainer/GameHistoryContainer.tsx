@@ -3,15 +3,15 @@ import { RoundedContainer } from "modules/common/components/_ui/RoundedContainer
 import { GameHistoryItem } from "../GameHistoryItem/GameHistoryItem";
 import { ApiGame } from "modules/profile/types";
 import { useState } from "react";
+import { useGameHistoryQuery } from "modules/profile/queries/useGameHistoryQuery";
 
 interface Props {
-  games: ApiGame[];
   id: number;
 }
 
-export const GameHistoryContainer = ({ games, id }: Props) => {
-  console.log("$$Games", games);
+export const GameHistoryContainer = ({ id }: Props) => {
   const [myGames, setMyGames] = useState(true);
+  const { data: games } = useGameHistoryQuery();
 
   return (
     <RoundedContainer

@@ -1,4 +1,4 @@
-export interface MyProfile {
+export interface User {
   User_channel: [];
   createdAt: string;
   friendReqReceive: [];

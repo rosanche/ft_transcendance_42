@@ -6,9 +6,13 @@ import { useAddFriendModal } from "../useAddFriendModal/useAddFriendModal";
 
 interface Props {
   friends: ApiFriend[] & FriendType;
+  withAddFriendButton: boolean;
 }
 
-export const FriendsContainer = ({ friends }: Props) => {
+export const FriendsContainer = ({
+  friends,
+  withAddFriendButton = false,
+}: Props) => {
   const { showModal } = useAddFriendModal();
 
   return (
@@ -16,9 +20,11 @@ export const FriendsContainer = ({ friends }: Props) => {
       className="px-10 py-9"
       title="Mes ami(e)s"
       button={
-        <Button variant="link" onClick={showModal}>
-          Ajouter un ami
-        </Button>
+        withAddFriendButton && (
+          <Button variant="link" onClick={showModal}>
+            Ajouter un ami
+          </Button>
+        )
       }
     >
       <div className="flex flex-col">

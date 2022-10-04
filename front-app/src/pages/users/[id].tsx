@@ -12,26 +12,15 @@ import { useSocketContext } from "modules/common/context/SocketContext";
 import { useSideBarContext } from "modules/common/context/SidebarContext";
 import { GameHistoryContainer } from "modules/profile/components/GameHistoryContainer/GameHistoryContainer";
 import { useGameHistoryQuery } from "modules/profile/queries/useGameHistoryQuery";
+import { useUsersQuery } from "modules/profile/queries/useUsersQuery";
 
 const Profil = () => {
-  const { data: user, isLoading: isProfilLoading } = useMyProfileQuery();
-  const { doubleFaEnabled } = useAppContextState();
-  console.log("$$date", user);
+  const router = useRouter();
+  const { data: users, isLoading: isUsersLoading } = useUsersQuery();
 
-  const { showModal } = useUserInfosModal();
-
-  console.log(
-    "$$friends, blocked",
-    user?.myfriends,
-    user?.myblocked,
-    user?.myfriends?.map((friend) => ({
-      ...friend,
-      status:
-        user?.myblocked?.filter((user) => user.id === friend.id)[0] &&
-        "blocked",
-    })),
-    user?.myblocked?.filter((user) => user.id === 2)
-  );
+  const userId = parseInt(router.query?.id as string);
+  const user = users?.filter((user) => user.id === userId)[0];
+  console.log("$$routeeeers", router, router.query.id, users);
 
   const friends = user?.myfriends?.map((friend) => ({
     ...friend,
@@ -39,8 +28,8 @@ const Profil = () => {
   }));
 
   return (
-    <Page title="Profil" isLoading={isProfilLoading}>
-      <div className="grid grid-flow-col max-h-1/3 space-x-3">
+    <Page title="Utilisateur" isLoading={isUsersLoading}>
+      <div className="grid grid-flow-col space-x-3">
         <div className="flex flex-col items-center  mb-16 space-y-4">
           <div className="flex relative rounded-full border border-gray-100 w-44 h-44 shadow-sm">
             <Image
@@ -55,18 +44,11 @@ const Profil = () => {
             />
           </div>
           <span className="text-white text-2xl font-default font-bold italic">
-            A toi de jouer {user?.pseudo} !
+            {user?.pseudo}
           </span>
-          <span className="text-pink text-2xl font-default font-medium italic">
-            Double authentification {doubleFaEnabled ? "activé" : "désactivé"}
-          </span>
-          <Button variant="link" onClick={showModal}>
-            Modifier
-          </Button>
         </div>
-        <FriendsContainer friends={friends} withAddFriendButton />
-        <NotificationsContainer friends={user?.friendReqReceive} />
-        <GameHistoryContainer id={user?.id} />
+        <FriendsContainer friends={friends} />
+        {/* <GameHistoryContainer games={games} /> */}
       </div>
     </Page>
   );
