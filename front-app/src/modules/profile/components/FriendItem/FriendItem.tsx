@@ -111,9 +111,16 @@ export const FriendItem = ({
       >
         <div className="w-7 h-7 shadow-sm mt-2 relative">
           <Image
-            height={30}
             layout="fill"
-            src={profileImage || "/assets/img/42.png"}
+            loader={() =>
+              profileImage &&
+              `http://localhost:3000/users/me/pp/${profileImage}`
+            }
+            src={
+              (profileImage &&
+                `http://localhost:3000/users/me/pp/${profileImage}`) ||
+              "/assets/img/42.png"
+            }
             priority={true}
             className="rounded-full"
           />

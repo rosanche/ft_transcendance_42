@@ -7,6 +7,11 @@ import IconRefuse from "./refuse";
 import IconAddFriend from "./addFriend";
 import IconBlock from "./block";
 import IconProfil from "./profil";
+import IconMute from "./mute";
+import IconAdmin from "./admin";
+import IconQuit from "./quit";
+import IconEnter from "./enter";
+import IconEdit from "./edit";
 
 export {
   IconCross,
@@ -18,4 +23,9 @@ export {
   IconAddFriend,
   IconBlock,
   IconProfil,
+  IconMute,
+  IconAdmin,
+  IconQuit,
+  IconEnter,
+  IconEdit,
 };
