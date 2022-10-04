@@ -25,7 +25,7 @@ const xMax = 1600;
 const yMax = 900;
 
 const ballSize = 12;
-const baseBallSpeed = 10;
+const baseBallSpeed = 8;
 
 const typeBonus = ["PaddleSize", "PaddleSpeed", "BallSpeed"];
 const bonusSize = 25;

@@ -19,7 +19,7 @@ export default function Game() {
   console.log("socket connected", socket.connected);
   return (
     <Page>
-      <RoundedContainer className="px-14 py-20 mt-16">
+      <RoundedContainer className="px-14 py-20 ml-36 mt-16 m-10">
         <div>{<Canvas width={1600} height={900} />}</div>
       </RoundedContainer>
     </Page>
