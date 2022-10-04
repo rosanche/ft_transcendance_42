@@ -16,7 +16,7 @@ interface FormData {
   searchTerm: string;
 }
 
-export const useAddFriendModal = () => {
+export const useAddFriendModal = (isInChannel = false) => {
   const { formState, register, watch } = useForm<FormData>({
     defaultValues: {
       searchTerm: "",
@@ -40,15 +40,15 @@ export const useAddFriendModal = () => {
       })
   );
 
-  const usersFiltered = useMemo(
-    () =>
-      users
-        ?.filter((value) => value != null)
-        .filter((value) => {
-          return String(value).toLowerCase().includes(searchTerm.toLowerCase());
-        }),
-    [searchTerm]
-  );
+  // const usersFiltered = useMemo(
+  //   () =>
+  //     users
+  //       ?.filter((value) => value != null)
+  //       .filter((value) => {
+  //         return String(value).toLowerCase().includes(searchTerm.toLowerCase());
+  //       }),
+  //   [searchTerm]
+  // );
 
   const UsersList = () => (
     <div className="flex flex-col">
@@ -63,7 +63,11 @@ export const useAddFriendModal = () => {
           {users?.map(
             (friend) =>
               friend.id !== profil?.id && (
-                <FriendItem {...friend} type="friend" />
+                <FriendItem
+                  {...friend}
+                  type="friend"
+                  isInChannel={isInChannel}
+                />
               )
           )}
         </>

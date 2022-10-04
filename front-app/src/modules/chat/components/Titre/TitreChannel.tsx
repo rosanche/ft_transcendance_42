@@ -13,6 +13,7 @@ import {
   IconAddFriend,
   IconBlock,
 } from "modules/common/components/_icons/icons";
+import ActionsChannel from "../ActionsChannel/ActionsChannel";
 
 type form = {
   idSend: number;
@@ -43,23 +44,8 @@ export const TitreChannel = () => {
         {chatName.admin && !chatName.owner && (
           <span className="ml-1">(admin)</span>
         )}
-        {chatName.admin && chatName.owner && (
-          <span className="ml-1">
-            (owner)
-            <Button variant="icon" color="active">
-              <IconBlock />
-            </Button>
-            <Button variant="icon" color="active">
-              <IconBlock />
-            </Button>
-            <Button variant="icon" color="active">
-              <IconBlock />
-            </Button>
-            <Button variant="icon" color="active">
-              <IconBlock />
-            </Button>
-          </span>
-        )}
+        {chatName.admin && chatName.owner && <span>(admin)</span>}
+        <ActionsChannel />
       </span>
     </span>
   );

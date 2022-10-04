@@ -1,8 +1,9 @@
-import { ReactNode } from "react";
 import { useUsersQuery } from "modules/profile/queries/useUsersQuery";
 import { Button } from "modules/common/components/_ui/Button/Button";
 import { RoundedContainer } from "modules/common/components/_ui/RoundedContainer/RoundedContainer";
 import { FriendItem } from "modules/profile/components/FriendItem/FriendItem";
+import { useChannelContext } from "modules/chat/context/ChannelContext";
+import React, { useState, useRef, useEffect } from "react";
 
 type form = {
   idSend: number;
@@ -23,6 +24,8 @@ interface Props {
 }
 
 export const UserMp = (info: Props) => {
+  const [cha_mp, setCha_mp] = useState<string>("default");
+
   //const { data: users, isLoading, status } = useUsersQuery();
   return (
     <div className="ml-2">

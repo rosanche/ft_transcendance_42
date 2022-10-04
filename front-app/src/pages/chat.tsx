@@ -1,6 +1,5 @@
 import { RoundedContainer } from "modules/common/components/_ui/RoundedContainer/RoundedContainer";
 import React, { useState, useRef, useEffect } from "react";
-import { Button } from "modules/common/components/_ui/Button/Button";
 import socketio from "socket.io-client";
 import { useRouter } from "next/router";
 import { useSocketContext } from "modules/common/context/SocketContext";
@@ -11,16 +10,18 @@ import { MessagesChannel } from "modules/chat/components/Messages/MessagesChanne
 import { MessagesMp } from "modules/chat/components/Messages/MessagesMp";
 import { Channel } from "modules/chat/components/Channel/Channel";
 import { Page } from "modules/common/components/_ui/Page/Page";
-import { IconMessage } from "modules/common/components/_icons/icons";
+
 import Image from "next/image";
 import {
   IconAddFriend,
   IconBlock,
 } from "modules/common/components/_icons/icons";
 import { useChannelContext } from "modules/chat/context/ChannelContext";
-import { MenuMessagesChannel } from "modules/chat/components/Menu/MenuMessageChannel";
-import { MenuMessagesMp } from "modules/chat/components/Menu/MenuMessageMp";
 import { TitreChannel } from "modules/chat/components/Titre/TitreChannel";
+import { MenuChat } from "modules/chat/components/Menu/MenuChat";
+import Messages from "modules/chat/components/Messages/Messages";
+import { useModeChannelMpContext } from "modules/chat/context/ModeChannelMpContext";
+import InputMessage from "modules/chat/components/InputMessage.tsx/InputMessage";
 
 type form = {
   idSend: number;
@@ -62,7 +63,9 @@ type users = {
 };
 
 const Chat = () => {
+  const { chatName, changeChatName } = useChannelContext();
   const socket = useSocketContext();
+  const { cha_mp } = useModeChannelMpContext();
   const [channel, setChannel] = useState<users[]>([]);
   const [invite, setInvite] = useState<boolean>(false);
   const [newAdmin, setNewAdmin] = useState<boolean>(false);
@@ -79,7 +82,6 @@ const Chat = () => {
   const [msg, setMsg] = useState<form[]>([]);
   const [msgMp, setMsgMp] = useState<form[]>([]);
   const [users, setUsers] = useState<users[]>([]);
-  const [cha_mp, setCha_mp] = useState<string>("default");
   const [game, setGame] = useState<number>(0);
   const [frienMode, setFriendMode] = useState<number>(1);
   const [ban, setBan] = useState<ban>({
@@ -96,25 +98,8 @@ const Chat = () => {
     private: false,
   });
 
-  const { chatName, changeChatName } = useChannelContext();
-
-  const [data, setData] = useState<form>({
-    idSend: 0,
-    idReceive: 0,
-    texte: "",
-  });
-
   const [isConnected, setIsConnected] = useState(socket.connected);
   const router = useRouter();
-
-  /*  const [join, setJoin] = useState<channel>({
-    id: 0,
-    name: "",
-    private: false,
-    admin: false,
-    owner: false,
-    password: false,
-  });*/
 
   const inviteChan = async (p: ban) => {
     console.log(p);
@@ -128,14 +113,6 @@ const Chat = () => {
   const joinPass = async (passj: pass) => {
     await socket.emit("joins channel password", passj);
     await setPassj({ name: "", password: "", private: false });
-    /* await setJoin({
-      id: 0,
-      name: "",
-      private: false,
-      admin: false,
-      owner: false,
-      password: false,
-    });*/
   };
 
   const demfriend = async (el: users) => {
@@ -172,7 +149,6 @@ const Chat = () => {
       password: false,
     });
     setData({ pseudo: data.pseudo, channel: "", texte: "" });
-    setCha_mp(val);
   };
 
   const quit = async () => {
@@ -235,34 +211,11 @@ const Chat = () => {
     console.log("A");
   };
 
-  const sendMessage = async () => {
-    if (cha_mp === "channel") {
-      console.log("ouiiiiiiiii");
-
-      console.log("UN JOUR PEUT ETRE");
-      await setData({
-        idSend: data.idSend,
-        idReceive: chatName.id,
-        texte: data.texte,
-      });
-      await socket.emit("channelToServer", data);
-
-      setData({ idSend: data.idSend, idReceive: chatName.id, texte: "" });
-    } else if (cha_mp === "message private") {
-      sendPrivate();
-    }
-  };
-
-  const sendPrivate = async () => {
-    console.log(data);
-    await socket.emit("message mp", data);
-  };
-
   const changechannel = async (el: channel) => {
     console.log(el);
-    await setData({ idSend: me.id, idReceive: el.id, texte: "" });
+    //await setData({ idSend: me.id, idReceive: el.id, texte: "" });
     console.log(data);
-    await changeChatName(el);
+    // await changeChatName(el);
   };
 
   const joinchannel = async (el: channel) => {
@@ -372,7 +325,7 @@ const Chat = () => {
     socket.on("join channel true", (ret: channel) => {
       console.log("enfin une nouvellle fiture");
       setChannel((channels) => [...channels, ret]);
-      changechannel(ret);
+      //changechannel(ret);
       //modifpub(ret)
       //
     });
@@ -462,6 +415,7 @@ const Chat = () => {
       socket.auth.token = cookieValue;
       //   console.log(router.query)
       socket.connect();
+      console.log(socket.isConnected);
       socket.emit("channelinit");
       socket.emit("listchannels");
       socket.emit("me info");
@@ -474,105 +428,19 @@ const Chat = () => {
       socket.disconnect();
     };
   }, []);
+
   return (
     <Page title="chat" width=" w-2/3">
       <div className="flex flex-1 flex-row h-5/6 scroll-smooth max-h-scren ">
         <RoundedContainer className="flex-none w-1/3  mu-3 items-start mb-9">
-          <span className="text-white font-medium text-2xl text-center leading-[3rem]">
-            {cha_mp}
-          </span>
-          <span className=" flex-initial justify-center">
-            <Button
-              className="ml-1 text-lg"
-              variant="link"
-              disabled={false}
-              color=""
-              onClick={() => changeChaMp("channel")}
-            >
-              channel
-            </Button>
-            <Button
-              className="ml-2 text-lg"
-              variant="link"
-              disabled={false}
-              onClick={() => changeChaMp("message private")}
-            >
-              message private
-            </Button>
-          </span>
-          {cha_mp == "message private" && (
-            <MenuMessagesMp users={users} msgMp={msgMp} />
-          )}
-          {cha_mp == "channel" && <MenuMessagesChannel channels={channel} />}
+          <MenuChat key="ss" users={users} msgMp={msgMp} channel={channel} />
         </RoundedContainer>
         <div className="flex flex-1 flex-col ml-8 w-2/3 justify-between ">
           <TitreChannel />
           <RoundedContainer className="flex overflow-auto overscroll-contain h-3/4  mu-3  mb-9">
-            {cha_mp === "channel" && (
-              <MessagesChannel
-                key="channel"
-                msg={msg}
-                idme={me.id}
-                idCourant={chatName.id}
-              />
-            )}
-            {
-              cha_mp === "message private" && (
-                <MessagesMp
-                  key="mp"
-                  msgMp={msgMp}
-                  idme={me.id}
-                  idCourant={chatName.id}
-                />
-              )
-              /*
-            cha_mp === "message private" &&
-            msgMp
-              .filter((e) => e.idReceive == chatName.id)
-              .map((el, i) => (
-                <div className="m-1.5">
-                  {el.idSend != me.id && (
-                    <div className="flex justify-start">
-                      <OtherMessage key={i} message={el} />
-                    </div>
-                  )}
-                  {el.idSend == me.id && (
-                    <div className="flex justify-end">
-                      <MyMessage key={i} message={el} />
-                    </div>
-                  )*
-                </div>
-                  ))*/
-            }
+            <Messages key="SS" msg={msg} msgMp={msgMp} idme={me.id} />
           </RoundedContainer>
-          <div className="flex flex-row  h-8 mb-10">
-            <input
-              className="rounded-lg flex w-full"
-              type="text"
-              value={data.texte}
-              onChange={(e) => {
-                setData({
-                  idSend: me.id,
-                  idReceive: chatName.id,
-                  texte: e.target.value,
-                });
-                console.log(data);
-              }}
-              placeholder="Enter Character Name"
-              onKeyPress={(event) => {
-                event.key === "Enter" && sendMessage();
-              }}
-            ></input>
-            <Button
-              className="ml-4 text-center items-center  align-middle"
-              variant="contained"
-              color="active"
-              icon={<IconMessage />}
-              onClick={() => sendMessage()}
-            >
-              envoie
-            </Button>
-          </div>
+          <InputMessage id={me.id} />
         </div>
       </div>
     </Page>

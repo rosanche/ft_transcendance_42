@@ -33,9 +33,10 @@ export const FriendItem = ({
   pseudo,
   type = "friend_request",
   isBlocked,
+  isInChannel,
   profileImage,
   id,
-}: ApiFriend & { type: FriendType; isBlocked: boolean }) => {
+}: ApiFriend & { type: FriendType; isBlocked: boolean; isInChannel }) => {
   const socket = useSocketContext();
   const queryClient = useQueryClient();
   const { data: myProfil } = useMyProfileQuery();

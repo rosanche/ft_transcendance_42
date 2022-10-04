@@ -30,16 +30,18 @@ export const MenuMessagesChannel = (a: Props) => {
   const { chatName, changeChatName } = useChannelContext();
   //const { data: users, isLoading, status } = useUsersQuery();
   return a.channels?.map((el, i) => (
-    <Button
-      key={i}
-      className=""
-      variant="link"
-      color=""
-      onClick={() => {
-        changeChatName(el);
-      }}
-    >
-      <Channel key={i} info={el} />
-    </Button>
+    <div>
+      <Button
+        key={i}
+        className=""
+        variant="link"
+        color=""
+        onClick={() => {
+          changeChatName(el);
+        }}
+      >
+        <Channel key={i} info={el} />
+      </Button>
+    </div>
   ));
 };

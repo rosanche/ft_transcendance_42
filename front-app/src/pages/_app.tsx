@@ -9,8 +9,7 @@ import { SocketContextProvider } from "modules/common/context/SocketContext";
 import { SideBar } from "modules/common/components/_ui/SideBar/SideBar";
 import { SideBarContextProvider } from "modules/common/context/SideBarContext";
 import { ChannelContextProvider } from "modules/chat/context/ChannelContext";
-
-require("typeface-dm-sans");
+import { ModeChannelMpContextProvider } from "modules/chat/context/ModeChannelMpContext";
 
 const queryClient = new QueryClient();
 
@@ -27,7 +26,9 @@ function MyApp({ Component, pageProps }) {
                 <AuthenticatedGuard>
                   <SideBar>
                     <ChannelContextProvider>
-                      <Component {...pageProps} />
+                      <ModeChannelMpContextProvider>
+                        <Component {...pageProps} />
+                      </ModeChannelMpContextProvider>
                     </ChannelContextProvider>
                   </SideBar>
                 </AuthenticatedGuard>
