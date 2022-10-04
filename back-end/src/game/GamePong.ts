@@ -38,6 +38,7 @@ const paddleSpeed = 7.5;
 
 export class GamePong {
 
+  speedUpBall: number;
   isBonus: boolean;
   paddleX1: number;
   paddleX2: number;
@@ -68,6 +69,7 @@ export class GamePong {
     this.paddleX1 = 40;
     this.paddleX2 = xMax - (this.paddleX1 + paddleWidth);
     this.ballSpeed = baseBallSpeed;
+    this.speedUpBall = 1;
     this.paddleSpeed1 = paddleSpeed;
     this.paddleSpeed2 = paddleSpeed;
     this.paddleHeight1 = paddleHeight;
@@ -160,7 +162,8 @@ export class GamePong {
     {
       if(this.paddleCollision(this.paddleX1, this.info.paddle1Y, this.paddleHeight1)) 
       {
-        this.ballSpeed = this.isBonusActive(typeBonus[2], 1) ? baseBallSpeed * 1.5 : baseBallSpeed;
+        this.speedUpBall = this.isBonusActive(typeBonus[2], 1) ? 1.5 : 1;
+        this.ballSpeed = this.ballSpeed <= baseBallSpeed * 1.5 ? this.ballSpeed + 0.2 : this.ballSpeed ;
         this.lastTouch = 1;
       }
     }
@@ -169,7 +172,8 @@ export class GamePong {
     {
       if(this.paddleCollision(this.paddleX2, this.info.paddle2Y, this.paddleHeight2)) 
       {
-        this.ballSpeed = this.isBonusActive(typeBonus[2], 2) ? baseBallSpeed * 1.5 : baseBallSpeed;
+        this.speedUpBall = this.isBonusActive(typeBonus[2], 2) ? 1.5 : 1;
+        this.ballSpeed = this.ballSpeed <= baseBallSpeed * 1.5 ? this.ballSpeed + 0.2 : this.ballSpeed ;
         this.lastTouch = 2;
       }
     }
@@ -278,14 +282,15 @@ export class GamePong {
 
   
   private limitCollision() {
-    var newX = this.info.ballX + (this.ballSpeed * Math.cos(this.angleBall));
-    var newY = this.info.ballY + (this.ballSpeed * Math.sin(this.angleBall));
+    var newX = this.info.ballX + (this.ballSpeed * this.speedUpBall * Math.cos(this.angleBall));
+    var newY = this.info.ballY + (this.ballSpeed * this.speedUpBall * Math.sin(this.angleBall));
     if(newX - ballSize > xMax) 
     {
       this.info.score1++;
       [newX, newY] = [xMax/2,Math.ceil(((0.8 * yMax) * Math.random()) + (0.1 * yMax))] 
       this.angleBall = ( (Math.PI / 2) * Math.random()) - (Math.PI / 4) ;
-      this.ballSpeed = baseBallSpeed * 0.6;
+      this.ballSpeed = baseBallSpeed;
+      this.speedUpBall = 0.6;
       this.lastTouch = 0;
       this.startTime = Date.now();
       this.info.bonus = [];
@@ -295,7 +300,8 @@ export class GamePong {
       this.info.score2++;
       [newX, newY] = [xMax/2,Math.ceil(((0.8 * yMax) * Math.random()) + (0.1 * yMax))] 
       this.angleBall = Math.PI + ( (Math.PI / 2) * Math.random()) - (Math.PI / 4) ;
-      this.ballSpeed = baseBallSpeed * 0.6
+      this.ballSpeed = baseBallSpeed;
+      this.speedUpBall = 0.6;
       this.lastTouch = 0;
       this.startTime = Date.now();
       this.info.bonus = [];

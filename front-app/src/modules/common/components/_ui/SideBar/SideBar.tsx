@@ -1,4 +1,4 @@
-import { useSideBarContext } from "modules/common/context/SidebarContext";
+import { useSideBarContext } from "modules/common/context/SideBarContext";
 import { EnumRoutes } from "modules/common/routes";
 import { PropsWithChildren } from "react";
 import IconGame from "../../_icons/game";
