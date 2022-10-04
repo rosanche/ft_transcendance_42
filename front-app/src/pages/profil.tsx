@@ -14,10 +14,9 @@ import { GameHistoryContainer } from "modules/profile/components/GameHistoryCont
 import { useGameHistoryQuery } from "modules/profile/queries/useGameHistoryQuery";
 
 const Profil = () => {
-  const router = useRouter();
-  const { data: user, isProfilLoading } = useMyProfileQuery();
-  const { data: games, isGameHistoryLoading } = useGameHistoryQuery();
-  const { doubleFaEnabled } = useAppContextState();  console.log("$$date", user);
+  const { data: user, isLoading: isProfilLoading } = useMyProfileQuery();
+  const { doubleFaEnabled } = useAppContextState();
+  console.log("$$date", user);
 
   const { showModal } = useUserInfosModal();
 
@@ -40,7 +39,7 @@ const Profil = () => {
   }));
 
   return (
-    <Page title="Profil" isLoading={isProfilLoading || isGameHistoryLoading}>
+    <Page title="Profil" isLoading={isProfilLoading}>
       <div className="grid grid-flow-col max-h-1/3 space-x-3">
         <div className="flex flex-col items-center  mb-16 space-y-4">
           <div className="flex relative rounded-full border border-gray-100 w-44 h-44 shadow-sm">
@@ -67,7 +66,7 @@ const Profil = () => {
         </div>
         <FriendsContainer friends={friends} withAddFriendButton />
         <NotificationsContainer friends={user?.friendReqReceive} />
-        <GameHistoryContainer games={games} id={user?.id} />
+        <GameHistoryContainer id={user?.id} />
       </div>
     </Page>
   );
