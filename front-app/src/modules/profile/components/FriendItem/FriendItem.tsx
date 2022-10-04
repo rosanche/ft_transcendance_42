@@ -4,11 +4,13 @@ import IconAccept from "modules/common/components/_icons/accept";
 import {
   IconAddFriend,
   IconBlock,
+  IconGame,
 } from "modules/common/components/_icons/icons";
 import IconMessage from "modules/common/components/_icons/message";
 import IconRefuse from "modules/common/components/_icons/refuse";
 import { Button } from "modules/common/components/_ui/Button/Button";
 import { useSocketContext } from "modules/common/context/SocketContext";
+import { EnumRoutes } from "modules/common/routes";
 import { enumProfileQueryKeys } from "modules/profile/queries/keys";
 import { useMyProfileQuery } from "modules/profile/queries/useMyProfileQuery";
 import {
@@ -18,6 +20,8 @@ import {
   UserStatus,
 } from "modules/profile/types";
 import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
 interface UsersStatus {
@@ -34,10 +38,10 @@ export const FriendItem = ({
 }: ApiFriend & { type: FriendType; isBlocked: boolean }) => {
   const socket = useSocketContext();
   const queryClient = useQueryClient();
-  const {
-    data: { myfriends, friendReqSend },
-  } = useMyProfileQuery();
-  const [status, setStatus] = useState("offline");
+  const { data: myProfil } = useMyProfileQuery();
+  const [status, setStatus] = useState<UserStatus>("offline");
+
+  const router = useRouter();
 
   const state = {
     online: "En ligne",
@@ -100,12 +104,14 @@ export const FriendItem = ({
 
   return (
     <div className="flex flex-row my-3">
-      <div className="flex flex-1">
+      <div
+        className="flex flex-1 cursor-pointer"
+        onClick={() => router.push(`${EnumRoutes.USERS}/${id}`)}
+      >
         <div className="w-7 h-7 shadow-sm mt-2 relative">
           <Image
             height={30}
             layout="fill"
-            // objectFit="contain"
             src={profileImage || "/assets/img/42.png"}
             priority={true}
             className="rounded-full"
@@ -132,7 +138,7 @@ export const FriendItem = ({
         </div>
       </div>
 
-      {type === "friend_resume" ? (
+      {type === "friend_resume" || id === myProfil?.id ? (
         <></>
       ) : type === "friend_request" ? (
         <div className="flex ml-2 space-x-1">
@@ -145,6 +151,33 @@ export const FriendItem = ({
         </div>
       ) : (
         <div className="flex space-x-2">
+          {status !== "playing" ? (
+            <Button
+              variant="icon"
+              onClick={() =>
+                router.push({
+                  pathname: EnumRoutes.GAME,
+                  query: `CREATE=${id}`,
+                })
+              }
+              color="active"
+            >
+              <IconGame />
+            </Button>
+          ) : (
+            <Button
+              variant="icon"
+              onClick={() =>
+                router.push({
+                  pathname: EnumRoutes.GAME,
+                  query: `SPECTATOR=${id}`,
+                })
+              }
+              color="active"
+            >
+              <IconGame />
+            </Button>
+          )}
           <Button
             variant="icon"
             onClick={blockUser}
@@ -153,13 +186,15 @@ export const FriendItem = ({
           >
             <IconBlock />
           </Button>
-          {!myfriends?.filter((friend) => friend.id === id)[0] && (
+          {!myProfil?.myfriends?.filter((friend) => friend.id === id)[0] && (
             <Button
               variant="icon"
               onClick={addFriend}
               color="active"
               disabled={
-                !!friendReqSend?.filter((friend) => friend.id === id)[0]
+                !!myProfil?.friendReqSend?.filter(
+                  (friend) => friend.id === id
+                )[0]
               }
             >
               <IconAddFriend />
