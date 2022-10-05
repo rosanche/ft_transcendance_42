@@ -923,7 +923,7 @@ export class ChatGateway implements OnGatewayInit {
     async acceptFriend(client: Socket, id : number)
     {
         const user = await this.authService.getUserFromSocket(client)
-        if (user)
+        if (!user)
             return ;
         const user2 : User = await  this.verifFriendReqSend(user.id , id);
         if (user2 == null)
