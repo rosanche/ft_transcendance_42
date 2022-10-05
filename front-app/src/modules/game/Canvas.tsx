@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import socketio from "socket.io-client";
 import { useRouter } from "next/router";
 import { Button } from "modules/common/components/_ui/Button/Button";
+import { useAppContextState } from "modules/common/context/AppContext";
 
 type PongProps = {
   player1: string;
@@ -50,7 +51,7 @@ const ballSize = 12;
 const socket = socketio("http://localhost:3000/game", {
   autoConnect: false,
   auth: {
-    token: "abcd",
+    token: "",
   },
 });
 
@@ -60,6 +61,7 @@ type CanvasProps = React.DetailedHTMLProps<
 >;
 
 const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
+  const { accessToken, doubleFaEnabled } = useAppContextState();
   const router = useRouter();
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const queryRef = useRef<string | null>(null);
@@ -175,9 +177,9 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
       }
     });
 
-    socket.on("auth error", () => {
-      router.replace("/connexion");
-    });
+    // socket.on("auth error", () => {
+    //   router.replace("/connexion");
+    // });
 
     socket.on("disconnect", () => {
       setIsConnected(false);
@@ -225,19 +227,15 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
   }, []);
 
   useEffect(() => {
-    if (typeof document != "undefined") {
-      const cookieValue = document.cookie
-        .split("; ")
-        .find((row) => row.startsWith("access_token"))
-        ?.split("=")[1];
-      console.log(cookieValue);
-      socket.auth.token = cookieValue;
+    socket.auth.token = accessToken;
+    console.log("accessToken", accessToken, socket.auth.token);
+    if (accessToken) {
       socket.connect();
     }
     return () => {
       socket.disconnect();
     };
-  }, []);
+  }, [accessToken, socket]);
 
   useEffect(() => {
     console.log("handler");

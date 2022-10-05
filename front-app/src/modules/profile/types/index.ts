@@ -5,9 +5,10 @@ export interface User {
   email: string;
   goals_a: number;
   goals_f: number;
-  id: number;
   level: number;
   experience: number;
+  id: number;
+  legend: string;
   friendReqSend: ApiFriend[];
   myfriends: ApiFriend[];
   blocked: ApiFriend[];
