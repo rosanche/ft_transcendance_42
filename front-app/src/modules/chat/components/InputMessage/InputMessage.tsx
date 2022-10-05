@@ -4,12 +4,7 @@ import { useSocketContext } from "modules/common/context/SocketContext";
 import { useChannelContext } from "modules/chat/context/ChannelContext";
 import { useModeChannelMpContext } from "modules/chat/context/ModeChannelMpContext";
 import { IconMessage } from "modules/common/components/_icons/icons";
-
-type form = {
-  idSend: number;
-  idReceive: number;
-  texte: string;
-};
+import { users, form, pass, ban, channel } from "modules/chat/types";
 
 interface Props {
   id: number;

@@ -23,7 +23,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google')
     async validate(accessToken: string, refreshToken: string,  profile :any, done: VerifyCallback)
     {
         const {name, emails, photos, displayName} = profile;
-        console.log(profile);
+        // console.log(profile);
         const user = await this.prisma.user.findUnique({
             where: {
                 email: emails[0].value

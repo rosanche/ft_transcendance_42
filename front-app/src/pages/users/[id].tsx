@@ -16,7 +16,6 @@ import { useUsersQuery } from "modules/profile/queries/useUsersQuery";
 
 const Profil = () => {
   const router = useRouter();
-  const { data: users, isLoading: isUsersLoading } = useUsersQuery();
 
   const userId = parseInt(router.query?.id as string);
   const user = users?.filter((user) => user.id === userId)[0];

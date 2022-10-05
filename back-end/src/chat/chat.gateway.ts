@@ -318,24 +318,33 @@ export class ChatGateway implements OnGatewayInit {
     }
 
     async verifChanneladmin(idCha : number, idUser : number) {
+
+        console.log(idCha);
+        console.log(idUser);
         return await this.Prisma.channel.findFirst({
             where:{
-                id : idCha,
+                AND:[
+                {id : idCha,},
+                {
                 users: {
                     some: {
                         id: idUser,
                     },
-                },
+                },},
+                {
                 admin : {
                     some: {
                         id: idUser,
                     }
                 }
-            }
+                },
+            ]
+        }
+
         });
     }
 
-    async verifChannelOwener(idCha : number, idCrea : number, idUser ) {
+    async verifChannelOwener(idCha : number, idCrea : number, idUser : number ) {
         return await this.Prisma.channel.findFirst({
             where:{
                 id : idCha,
@@ -380,7 +389,7 @@ export class ChatGateway implements OnGatewayInit {
                 iduser: user.id,
             }
         }); 
-        console.log("yo");
+        // // console.log("yo");
         if  (!ban || (await this.commons.banupdate(ban))) {
                 await this.creatPost(user.id, cha.id, 0, message.texte);
                 this.wss.to(cha.name).emit('chatToClient', message);
@@ -390,18 +399,30 @@ export class ChatGateway implements OnGatewayInit {
     //admin channel
 
     @SubscribeMessage('invite channel')
-    async inviteCha(client: Socket, chat : ban) {
+    async inviteCha(client: Socket,  info : {inviteId : number , channelId : number}) {
+          console.log("debut")
      const user = await this.authService.getUserFromSocket(client);
      const user2 = await this.Prisma.user.findUnique({
          where:{
-             id: chat.idUser,
+             id: info.inviteId,
          }
      });
+      console.log(info);
+      console.log("SSSS");
      if (!user || !user2)
          return;
-     const channel = await this.verifChanneladmin(chat.idChannel, user.id);
-     if (!channel || await this.bandef(user.id, channel.id))
+         console.log("SSSS");
+         console.log("SSSS");
+     const channel = await this.verifChanneladmin(info.channelId, user.id);
+     console.log(channel);
+     if (!channel || await (!this.bandef(info.channelId, channel.id)))
+     {
+        console.log("error");
+        console.log((!channel));
+        console.log(await (!this.bandef(info.channelId, channel.id)));
              return;
+     }
+     console.log("c'est bon");
      await this.Prisma.channel.update({
              where: {
                      id: channel.id,
@@ -412,18 +433,19 @@ export class ChatGateway implements OnGatewayInit {
                  },
              }
          })
+          // console.log("enfin")
          this.wss.to(client.id).emit('invite sucess');
          this.wss.to(this.iddd[user.id]).emit('join channel true');
     }
 
-    @SubscribeMessage('list user channel')
+    @SubscribeMessage('list users channel')
     async listUserchanel(client: Socket, idChannel : number)
     {  
         const user = await this.authService.getUserFromSocket(client);
         if (!user)
             return;
-            console.log(idChannel);
-        const Channel = await await this.verifChanneladmin(idChannel, user.id);
+            // // console.log(idChannel);
+        const Channel = await this.verifChanneladmin(idChannel, user.id);
         if (!Channel)
             return;
             const chanel_user = await this.Prisma.channel.findFirst({
@@ -440,14 +462,16 @@ export class ChatGateway implements OnGatewayInit {
             }) 
             var a = Array<number>();
             await chanel_user.users.forEach(e => a.push(e.id))
-            this.wss.emit('cha users', a);
+            // // console.log("ouiuiuiuiu")
+            // // console.log(a);
+            client.emit('channel users', a);
         //return a;
     }
 
     @SubscribeMessage('blockedChannel')
     async blockedChannel(client: Socket, src: ban) {
         const user = await this.authService.getUserFromSocket(client);
-        console.log(src);
+        // // console.log(src);
         if (!user)
             return ;
         const cha = await this.Prisma.channel.findFirst({
@@ -546,12 +570,15 @@ export class ChatGateway implements OnGatewayInit {
     }
 
     @SubscribeMessage('modif channel')
-    async modifChan(client: Socket, chan : pass)
+    async modifChan(client: Socket, chan : {idChannel : number, password : string})
     {
         const user = await this.authService.getUserFromSocket(client);
         if (!user)
             return null;
-            const Channel = await this.verifChannelOwener(chan.idChannel, user.id, chan.idChannel);
+            console.log(user);
+            console.log(chan);
+            const Channel = await this.verifChannelOwener(chan.idChannel, user.id, user.id);
+            console.log(Channel)
         const hash : string = (chan.password == "") ?  null : await bcrypt.hash(chan.password, 3);
             if (!Channel)
                 return null;
@@ -647,11 +674,11 @@ export class ChatGateway implements OnGatewayInit {
     @SubscribeMessage('creatcha')
     async creatChan(client: Socket, chan : pass)
     {
-        console.log("oui");
+        // // console.log("oui");
         const user = await this.authService.getUserFromSocket(client);
         if (!user)
             return;
-            console.log(user);
+            // // console.log(user);
         const hash : string = (chan.password == "") ?  null : await bcrypt.hash(chan.password, 3);
             
             const channel = await this.Prisma.channel.create({
@@ -691,7 +718,7 @@ export class ChatGateway implements OnGatewayInit {
     {
         const socketIds = this.getAllSocketID(id);
         const invitations = this.gameGateway.searchInvite(id);
-        console.log("invitations games", invitations)
+        // // console.log("invitations games", invitations)
         socketIds.forEach(sock => {
             this.wss.to(sock).emit("list game invitations", invitations);
         });
@@ -741,9 +768,9 @@ export class ChatGateway implements OnGatewayInit {
     @SubscribeMessage('Get status')
     sendStatus(client: Socket)
     {
-        console.log("$$GetStatus")
+        // // console.log("$$GetStatus")
         const listStatus = this.getStatus();
-        console.log("$$GetStatus2", listStatus)
+        // // console.log("$$GetStatus2", listStatus)
         client.emit("list status", listStatus);
     }
 
@@ -757,9 +784,9 @@ export class ChatGateway implements OnGatewayInit {
     getStatus(): {id: number,status: string}[]
     {
         const players : Set<number> = this.gameGateway.getPlayingUser();
-        console.log("$players", players);
+        // // console.log("$players", players);
         const onlines : Set<number> = this.getOnlineUser();
-        console.log("$onlines", onlines);
+        // // console.log("$onlines", onlines);
         let status : {id: number,status: string}[] = [];
         onlines.forEach(element => {
             if(players.has(element))
@@ -771,13 +798,13 @@ export class ChatGateway implements OnGatewayInit {
                 status.push({id: element, status: "online"});
             }
         });
-        console.log("$$status", status);
+        // // console.log("$$status", status);
         return status;
     }
 
     getOnlineUser() : Set<number>
     {
-        console.log("mapIdSocket", this.mapIdSocket)
+        // // console.log("mapIdSocket", this.mapIdSocket)
         let onlines : Set<number> = new Set<number>();
         this.mapIdSocket.forEach((val,key) => {
             onlines.add(val);
@@ -798,7 +825,7 @@ export class ChatGateway implements OnGatewayInit {
     @SubscribeMessage('dem friend')
     async demFriend(client: Socket, id :  number )
     {
-        // // console.log("demande amie", id)
+        // // // // console.log("demande amie", id)
         const user = await this.authService.getUserFromSocket(client);
         if (!user)
             return null;
@@ -1062,7 +1089,7 @@ export class ChatGateway implements OnGatewayInit {
         const id : number = (await this.authService.getUserFromSocket(client)).id;
         if (id !== undefined) {
             const users : users[] = await this.commons.listMp(id)
-            console.log(users);
+            // // console.log(users);
             this.wss.to(client.id).emit("use info", users.find(e => e.id === id));
             this.wss.to(client.id).emit('user list', users);
         }

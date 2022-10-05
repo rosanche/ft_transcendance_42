@@ -18,7 +18,7 @@ export class AuthController {
     async signup(@Body() dto: AuthUpDto, @Res() res) {
 
       const user : Partial<User>  = await this.authService.signup(dto);
-      console.log('bonjour');
+      // console.log('bonjour');
       const access_token = await this.authService.login(user);
       res.cookie('access_token', access_token.access_token);
       res.send(access_token);
@@ -26,7 +26,7 @@ export class AuthController {
 
     @Post('signin')
     async signin(@Body() dto: AuthInDto, @Res() res) {
-      console.log("signin");
+      // console.log("signin");
       const user : Partial<User>  = await this.authService.signin(dto);
 
       const access_token = await this.authService.login(user);
@@ -44,7 +44,7 @@ export class AuthController {
     @UseGuards(AuthGuard('google'))
     async googleAuthRedirect(@Req() req: Request)
     {
-        console.log(req.user);
+        // console.log(req.user);
         const user : Partial<User> = req.user;
         return this.authService.login(user);
     }
@@ -61,7 +61,7 @@ export class AuthController {
     @UseGuards(AuthGuard('42'))
     async api42AuthRedirect(@Req() req: Request, @Res(({ passthrough: true })) res: Response)
     {
-        console.log(req.user);
+        // console.log(req.user);
         const user : Partial<User> = req.user;
         const access_token = await this.authService.login(user);
         res.cookie('access_token', access_token.access_token);
@@ -86,16 +86,16 @@ export class AuthController {
     @Post('2fa/turn-on')
     @UseGuards(Jwt2FAGuard)
     async turnOnTwoFactorAuthentication(@Req() request, @Body() body: CodeAuthDto, @Res() res) {
-// console.log("$$body", body);
+// // console.log("$$body", body);
         if (!request.user.twoFactorAuthenticationSecret){
-          // console.log("$$wrong")
+          // // console.log("$$wrong")
             throw new UnauthorizedException('Two Factor Authentication Secret Not Generate');
         }
         const isCodeValid = this.authService.isTwoFactorAuthenticationCodeValid(
             body.twoFactorAuthenticationCode,
             request.user,
         );
-        // console.log("$$answer", isCodeValid, body.twoFactorAuthenticationCode)
+        // // console.log("$$answer", isCodeValid, body.twoFactorAuthenticationCode)
         if (!isCodeValid) {
           throw new UnauthorizedException('Wrong authentication code');
         }

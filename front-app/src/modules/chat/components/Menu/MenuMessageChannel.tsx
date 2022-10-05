@@ -10,27 +10,17 @@ import {
 import { UserMp } from "modules/chat/components/Menu/Messagemp";
 import { useChannelContext } from "modules/chat/context/ChannelContext";
 import { Channel } from "modules/chat/components/Channel/Channel";
-
-type Channel = {
-  id: number;
-  name: string;
-  private: boolean;
-  user: boolean;
-  admin: boolean;
-  owner: boolean;
-  password: boolean;
-};
+import { users, form, pass, ban, channel } from "modules/chat/types";
 
 interface Props {
-  key: string;
-  channels: Channel[];
+  channels: channel[];
 }
 
 export const MenuMessagesChannel = (a: Props) => {
   const { chatName, changeChatName } = useChannelContext();
   //const { data: users, isLoading, status } = useUsersQuery();
   return a.channels?.map((el, i) => (
-    <div>
+    <div key={i}>
       <Button
         key={i}
         className=""

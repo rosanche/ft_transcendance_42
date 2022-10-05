@@ -37,6 +37,13 @@ export class ChannelController
         return this.ChannelService.listchannels(user);
     }
 
+    @Get(':id/users')
+    listchannelusers(@Param('id') id , @GetUser() user: User)
+    {
+      
+            return this.ChannelService.listchannelusers(user, +id);
+    }
+
     @Post('join')
     joinchannel(@GetUser() user: User, @Body() dto: ChannelDto)
     {

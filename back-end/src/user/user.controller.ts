@@ -50,7 +50,7 @@ export class UserController {
   ) {}
   @Get('all')
   findAll(): Promise<any[]> {
-   // console.log("$$ALL ALLA", this.UserService.findAll())
+   // // console.log("$$ALL ALLA", this.UserService.findAll())
     return this.UserService.findAll();
   }
 
@@ -86,11 +86,11 @@ export class UserController {
     @UploadedFile() file ,
     @Request() req: Express.Multer.File,
   )   {
-    console.log(file);
-    console.log("5");
+    // console.log(file);
+    // console.log("5");
     //return (of({ImagePath: file.filename}))
-   console.log(user);
-    console.log(file);
+   // console.log(user);
+    // console.log(file);
    this.UserService.UserUploadedImage(user, file.filename);
     //return this.UserService.UserUploadedImage(user, file.filename);
   }
@@ -104,7 +104,7 @@ export class UserController {
 
   @Get('playingUser')
   getPlayingUser(): number[] {
-    console.log(this.gameGateway.getPlayingUser());
+    // console.log(this.gameGateway.getPlayingUser());
     return [...this.gameGateway.getPlayingUser()];
   }
 

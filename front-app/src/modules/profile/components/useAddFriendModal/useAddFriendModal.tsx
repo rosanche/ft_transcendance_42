@@ -16,12 +16,21 @@ interface FormData {
   searchTerm: string;
 }
 
-export const useAddFriendModal = (isInChannel = false) => {
+export const useAddFriendModal = ({
+  isInChannel = false,
+  idsToAvoid = [],
+  channelId = 0,
+}: {
+  isInChannel: boolean;
+  channelId: number;
+  idsToAvoid: number[];
+}) => {
   const { formState, register, watch } = useForm<FormData>({
     defaultValues: {
       searchTerm: "",
     },
   });
+  console.log("$$BOBNJOUUURR", idsToAvoid);
   const { errors } = formState;
   const { data: users, isLoading, status } = useUsersQuery();
   const { data: profil } = useMyProfileQuery();
@@ -40,15 +49,26 @@ export const useAddFriendModal = (isInChannel = false) => {
       })
   );
 
-  // const usersFiltered = useMemo(
-  //   () =>
-  //     users
-  //       ?.filter((value) => value != null)
-  //       .filter((value) => {
-  //         return String(value).toLowerCase().includes(searchTerm.toLowerCase());
-  //       }),
-  //   [searchTerm]
-  // );
+  console.log(
+    "$$users Addmodal bordel",
+    users,
+    users?.map(
+      (friend) =>
+        friend.id !== profil?.id && idsToAvoid.some((id) => id !== friend.id)
+    ),
+    idsToAvoid.some((idMember) => idMember === 1),
+    idsToAvoid
+  );
+
+  const usersFiltered = useMemo(
+    () =>
+      users
+        ?.filter((value) => value != null)
+        .filter((value) => {
+          return String(value).toLowerCase().includes(searchTerm.toLowerCase());
+        }),
+    [searchTerm]
+  );
 
   const UsersList = () => (
     <div className="flex flex-col">
@@ -62,11 +82,13 @@ export const useAddFriendModal = (isInChannel = false) => {
           /> */}
           {users?.map(
             (friend) =>
-              friend.id !== profil?.id && (
+              friend.id !== profil?.id &&
+              idsToAvoid.some((id) => id !== friend.id) && (
                 <FriendItem
                   {...friend}
                   type="friend"
                   isInChannel={isInChannel}
+                  channelId={channelId}
                 />
               )
           )}

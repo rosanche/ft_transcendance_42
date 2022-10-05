@@ -10,6 +10,7 @@ import { SideBar } from "modules/common/components/_ui/SideBar/SideBar";
 import { SideBarContextProvider } from "modules/common/context/SideBarContext";
 import { ChannelContextProvider } from "modules/chat/context/ChannelContext";
 import { ModeChannelMpContextProvider } from "modules/chat/context/ModeChannelMpContext";
+import { UsersChannelContextProvider } from "modules/chat/context/UsersChannelContext";
 
 const queryClient = new QueryClient();
 
@@ -27,7 +28,9 @@ function MyApp({ Component, pageProps }) {
                   <SideBar>
                     <ChannelContextProvider>
                       <ModeChannelMpContextProvider>
-                        <Component {...pageProps} />
+                        <UsersChannelContextProvider>
+                          <Component {...pageProps} />
+                        </UsersChannelContextProvider>
                       </ModeChannelMpContextProvider>
                     </ChannelContextProvider>
                   </SideBar>

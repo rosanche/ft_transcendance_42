@@ -21,69 +21,28 @@ import { TitreChannel } from "modules/chat/components/Titre/TitreChannel";
 import { MenuChat } from "modules/chat/components/Menu/MenuChat";
 import Messages from "modules/chat/components/Messages/Messages";
 import { useModeChannelMpContext } from "modules/chat/context/ModeChannelMpContext";
-import InputMessage from "modules/chat/components/InputMessage.tsx/InputMessage";
-
-type form = {
-  idSend: number;
-  idReceive: number;
-  texte: string;
-};
-
-type pass = {
-  idChannel: number;
-  name: string;
-  password: string;
-  private: boolean;
-};
-
-type channel = {
-  id: number;
-  name: string;
-  private: boolean;
-  user: boolean;
-  admin: boolean;
-  owner: boolean;
-  password: boolean;
-};
-
-type ban = {
-  mute_ban: string;
-  idChannel: number;
-  idUser: number;
-  time: number;
-  motif: string;
-};
-
-type users = {
-  id: number;
-  pseudo: string;
-  stastu: number;
-  blocked: boolean;
-  myblocked: boolean;
-};
+import InputMessage from "modules/chat/components/InputMessage/InputMessage";
+import { usersChannel, form, pass, ban } from "modules/chat/types";
 
 const Chat = () => {
   const { chatName, changeChatName } = useChannelContext();
   const socket = useSocketContext();
-  const { cha_mp } = useModeChannelMpContext();
-  const [channel, setChannel] = useState<users[]>([]);
-  const [invite, setInvite] = useState<boolean>(false);
-  const [newAdmin, setNewAdmin] = useState<boolean>(false);
+  const { cha_mp, changeCha_mp } = useModeChannelMpContext();
+  const [channel, setChannel] = useState<usersChannel[]>([]);
   const [newOwner, setNewOwner] = useState<boolean>(false);
   const [create, setCreate] = useState<boolean>(false);
-  const [me, setMe] = useState<users>({
+  const [me, setMe] = useState<usersChannel>({
     id: 0,
     pseudo: "",
     stastu: 0,
     blocked: false,
     myblocked: false,
   });
-  //const [myMp, setMyMp] = useState<channel[]>([]);
+  const [usersChannel_, setUsersChannel_] = useState<number[]>([]);
   const [msg, setMsg] = useState<form[]>([]);
   const [msgMp, setMsgMp] = useState<form[]>([]);
-  const [users, setUsers] = useState<users[]>([]);
-  const [game, setGame] = useState<number>(0);
-  const [frienMode, setFriendMode] = useState<number>(1);
+  const [users, setUsers] = useState<usersChannel[]>([]);
+  const [game, setGame] = useState<Number>(0);
   const [ban, setBan] = useState<ban>({
     mute_ban: "",
     idChannel: 0,
@@ -91,15 +50,21 @@ const Chat = () => {
     time: 0,
     motif: "",
   });
-  const [passj, setPassj] = useState<pass>({
-    idChannel: 0,
-    name: "",
-    password: "",
-    private: false,
-  });
-
   const [isConnected, setIsConnected] = useState(socket.connected);
   const router = useRouter();
+
+  useEffect(() => {
+    changeCha_mp("message private");
+    changeChatName({
+      id: parseInt(router.query.userId),
+      name: router.query.pseudo,
+      private: false,
+      user: false,
+      admin: false,
+      owner: false,
+      password: "",
+    });
+  }, [router.query]);
 
   const inviteChan = async (p: ban) => {
     console.log(p);
@@ -115,27 +80,27 @@ const Chat = () => {
     await setPassj({ name: "", password: "", private: false });
   };
 
-  const demfriend = async (el: users) => {
+  const demfriend = async (el: usersChannel) => {
     console.log(el);
     await socket.emit("dem friend", el.id);
   };
 
-  const acceptfriend = async (el: users) => {
+  const acceptfriend = async (el: usersChannel) => {
     console.log(el);
     await socket.emit("accept friend", el.id);
   };
 
-  const supdemfirend = async (el: users) => {
+  const supdemfirend = async (el: usersChannel) => {
     console.log(el);
     await socket.emit("sup dem friend", el.id);
   };
 
-  const supfriend = async (el: users) => {
+  const supfriend = async (el: usersChannel) => {
     console.log(el);
     await socket.emit("sup friend", el.id);
   };
 
-  const refusefriend = async (el: users) => {
+  const refusefriend = async (el: usersChannel) => {
     console.log(el);
     await socket.emit("refuse friend", el.id);
   };
@@ -364,6 +329,12 @@ const Chat = () => {
       setIsConnected(true);
     });
 
+    socket.on("cha users", (you: number[]) => {
+      setUsersChannel_(you);
+      console.log("oui");
+      console.log(`toi et moi ${you}`);
+    });
+
     socket.on("user info", (user: { id: number; pseudo: string }) => {
       console.log(user);
       setData({ channel: "", pseudo: user.pseudo, texte: "" });
@@ -398,36 +369,38 @@ const Chat = () => {
       socket.off("left chanel");
       socket.off("join channel true");
       socket.off("new channel pub");
-      socket.off("chatToClientMp");
+      socket.off("list user channel", 1);
     };
-  }, []);
+  }, [socket]);
 
   useEffect(() => {
     console.log("oui!!!!!!!!!!!!!!!!!!!!!!!!!");
-    if (typeof document != "undefined") {
-      console.log("ouissssss");
-      const cookieValue = document.cookie
-        .split("; ")
-        .find((row) => row.startsWith("access_token"))
-        ?.split("=")[1];
-      socket.connect();
-      // console.log(cookieValue);Message
-      socket.auth.token = cookieValue;
-      //   console.log(router.query)
-      socket.connect();
-      console.log(socket.isConnected);
-      socket.emit("channelinit");
-      socket.emit("listchannels");
-      socket.emit("me info");
-      socket.emit("me blocks");
-      socket.emit("list users");
-      socket.emit("list mps");
-    }
+    //   if (typeof document != "undefined") {
+    console.log("ouissssss");
+    const cookieValue = document.cookie
+      .split("; ")
+      .find((row) => row.startsWith("access_token"))
+      ?.split("=")[1];
+    // console.log(cookieValue);Message
+    socket.auth.token = cookieValue;
+    //   console.log(router.query)
+    socket.connect();
+    console.log(isConnected);
+    socket.emit("channelinit");
+    socket.emit("listchannels");
+    socket.emit("me info");
+    socket.emit("me blocks");
+    socket.emit("list users");
+    socket.emit("list mps");
+    socket.emit("list user channel");
 
-    return () => {
+    console.log("finish !!!!!!!!!!!!!!!!!!!!!!!!!");
+    //}
+
+    /*return () => {
       socket.disconnect();
-    };
-  }, []);
+    };*/
+  }, [isConnected]);
 
   return (
     <Page title="chat" width=" w-2/3">
@@ -436,7 +409,7 @@ const Chat = () => {
           <MenuChat key="ss" users={users} msgMp={msgMp} channel={channel} />
         </RoundedContainer>
         <div className="flex flex-1 flex-col ml-8 w-2/3 justify-between ">
-          <TitreChannel />
+          <TitreChannel usersChannelId={usersChannel_} />
           <RoundedContainer className="flex overflow-auto overscroll-contain h-3/4  mu-3  mb-9">
             <Messages key="SS" msg={msg} msgMp={msgMp} idme={me.id} />
           </RoundedContainer>

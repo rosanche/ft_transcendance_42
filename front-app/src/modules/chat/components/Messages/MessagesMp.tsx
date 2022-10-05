@@ -7,20 +7,7 @@ import {
   OtherMessage,
   MyMessage,
 } from "modules/chat/components/Message/Message";
-
-type form = {
-  idSend: number;
-  idReceive: number;
-  texte: string;
-};
-
-type user = {
-  id: number;
-  pseudo: string;
-  stastu: number;
-  blocked: boolean;
-  myblocked: boolean;
-};
+import { users, form, pass, ban, channel } from "modules/chat/types";
 
 interface Props {
   msgMp: form[];

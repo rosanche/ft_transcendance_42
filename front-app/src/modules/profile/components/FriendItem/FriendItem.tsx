@@ -1,6 +1,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 import clsx from "clsx";
 import IconAccept from "modules/common/components/_icons/accept";
+import IconAdmin from "modules/common/components/_icons/admin";
 import {
   IconAddFriend,
   IconBlock,
@@ -33,10 +34,16 @@ export const FriendItem = ({
   pseudo,
   type = "friend_request",
   isBlocked,
-  isInChannel,
+  isInChannel = false,
+  channelId = 0,
   profileImage,
   id,
-}: ApiFriend & { type: FriendType; isBlocked: boolean; isInChannel }) => {
+}: ApiFriend & {
+  type: FriendType;
+  isBlocked: boolean;
+  isInChannel: boolean;
+  channelId: number;
+}) => {
   const socket = useSocketContext();
   const queryClient = useQueryClient();
   const { data: myProfil } = useMyProfileQuery();
@@ -54,11 +61,9 @@ export const FriendItem = ({
   console.log("$$Status component", status, socket.connected);
 
   useEffect(() => {
-    console.log("$$connected", socket.connected);
     if (!socket.connected) {
       socket.connect();
     }
-    console.log("$$connected", socket.connected);
     socket.on("request_friend", () => {
       queryClient.invalidateQueries([enumProfileQueryKeys.MY_PROFILE]);
     });
@@ -67,8 +72,6 @@ export const FriendItem = ({
     });
     socket.on("list status", (usersStatus: UsersStatus[]) => {
       setStatus(usersStatus?.find((user) => user.id === id).status);
-      console.log("$$Status socket", usersStatus);
-      console.log("$$Status user", status);
     });
 
     console.log("$$Status emitttt");
@@ -85,6 +88,13 @@ export const FriendItem = ({
     console.log("$$friend accepted", id);
     console.log("$$friend connected?", socket.connected);
     socket.emit("accept friend", id);
+  };
+
+  const inviteUserChannel = async () => {
+    console.log("oui");
+    console.log("$$friend connected?", socket.connected);
+    console.log("$$friend connected?", channelId);
+    socket.emit("invite channel", { inviteId: id, channelId: channelId });
   };
 
   const blockUser = async () => {
@@ -208,9 +218,22 @@ export const FriendItem = ({
               <IconAddFriend />
             </Button>
           )}
-          <Button variant="icon">
+          <Button
+            variant="icon"
+            onClick={() =>
+              router.push({
+                pathname: EnumRoutes.CHAT,
+                query: { userId: id, pseudo },
+              })
+            }
+          >
             <IconMessage />
           </Button>
+          {isInChannel && (
+            <Button variant="icon" onClick={inviteUserChannel}>
+              <IconAdmin />
+            </Button>
+          )}
         </div>
       )}
     </div>

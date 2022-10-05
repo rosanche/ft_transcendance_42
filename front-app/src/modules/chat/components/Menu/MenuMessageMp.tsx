@@ -9,24 +9,10 @@ import {
 } from "modules/chat/components/Message/Message";
 import { UserMp } from "modules/chat/components/Menu/Messagemp";
 import { useChannelContext } from "modules/chat/context/ChannelContext";
-
-type form = {
-  idSend: number;
-  idReceive: number;
-  texte: string;
-};
-
-type user = {
-  id: number;
-  pseudo: string;
-  stastu: number;
-  blocked: boolean;
-  myblocked: boolean;
-};
+import { users, form, pass, ban, channel } from "modules/chat/types";
 
 interface Props {
-  key: string;
-  users: user[];
+  users: users[];
   msgMp: form[];
 }
 

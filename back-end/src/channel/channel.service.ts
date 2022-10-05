@@ -93,6 +93,68 @@ export class ChannelService
         return channel;
     }
 
+    async listchannelusers(user: User, id : number)
+    {
+        const channel = await this.Prisma.channel.findFirst({
+            where:{
+                id: id,
+                admin:{
+                    some:{
+                        id : user.id
+                    }
+                }
+            }
+        });
+    if (channel) {
+        return await this.Prisma.user.findMany({
+            where: {
+                admin_channel: {
+                    some:{  
+                        id: user.id,
+            }
+        },
+                User_channel: {
+                        some:{  
+                            id: id,
+                }
+            },
+        },
+                select: {
+                  id: true,
+                  pseudo: true,
+                  legend: true,
+                  profileImage: true,
+                  myfriends: {
+                    select: {
+                      id: true,
+                      pseudo: true,
+                      legend: true,
+                      profileImage: true,
+                    },
+                  },
+                  friendReqSend: {
+                    select: {
+                      id: true,
+                      pseudo: true,
+                      legend: true,
+                      profileImage: true,
+                    },
+                  },
+                  friendReqReceive: {
+                    select: {
+                      id: true,
+                      pseudo: true,
+                      legend: true,
+                      profileImage: true,
+                    },
+                  },
+                },
+    });
+       
+    }
+    return null;
+    }
+
     async joinchannel(user: User, src : ChannelDto)
     {
         const channel = await this.Prisma.channel.findFirst({

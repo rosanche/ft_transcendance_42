@@ -4,23 +4,10 @@ import { RoundedContainer } from "modules/common/components/_ui/RoundedContainer
 import { FriendItem } from "modules/profile/components/FriendItem/FriendItem";
 import { useChannelContext } from "modules/chat/context/ChannelContext";
 import React, { useState, useRef, useEffect } from "react";
-
-type form = {
-  idSend: number;
-  idReceive: number;
-  texte: string;
-};
-
-type user = {
-  id: number;
-  pseudo: string;
-  stastu: number;
-  blocked: boolean;
-  myblocked: boolean;
-};
+import { users, form, pass, ban, channel } from "modules/chat/types";
 
 interface Props {
-  user: user;
+  user: users;
 }
 
 export const UserMp = (info: Props) => {

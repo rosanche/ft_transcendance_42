@@ -24,7 +24,7 @@ export class Chat_Commons {
             const u : number = Date.now()
             const c : number = Number(Element.finshBan);
             const v : number = ( u - c);
-            console.log(v);
+            // console.log(v);
             if (Element.bandef === false && Element.finshBan < Date.now()) {
                 await this.Prisma.ban.update(
                     {
@@ -84,16 +84,16 @@ export class Chat_Commons {
                     muteBan: 'ban',
                 }
             });
-            console.log(user.id);
-            console.log(ban);
-            console.log("aurevoir");
+            // console.log(user.id);
+            // console.log(ban);
+            // console.log("aurevoir");
                 if (!ban || (await this.banupdate(ban)))
                 for (let n : number = 0; cha[i].post.length != n; ++n) {           
                      
                     re.push({idSend: cha[i].post[n].userID, idReceive: cha[i].id, texte: cha[i].post[n].message});
                 }
             }
-            console.log(re);
+            // console.log(re);
             return re;
     }
 
@@ -199,7 +199,7 @@ export class Chat_Commons {
             var re = new Array<users>();
             
             for (let i : number = 0; users.length != i; ++i) {
-                // // console.log(user);
+                // // // console.log(user);
                 if (await (user.myfriends.length !== 0 && user.myfriends.find((el) => el.id === users[i].id) !== undefined))
                 re.push({
                     id: users[i].id, 

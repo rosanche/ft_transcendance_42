@@ -34,7 +34,7 @@ export class API42Strategy extends PassportStrategy(Strategy)
         });
         
         if (user){
-            console.log("already a user");
+            // console.log("already a user");
             delete user.hash;
             delete user.twoFactorAuthenticationSecret;
             done(null,user);

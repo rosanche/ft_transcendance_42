@@ -2,24 +2,8 @@ import { ReactNode } from "react";
 import { Button } from "modules/common/components/_ui/Button/Button";
 import { RoundedContainer } from "modules/common/components/_ui/RoundedContainer/RoundedContainer";
 import React, { useState, useRef, useEffect } from "react";
+import { users, form, pass, ban, channel } from "modules/chat/types";
 import { useSocketContext } from "modules/common/context/SocketContext";
-
-type channel = {
-  id: number;
-  name: string;
-  private: boolean;
-  user: boolean;
-  admin: boolean;
-  owner: boolean;
-  password: boolean;
-};
-
-type pass = {
-  idChannel: number;
-  name: string;
-  password: string;
-  private: boolean;
-};
 
 interface Props {
   info: channel;

@@ -6,41 +6,18 @@ import { Button } from "modules/common/components/_ui/Button/Button";
 import { useChannelContext } from "modules/chat/context/ChannelContext";
 import { useModeChannelMpContext } from "modules/chat/context/ModeChannelMpContext";
 import { ChannelCreate } from "../Channel/ChannelCreate";
-
-type form = {
-  idSend: number;
-  idReceive: number;
-  texte: string;
-};
-
-type user = {
-  id: number;
-  pseudo: string;
-  stastu: number;
-  blocked: boolean;
-  myblocked: boolean;
-};
-
-type Channel = {
-  id: number;
-  name: string;
-  private: boolean;
-  user: boolean;
-  admin: boolean;
-  owner: boolean;
-  password: boolean;
-};
+import { usersChannel, form, pass, ban, channel } from "modules/chat/types";
 
 interface Props {
   key: string;
-  users: user[];
+  users: usersChannel[];
   msgMp: form[];
-  channel: Channel[];
+  channel: channel[];
 }
 
 export const MenuChat = (a: Props) => {
   const { cha_mp, changeCha_mp } = useModeChannelMpContext();
-  const socket = useSocketContext();
+  const { chatName, changeChatName } = useChannelContext();
   const [create, setCreate] = useState<boolean>(false);
   return (
     <div>
@@ -68,7 +45,17 @@ export const MenuChat = (a: Props) => {
             color=""
             onClick={() => {
               changeCha_mp("channel");
+              changeChatName({
+                id: 0,
+                name: null,
+                private: false,
+                user: false,
+                admin: false,
+                owner: false,
+                password: false,
+              });
               setCreate(false);
+              console.log(chatName);
             }}
           >
             channel
@@ -88,10 +75,10 @@ export const MenuChat = (a: Props) => {
         {!create && (
           <div>
             {cha_mp == "message private" && (
-              <MenuMessagesMp key="mp" users={a.users} msgMp={a.msgMp} />
+              <MenuMessagesMp key="DDD" users={a.users} msgMp={a.msgMp} />
             )}
             {cha_mp == "channel" && (
-              <MenuMessagesChannel key="channel" channels={a.channel} />
+              <MenuMessagesChannel key="SSS" channels={a.channel} />
             )}
           </div>
         )}

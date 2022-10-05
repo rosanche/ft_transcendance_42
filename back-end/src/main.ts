@@ -19,7 +19,7 @@ async function bootstrap() {
   }));
   app.use(bodyParser.json({limit: '5mb'}));
   app.use(bodyParser.urlencoded({limit: '5mb', extended: true}))
-  console.log("-- server --")
+  // console.log("-- server --")
   app.enableCors({
     origin: `http://${configService.get("HOST")}:3001`,
     credentials: true

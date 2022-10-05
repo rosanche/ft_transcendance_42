@@ -13,7 +13,9 @@ export const FriendsContainer = ({
   friends,
   withAddFriendButton = false,
 }: Props) => {
-  const { showModal } = useAddFriendModal();
+  const { showModal } = useAddFriendModal({
+    isInChannel: false,
+  });
 
   return (
     <RoundedContainer

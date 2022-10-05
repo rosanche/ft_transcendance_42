@@ -38,15 +38,9 @@ export class UserService {
             profileImage: true,
           },
         },
-        User_channel: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
       },
     });
-    //console.log("$$USER bitch", users)
+    //// console.log("$$USER bitch", users)
     return users;
   }
 
@@ -308,7 +302,7 @@ export class UserService {
         profileImage: src,
       },
     });
-    console.log("ouiuiuiu")
+    // console.log("ouiuiuiu")
     return user;
   }
 

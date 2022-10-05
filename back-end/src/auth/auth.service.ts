@@ -61,8 +61,8 @@ export class AuthService {
         },
       });
     } catch (error) {
-      console.log("l'erreur");
-      console.log(error);
+      // console.log("l'erreur");
+      // console.log(error);
     }
 
     return user;
@@ -75,18 +75,18 @@ export class AuthService {
           pseudo: string,
         },
       })) !== null;
-    console.log(users);
+    // console.log(users);
     return users;
   }
 
   async signup(dto: AuthUpDto) {
     try {
       while (await this.test_pseudo(dto.pseudo)) {
-        console.log(this.test_pseudo(dto.pseudo));
+        // console.log(this.test_pseudo(dto.pseudo));
         dto.pseudo += '_';
-        console.log(dto.pseudo);
+        // console.log(dto.pseudo);
       }
-      console.log(this.test_pseudo(dto.pseudo));
+      // console.log(this.test_pseudo(dto.pseudo));
       const hash = await bcrypt.hash(dto.password, 3);
       const user = await this.prisma.user.create({
         data: {
@@ -95,11 +95,11 @@ export class AuthService {
           hash,
         },
       });
-      console.log('user');
-      console.log(user);
+      // console.log('user');
+      // console.log(user);
       return user;
     } catch (error) {
-      console.log('error');
+      // console.log('error');
       if (error instanceof PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {
           throw new ForbiddenException('Credentials taken');
@@ -115,12 +115,12 @@ export class AuthService {
         email: dto.email,
       },
     });
-    console.log(user);
-    console.log('compare');
+    // console.log(user);
+    // console.log('compare');
     if (!user) throw new ForbiddenException('Credentials incorrect');
     if (!user.hash) throw new ForbiddenException('Wrong authentication method');
     const isVerify = await bcrypt.compare(dto.password, user.hash);
-    console.log('compare after');
+    // console.log('compare after');
     if (isVerify) {
       return user;
     } else {
@@ -139,7 +139,7 @@ export class AuthService {
       expiresIn: '3000m',
       secret: secret,
     });
-    console.log(token);
+    // console.log(token);
     return {
       access_token: token,
       isTwoFactorAuthenticationEnabled:
@@ -157,7 +157,7 @@ export class AuthService {
       isTwoFactorAuthenticationEnabled: !!user.isTwoFactorAuthenticationEnabled,
       isTwoFactorAuthenticated: false,
     };
-    console.log(payload);
+    // console.log(payload);
     return this.signToken(payload);
   }
 

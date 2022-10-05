@@ -181,7 +181,7 @@ export class GamePong {
     {
       this.info.bonus.forEach((el,i,arr) =>
       {
-        // console.log(time - el.date);
+        // // console.log(time - el.date);
         if (el.owner === null && time - el.date >= 250 && this.lastTouch !== 0)
         {
           if ((Math.pow(newX - el.x, 2) + Math.pow(newY - el.y, 2)) < Math.pow(bonusSize + ballSize, 2))
@@ -198,22 +198,22 @@ export class GamePong {
         {
           if ((time - el.date) > (freqBonus * 2))
           {
-            // console.log(deleteBonus);
+            // // console.log(deleteBonus);
             deleteBonus.push(i);
           }
         }
       });
-      // console.log(deleteBonus);
+      // // console.log(deleteBonus);
     }
     if (deleteBonus.length != 0)
     {
       deleteBonus.sort().reverse();
-      //console.log(deleteBonus);
-      //console.log(this.info.bonus);
+      //// console.log(deleteBonus);
+      //// console.log(this.info.bonus);
       deleteBonus.forEach(element => {
         this.info.bonus.splice(element, 1);
       });
-      //console.log(this.info.bonus);
+      //// console.log(this.info.bonus);
     }
     
     return (this.info);

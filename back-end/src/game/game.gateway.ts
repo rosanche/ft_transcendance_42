@@ -63,7 +63,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   }
 
   async handleConnection(client: Socket, ...args: any[]){
-    console.log(client.handshake);
+    // console.log(client.handshake);
     const user = await this.authService.getUserFromSocket(client);
     if (user)
     {
@@ -74,7 +74,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     }
     else
     {
-      console.log("erreur d'authentification");
+      // console.log("erreur d'authentification");
       client.emit("auth error");
       client.disconnect();
     }
@@ -147,7 +147,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     // {
     //   this.queueGame[0].addNewPlayer(user.pseudo, user.id);
     //   this.queueGame.splice(0,1);
-    //   console.log(this.queueGame.length);
+    //   // console.log(this.queueGame.length);
     // }
     // else
     // {
@@ -162,7 +162,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     let game: GamePong;
     let players: Queue[] = [];
     const user = await this.userService.findid(id);
-    console.log(user);
+    // console.log(user);
     if (bonus)
     {
       if (this.queueBonus.find(e => e.id == id))
@@ -192,7 +192,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     }
     if(game)
     {
-      console.log("log test: ", players[0]);
+      // console.log("log test: ", players[0]);
       game.addPlayer(players[0].pseudo, players[0].id);
       game.addPlayer(players[1].pseudo, players[1].id);
       this.server.in(players[0].sock.id).socketsJoin(game.roomID);
@@ -314,10 +314,10 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     const id1 = this.mapIdSocket.get(client.id);
     const bonus = (arg[1] == "true" ? true : false);
     const id2 = Number(arg[0]);
-    console.log('create private game', id2, bonus);
+    // console.log('create private game', id2, bonus);
     if(!id2 )
     {
-      console.log("erreur")
+      // console.log("erreur")
       return;
     }
     
@@ -326,12 +326,12 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     let game : GamePong;
     if (bonus == true)
     { 
-      console.log('create private game true');
+      // console.log('create private game true');
       game = this.createGame(true);
     }
     else if (bonus == false)
     {
-      console.log('create private game false');
+      // console.log('create private game false');
       game = this.createGame(false);
     }
     else
@@ -351,18 +351,18 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   async handleInvite(client: Socket, ID: string){
     const id = this.mapIdSocket.get(client.id);
     const idHost = Number(ID);
-    console.log("Error invite start");
-    console.log(idHost);
+    // console.log("Error invite start");
+    // console.log(idHost);
     if (!idHost)
     {
       return;
     }
     const game = this.searchGame(idHost);
-    console.log(game);
+    // console.log(game);
     if (!game)
     {
       client.emit("Error invite", 1);
-      console.log("Error invite");
+      // console.log("Error invite");
       return;
     }
     if (game)
@@ -401,8 +401,8 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     this.players.add(game.id1);
     this.players.add(game.id2);
     this.chatGateway.sendAllStatus();
-    console.log(this.players);
-    console.log(game.roomID);
+    // console.log(this.players);
+    // console.log(game.roomID);
     this.server.to(game.roomID).emit("game start");
 
   }
@@ -542,9 +542,9 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   {
     let research: GamePong = null
     this.gamePongs.forEach((game) => {
-      console.log("searchGame, ", game);
+      // console.log("searchGame, ", game);
       if (game.id1 == id || game.id2 == id){
-        console.log("searchGame, ", game);
+        // console.log("searchGame, ", game);
         research = game;
       }
     });
@@ -564,7 +564,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   getPlayingUser() : Set<number>
   {
-    console.log(this.players)
+    // console.log(this.players)
     return this.players;
   }
 
