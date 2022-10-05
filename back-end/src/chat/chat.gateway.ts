@@ -716,18 +716,21 @@ export class ChatGateway implements OnGatewayInit {
 
     sendAllGameInvitation(id: number)
     {
+        console.log("sendAllGameInvitation" , id);
         const socketIds = this.getAllSocketID(id);
         const invitations = this.gameGateway.searchInvite(id);
         socketIds.forEach(sock => {
+            console.log("sendAllGameInvitation" , id, sock);
             this.wss.to(sock).emit("list game invitations", invitations);
         });
         return;
     }
 
-    @SubscribeMessage('Get Game Invitation')
+    @SubscribeMessage('Get Game Invitations')
     getGameInvitation(client: Socket)
     {
         const id = this.mapIdSocket.get(client.id);
+        console.log("Get Game Invitation" , id);
         const invitations = this.gameGateway.searchInvite(id);
         client.emit("list game invitations", invitations);
         return;
