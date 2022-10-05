@@ -438,7 +438,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     {
       level2++;
     }
-    this.prisma.user.updateMany({
+    await this.prisma.user.updateMany({
       where: { 
       id: game.id1 },
       data: {
@@ -461,7 +461,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         },
       }
     });
-    this.prisma.user.updateMany({
+    await this.prisma.user.updateMany({
       where: { 
       id: game.id2 },
       data: {

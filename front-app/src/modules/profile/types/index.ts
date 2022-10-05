@@ -3,9 +3,11 @@ export interface User {
   createdAt: string;
   friendReqReceive: [];
   email: string;
-  goals_a: 0;
-  goals_f: 0;
-  id: 1;
+  goals_a: number;
+  goals_f: number;
+  level: number;
+  experience: number;
+  id: number;
   friendReqSend: ApiFriend[];
   myfriends: ApiFriend[];
   blocked: ApiFriend[];

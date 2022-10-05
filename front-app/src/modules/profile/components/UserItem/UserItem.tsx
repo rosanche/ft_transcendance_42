@@ -1,24 +1,5 @@
-import { useQueryClient } from "@tanstack/react-query";
-import clsx from "clsx";
-import IconAccept from "modules/common/components/_icons/accept";
-import {
-  IconAddFriend,
-  IconBlock,
-} from "modules/common/components/_icons/icons";
-import IconMessage from "modules/common/components/_icons/message";
-import IconRefuse from "modules/common/components/_icons/refuse";
-import { Button } from "modules/common/components/_ui/Button/Button";
-import { useSocketContext } from "modules/common/context/SocketContext";
-import { enumProfileQueryKeys } from "modules/profile/queries/keys";
-import { useMyProfileQuery } from "modules/profile/queries/useMyProfileQuery";
-import {
-  ApiFriend,
-  Friend,
-  FriendType,
-  UserStatus,
-} from "modules/profile/types";
+import { ApiFriend } from "modules/profile/types";
 import Image from "next/image";
-import { useEffect, useState } from "react";
 
 export const UserItem = ({
   pseudo,
@@ -33,9 +14,9 @@ export const UserItem = ({
         {!reverse && (
           <div className="w-7 h-7 shadow-sm mt-3 relative">
             <Image
-              height={30}
               layout="fill"
               // objectFit="contain"
+              loader={() => profileImage || "/assets/img/42.png"}
               src={profileImage || "/assets/img/42.png"}
               priority={true}
               className="rounded-full"
@@ -50,9 +31,9 @@ export const UserItem = ({
         {reverse && (
           <div className="w-7 h-7 shadow-sm mt-3 relative">
             <Image
-              height={30}
               layout="fill"
               // objectFit="contain"
+              loader={() => profileImage || "/assets/img/42.png"}
               src={profileImage || "/assets/img/42.png"}
               priority={true}
               className="rounded-full"

@@ -1,5 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
+import { UnauthorizedException } from "@nestjs/common";
 import { PassportStrategy } from "@nestjs/passport";
 import { Request } from "express";
 import { ExtractJwt, Strategy } from "passport-jwt";
@@ -35,6 +36,11 @@ export class Jwt2FAStrategy extends PassportStrategy(Strategy, 'jwt-2fa')
                 id: payload.sub
             }
         });
+
+        if (!user)
+        {
+            throw new UnauthorizedException('Wrong authentication code');
+        }
         console.log("user, authenticator validate", user);
         delete user.hash;
         if (!user.isTwoFactorAuthenticationEnabled) {

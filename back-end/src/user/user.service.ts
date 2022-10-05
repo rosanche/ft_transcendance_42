@@ -14,6 +14,13 @@ export class UserService {
         pseudo: true,
         legend: true,
         profileImage: true,
+        nbr_games: true,
+        nbr_wins: true,
+        nbr_looses: true,
+        goals_f: true,
+        goals_a: true,
+        level: true,
+        experience: true,
         myfriends: {
           select: {
             id: true,
