@@ -83,7 +83,7 @@ export const useAddFriendModal = ({
           {users?.map(
             (friend) =>
               friend.id !== profil?.id &&
-              idsToAvoid.some((id) => id !== friend.id) && (
+              (!isInChannel || idsToAvoid.some((id) => id !== friend.id)) && (
                 <FriendItem
                   {...friend}
                   type="friend"
