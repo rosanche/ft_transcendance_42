@@ -75,12 +75,13 @@ const Profil = () => {
             Modifier
           </Button>
         </div>
-        <FriendsContainer friends={friends} withAddFriendButton />
-        <NotificationsContainer friends={user?.friendReqReceive} />
-        <GameHistoryContainer id={user?.id} />
         <StatsContainer id={user?.id} />
-        <AchievementsContainer id={user?.id} />
+        <FriendsContainer friends={friends} withAddFriendButton />
+        <GameHistoryContainer id={user?.id} />
+
         <LeaderboardContainer id={user?.id} />
+        <NotificationsContainer friends={user?.friendReqReceive} />
+        <AchievementsContainer id={user?.id} />
       </div>
     </Page>
   );

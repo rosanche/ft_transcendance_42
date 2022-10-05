@@ -15,7 +15,7 @@ export const LeaderboardContainer = ({ id }: Props) => {
         {users
           ?.sort((a, b) => b.nbr_wins - a.nbr_wins)
           .map((user, i) => (
-            <LeaderboardItem user={user} key={i} position={i + 1} />
+            <LeaderboardItem id={id} user={user} key={i} position={i + 1} />
           ))}
       </div>
     </RoundedContainer>
