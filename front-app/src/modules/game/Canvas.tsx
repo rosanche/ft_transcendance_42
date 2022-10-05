@@ -147,33 +147,34 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
 
     socket.on("user info", (user: { id: number; pseudo: string }) => {
       console.log(user);
-      if (typeof window != "undefined") {
-        setIsCreate(false);
-        const queryParams = new URLSearchParams(window.location.search);
-        //ID=(ROOMID)
-        queryRef.current = queryParams.get("ID");
-        console.log(queryRef.current);
-        if (queryRef.current !== null) {
-          socket.emit("join", queryRef.current);
-        }
-        //SPECTATOR=(ID)
-        queryRef.current = queryParams.get("SPECTATOR");
-        console.log(queryRef.current);
-        if (queryRef.current !== null) {
-          socket.emit("spectate", queryRef.current);
-        }
-        //INVITE=(ID DU HOST)
-        queryRef.current = queryParams.get("INVITE");
-        console.log(Number(queryRef.current));
-        if (queryRef.current !== null) {
-          socket.emit("invite", queryRef.current);
-        }
-        //CREATE=(ID DU INVITE)
-        queryRef.current = queryParams.get("CREATE");
-        console.log("id:", queryRef.current);
-        if (queryRef.current !== null) {
-          setIsCreate(true);
-        }
+      setIsCreate(false);
+      //ID=(ROOMID)
+      queryRef.current = router.query.ID;
+      console.log(queryRef.current);
+      if (queryRef.current) {
+        socket.emit("join", queryRef.current);
+        router.replace("/game", undefined, { shallow: true });
+      }
+      //SPECTATOR=(ID)
+      queryRef.current = router.query.SPECTATOR;
+      console.log(queryRef.current);
+      if (queryRef.current) {
+        socket.emit("spectate", queryRef.current);
+        router.replace("/game", undefined, { shallow: true });
+      }
+      //INVITE=(ID DU HOST)
+      queryRef.current = router.query.INVITE;
+      console.log(Number(queryRef.current));
+      if (queryRef.current) {
+        socket.emit("invite", queryRef.current);
+        router.replace("/game", undefined, { shallow: true });
+      }
+      //CREATE=(ID DU INVITE)
+      queryRef.current = router.query.CREATE;
+      console.log("id:", queryRef.current);
+      if (queryRef.current) {
+        setIsCreate(true);
+        router.replace("/game", undefined, { shallow: true });
       }
     });
 
@@ -206,6 +207,12 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
       endGameRef.current = data;
       setIsGame(false);
       setIsEndGame(true);
+      setIsWaiting(false);
+    });
+
+    socket.on("cancel game", () => {
+      setIsGame(false);
+      setIsEndGame(false);
       setIsWaiting(false);
     });
 

@@ -21,13 +21,17 @@ export const RoundedContainer: React.FC<PropsWithChildren<Props>> = ({
         className
       )}
     >
-      {title && (
+      {title && button && (
         <div className="flex flex-row justify-between">
           <span className="text-base text-gray-light font-default">
             {title}
           </span>
           {button}
         </div>
+      )}
+
+      {title && !button && (
+        <span className=" text-gray-100 mt-1 text-lg text-center">{title}</span>
       )}
       {children}
     </div>

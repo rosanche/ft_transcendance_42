@@ -10,7 +10,6 @@ export const StatsContainer = ({ id }: Props) => {
   const user = users?.find((el) => {
     return el.id == id;
   });
-  console.log("userstat", user, id);
   return (
     <div className="grid min-w-min grid-cols-3 grid-rows-2">
       <StatsItem title="Level" info={user?.level} />

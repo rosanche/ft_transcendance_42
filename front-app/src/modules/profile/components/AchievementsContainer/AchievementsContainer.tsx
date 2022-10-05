@@ -12,7 +12,7 @@ export const AchievementsContainer = ({ id }: Props) => {
     return el.id == id;
   });
   return (
-    <RoundedContainer>
+    <RoundedContainer title="Achievements">
       <div className="grid min-w-min grid-cols-3 grid-rows-2">
         <AchievementsItem
           text="Gagner 1 match"

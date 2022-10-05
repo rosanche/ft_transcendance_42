@@ -10,7 +10,7 @@ export const LeaderboardContainer = ({ id }: Props) => {
   const { data: users, isLoading, status } = useUsersQuery();
 
   return (
-    <RoundedContainer>
+    <RoundedContainer title="Classement">
       <div className="flex-col min-w-min">
         {users
           ?.sort((a, b) => b.nbr_wins - a.nbr_wins)

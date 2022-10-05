@@ -54,8 +54,8 @@ const Profil = () => {
 
   return (
     <Page title="Profil" isLoading={isProfilLoading}>
-      <div className="grid grid-cols-3 gap-3  space-x-3 m-2">
-        <div className="flex flex-col items-center  mb-16 space-y-4">
+      <div className="grid grid-flow-row grid-flow-col gap-3  space-x-3 m-2">
+        <div className="flex row-start-1 col-start-1 row-span-2 flex-col items-center  mb-16 space-y-4">
           <div className="flex relative rounded-full border border-gray-100 w-44 h-44 shadow-sm">
             <Image
               layout="fill"
@@ -75,7 +75,9 @@ const Profil = () => {
             Modifier
           </Button>
         </div>
-        <StatsContainer id={user?.id} />
+        <div className="row-start-3 col-start-1 row-span-1">
+          <StatsContainer id={user?.id} />
+        </div>
         <FriendsContainer friends={friends} withAddFriendButton />
         <GameHistoryContainer id={user?.id} />
 

@@ -245,6 +245,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   @SubscribeMessage('spectate')
   async handleSpectate(client: Socket, ID: string){
     const id = Number(ID);
+    console.log("spectate test")
     if (!id)
     {
       return;
@@ -253,6 +254,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     
     if (game)
     {
+        console.log("spectate test game")
         client.join(game.roomID);
         client.emit("game start");
     }
@@ -289,9 +291,10 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   cancelGame(game: GamePong, client: Socket)
   {
     const id = this.mapIdSocket.get(client.id);
-    this.chatGateway.sendAllGameInvitation(id);
+    client.emit("cancel game");
     this.server.socketsLeave(game.roomID);
     this.gamePongs.delete(game.roomID);
+    this.chatGateway.sendAllGameInvitation(id);
   }
 
   refuseGame(idHost :number)
@@ -339,7 +342,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     client.join(game.roomID);
     this.chatGateway.sendAllGameInvitation(id2);
     client.emit("wait game");
-    setTimeout(this.timeOutinvitationHandler, 30000,this, game, client);
+    setTimeout(this.timeOutinvitationHandler, 100000,this, game, client);
   }
 
   @SubscribeMessage('invite')
