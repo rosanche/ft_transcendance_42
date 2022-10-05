@@ -15,13 +15,12 @@ export const AuthenticatedGuard: React.FC<PropsWithChildren> = ({
   useEffect(() => {
     if (!accessToken && !doubleFaEnabled) {
       router.pathname !== EnumRoutes.LOGIN && router.replace(EnumRoutes.LOGIN);
-    } 
-    // else if (
-    //   router.pathname === "/connexion" &&
-    //   router.query["2faEnabled"] === "false"
-    // ) {
-    //   router.replace(EnumRoutes.PROFIL);
-    // }
+    } else if (
+      router.pathname === "/connexion" &&
+      router.query["2faEnabled"] === "false"
+    ) {
+      router.replace(EnumRoutes.PROFIL);
+    }
   }, [accessToken, router, doubleFaEnabled]);
 
   return <>{children}</>;

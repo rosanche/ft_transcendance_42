@@ -12,6 +12,7 @@ import IconAdmin from "./admin";
 import IconQuit from "./quit";
 import IconEnter from "./enter";
 import IconEdit from "./edit";
+import IconLock from "./lock";
 
 export {
   IconCross,
@@ -28,4 +29,5 @@ export {
   IconQuit,
   IconEnter,
   IconEdit,
+  IconLock,
 };
