@@ -12,6 +12,8 @@ import { ChannelContextProvider } from "modules/chat/context/ChannelContext";
 import { ModeChannelMpContextProvider } from "modules/chat/context/ModeChannelMpContext";
 import { UsersChannelContextProvider } from "modules/chat/context/UsersChannelContext";
 
+require("typeface-dm-sans");
+
 const queryClient = new QueryClient();
 
 ReactModal.setAppElement("#__next");

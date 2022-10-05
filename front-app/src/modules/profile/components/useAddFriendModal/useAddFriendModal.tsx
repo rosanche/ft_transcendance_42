@@ -70,6 +70,8 @@ export const useAddFriendModal = ({
     [searchTerm]
   );
 
+  console.log("$$biatch", users, idsToAvoid);
+
   const UsersList = () => (
     <div className="flex flex-col">
       {!isLoading ? (

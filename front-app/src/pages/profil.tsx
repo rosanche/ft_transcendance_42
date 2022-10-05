@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import Image from "next/image";
 import { Page } from "modules/common/components/_ui/Page/Page";
 import { useMyProfileQuery } from "modules/profile/queries/useMyProfileQuery";
@@ -21,7 +21,6 @@ const Profil = () => {
   const { data: user, isLoading: isProfilLoading } = useMyProfileQuery({
     onError: () => {
       Cookies.remove(CookieKeys.ACCESS_TOKEN);
-      // router.push(EnumRoutes.LOGIN);
     },
   });
   const { doubleFaEnabled } = useAppContextState();
@@ -47,9 +46,12 @@ const Profil = () => {
     isBlocked: !!user?.myblocked?.filter((user) => user.id === friend.id)[0],
   }));
 
-  const urlImage =
-    user?.profileImage &&
-    `http://localhost:3000/users/me/pp/${user?.profileImage}`;
+  const urlImage = useMemo(
+    () =>
+      user?.profileImage &&
+      `http://localhost:3000/users/me/pp/${user?.profileImage}`,
+    [user?.profileImage]
+  );
   console.log("$$usersssss", user);
 
   return (
@@ -59,6 +61,7 @@ const Profil = () => {
           <div className="flex relative rounded-full border border-gray-100 w-44 h-44 shadow-sm">
             <Image
               layout="fill"
+              unoptimized={true}
               loader={() => urlImage || "/assets/img/42.png"}
               src={urlImage || "/assets/img/42.png"}
               priority={true}

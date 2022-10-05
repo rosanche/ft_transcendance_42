@@ -24,7 +24,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 interface UsersStatus {
   id: number;
@@ -114,6 +114,11 @@ export const FriendItem = ({
     socket.emit("refuse friend", id);
   };
 
+  const urlImage = useMemo(
+    () => profileImage && `http://localhost:3000/users/me/pp/${profileImage}`,
+    [profileImage]
+  );
+
   return (
     <div className="flex flex-row my-3">
       <div
@@ -123,15 +128,9 @@ export const FriendItem = ({
         <div className="w-7 h-7 shadow-sm mt-2 relative">
           <Image
             layout="fill"
-            loader={() =>
-              profileImage &&
-              `http://localhost:3000/users/me/pp/${profileImage}`
-            }
-            src={
-              (profileImage &&
-                `http://localhost:3000/users/me/pp/${profileImage}`) ||
-              "/assets/img/42.png"
-            }
+            unoptimized={true}
+            loader={() => urlImage}
+            src={urlImage || "/assets/img/42.png"}
             priority={true}
             className="rounded-full"
           />

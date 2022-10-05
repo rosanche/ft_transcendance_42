@@ -95,6 +95,7 @@ export const useUserInfosModal = () => {
         <div className="flex relative rounded-full border border-gray-100 w-24 h-24 shadow-sm mb-3">
           <Image
             layout="fill"
+            unoptimized={true}
             loader={() => urlImage || "/assets/img/42.png"}
             src={urlImage || "/assets/img/42.png"}
             priority={true}
