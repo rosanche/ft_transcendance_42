@@ -1,6 +1,6 @@
 import { RoundedContainer } from "modules/common/components/_ui/RoundedContainer/RoundedContainer";
 import { useUsersQuery } from "modules/profile/queries/useUsersQuery";
-import { AchievementsItem } from "../AchievementsItem/AchievementsItem";
+import { LeaderboardItem } from "../LeaderbordItem/LeaderbordItem";
 
 interface Props {
   id: number;
@@ -15,7 +15,7 @@ export const LeaderboardContainer = ({ id }: Props) => {
         {users
           ?.sort((a, b) => b.nbr_wins - a.nbr_wins)
           .map((user, i) => (
-            <AchievementsItem key={i} text="Gagner 1 match" />
+            <LeaderboardItem user={user} key={i} position={i + 1} />
           ))}
       </div>
     </RoundedContainer>
