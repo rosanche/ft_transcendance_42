@@ -8,6 +8,7 @@ export interface User {
   level: number;
   experience: number;
   id: number;
+  legend: string;
   friendReqSend: ApiFriend[];
   myfriends: ApiFriend[];
   blocked: ApiFriend[];

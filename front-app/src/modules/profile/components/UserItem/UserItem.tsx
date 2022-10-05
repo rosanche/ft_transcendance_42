@@ -15,9 +15,15 @@ export const UserItem = ({
           <div className="w-7 h-7 shadow-sm mt-3 relative">
             <Image
               layout="fill"
-              // objectFit="contain"
-              loader={() => profileImage || "/assets/img/42.png"}
-              src={profileImage || "/assets/img/42.png"}
+              loader={() =>
+                profileImage &&
+                `http://localhost:3000/users/me/pp/${profileImage}`
+              }
+              src={
+                (profileImage &&
+                  `http://localhost:3000/users/me/pp/${profileImage}`) ||
+                "/assets/img/42.png"
+              }
               priority={true}
               className="rounded-full"
             />
@@ -32,9 +38,15 @@ export const UserItem = ({
           <div className="w-7 h-7 shadow-sm mt-3 relative">
             <Image
               layout="fill"
-              // objectFit="contain"
-              loader={() => profileImage || "/assets/img/42.png"}
-              src={profileImage || "/assets/img/42.png"}
+              loader={() =>
+                profileImage &&
+                `http://localhost:3000/users/me/pp/${profileImage}`
+              }
+              src={
+                (profileImage &&
+                  `http://localhost:3000/users/me/pp/${profileImage}`) ||
+                "/assets/img/42.png"
+              }
               priority={true}
               className="rounded-full"
             />

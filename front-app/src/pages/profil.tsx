@@ -12,8 +12,9 @@ import Cookies from "js-cookie";
 import { CookieKeys } from "modules/common/types";
 import Router, { useRouter } from "next/router";
 import { EnumRoutes } from "modules/common/routes";
-import { StatsItem } from "modules/profile/components/StatsItem/StatsItem";
 import { StatsContainer } from "modules/profile/components/StatsContainer/StatsContainer";
+import { AchievementsContainer } from "modules/profile/components/AchievementsContainer/AchievementsContainer";
+import { LeaderboardContainer } from "modules/profile/components/LeaderboardContainer/LeaderboardContainer";
 
 const Profil = () => {
   const router = useRouter();
@@ -53,7 +54,7 @@ const Profil = () => {
 
   return (
     <Page title="Profil" isLoading={isProfilLoading}>
-      <div className="grid grid-cols-3 max-h-1/3 space-x-3">
+      <div className="grid grid-cols-3 gap-3  space-x-3 m-2">
         <div className="flex flex-col items-center  mb-16 space-y-4">
           <div className="flex relative rounded-full border border-gray-100 w-44 h-44 shadow-sm">
             <Image
@@ -78,6 +79,8 @@ const Profil = () => {
         <NotificationsContainer friends={user?.friendReqReceive} />
         <GameHistoryContainer id={user?.id} />
         <StatsContainer id={user?.id} />
+        <AchievementsContainer id={user?.id} />
+        <LeaderboardContainer id={user?.id} />
       </div>
     </Page>
   );
