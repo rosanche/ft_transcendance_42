@@ -2,6 +2,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import clsx from "clsx";
 import IconAccept from "modules/common/components/_icons/accept";
 import IconAdmin from "modules/common/components/_icons/admin";
+import IconEye from "modules/common/components/_icons/eye";
 import {
   IconAddFriend,
   IconBlock,
@@ -175,7 +176,7 @@ export const FriendItem = ({
               onClick={() =>
                 router.push({
                   pathname: EnumRoutes.GAME,
-                  query: `CREATE=${id}`,
+                  query: { CREATE: id },
                 })
               }
               color="active"
@@ -188,12 +189,12 @@ export const FriendItem = ({
               onClick={() =>
                 router.push({
                   pathname: EnumRoutes.GAME,
-                  query: `SPECTATOR=${id}`,
+                  query: { SPECTATOR: id },
                 })
               }
               color="active"
             >
-              <IconGame />
+              <IconEye />
             </Button>
           )}
           <Button
