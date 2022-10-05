@@ -718,7 +718,6 @@ export class ChatGateway implements OnGatewayInit {
     {
         const socketIds = this.getAllSocketID(id);
         const invitations = this.gameGateway.searchInvite(id);
-        // // console.log("invitations games", invitations)
         socketIds.forEach(sock => {
             this.wss.to(sock).emit("list game invitations", invitations);
         });
@@ -768,9 +767,7 @@ export class ChatGateway implements OnGatewayInit {
     @SubscribeMessage('Get status')
     sendStatus(client: Socket)
     {
-        // // console.log("$$GetStatus")
         const listStatus = this.getStatus();
-        // // console.log("$$GetStatus2", listStatus)
         client.emit("list status", listStatus);
     }
 
@@ -784,9 +781,7 @@ export class ChatGateway implements OnGatewayInit {
     getStatus(): {id: number,status: string}[]
     {
         const players : Set<number> = this.gameGateway.getPlayingUser();
-        // // console.log("$players", players);
         const onlines : Set<number> = this.getOnlineUser();
-        // // console.log("$onlines", onlines);
         let status : {id: number,status: string}[] = [];
         onlines.forEach(element => {
             if(players.has(element))
@@ -798,13 +793,11 @@ export class ChatGateway implements OnGatewayInit {
                 status.push({id: element, status: "online"});
             }
         });
-        // // console.log("$$status", status);
         return status;
     }
 
     getOnlineUser() : Set<number>
     {
-        // // console.log("mapIdSocket", this.mapIdSocket)
         let onlines : Set<number> = new Set<number>();
         this.mapIdSocket.forEach((val,key) => {
             onlines.add(val);

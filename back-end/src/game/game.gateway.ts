@@ -314,24 +314,19 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     const id1 = this.mapIdSocket.get(client.id);
     const bonus = (arg[1] == "true" ? true : false);
     const id2 = Number(arg[0]);
-    // console.log('create private game', id2, bonus);
-    if(!id2 )
+    if(!id2)
     {
-      // console.log("erreur")
       return;
-    }
-    
+    } 
     const user1 = await this.userService.findid(id1);
     const user2 = await this.userService.findid(id2);
     let game : GamePong;
     if (bonus == true)
     { 
-      // console.log('create private game true');
       game = this.createGame(true);
     }
     else if (bonus == false)
     {
-      // console.log('create private game false');
       game = this.createGame(false);
     }
     else
@@ -344,7 +339,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     client.join(game.roomID);
     this.chatGateway.sendAllGameInvitation(id2);
     client.emit("wait game");
-    setTimeout(this.timeOutinvitationHandler, 100000,this, game, client);
+    setTimeout(this.timeOutinvitationHandler, 30000,this, game, client);
   }
 
   @SubscribeMessage('invite')
@@ -369,10 +364,9 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     {
       if (game.id2 == id)
       {
-
-        this.chatGateway.sendAllGameInvitation(game.id2);
         client.join(game.roomID);
         this.startGame(game);
+        
       }
       else
       {
@@ -404,6 +398,12 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     // console.log(this.players);
     // console.log(game.roomID);
     this.server.to(game.roomID).emit("game start");
+    this.gamePongs.forEach((value, key)  => {
+      if(value.idInterval == null && (game.id1==value.id1 || game.id2==value.id2) )
+      {
+        this.deleteGame(value);
+      }
+    });
 
   }
 
@@ -508,6 +508,20 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     this.server.to(game.roomID).emit("game end", endGame);
     this.server.socketsLeave(game.roomID);
     this.gamePongs.delete(game.roomID);
+  }
+
+  deleteGame(game: GamePong)
+  {
+    let id1 = game.id1;
+    let id2 = game.id2;
+    if(game.idInterval == null)
+    {
+      this.server.socketsLeave(game.roomID);
+      this.gamePongs.delete(game.roomID);
+      this.chatGateway.sendAllGameInvitation(id1);
+      this.chatGateway.sendAllGameInvitation(id2);
+    }
+    
   }
 
   updateGame(game: GamePong, gateway:GameGateway){ 
