@@ -19,6 +19,7 @@ CREATE TABLE "user" (
     "goals_a" INTEGER NOT NULL DEFAULT 0,
     "experience" INTEGER NOT NULL DEFAULT 0,
     "level" INTEGER NOT NULL DEFAULT 0,
+    "new" BOOLEAN NOT NULL DEFAULT true,
 
     CONSTRAINT "user_pkey" PRIMARY KEY ("id")
 );

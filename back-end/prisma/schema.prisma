@@ -55,6 +55,7 @@ model User {
 
   mp Mp[] @relation("mpuser")
   mypost  Post[] @relation("mypost")
+  new     Boolean @default(true)
   
   @@map("user")
 }

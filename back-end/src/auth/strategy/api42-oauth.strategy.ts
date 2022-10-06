@@ -37,6 +37,7 @@ export class API42Strategy extends PassportStrategy(Strategy)
             // console.log("already a user");
             delete user.hash;
             delete user.twoFactorAuthenticationSecret;
+            user.new = false;
             done(null,user);
             
         }
@@ -53,6 +54,7 @@ export class API42Strategy extends PassportStrategy(Strategy)
             });
             delete newUser.hash;
             delete newUser.twoFactorAuthenticationSecret;
+            newUser.new = true;
             done(null, newUser);
         }   
     }
