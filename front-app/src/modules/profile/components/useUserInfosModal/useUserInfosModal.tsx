@@ -66,7 +66,8 @@ export const useUserInfosModal = () => {
     multiple: false,
     noClick: true,
     accept: {
-      acceptedTypes: "image/png, image/jpg, image/jpeg",
+      "image/png": [".png"],
+      "image/jpeg": [".jpg", ".jpeg"],
     },
     onDropAccepted: (file: File[]) => {
       console.log("$$file", file);

@@ -21,7 +21,7 @@ const Profil = () => {
     },
   });
   const { doubleFaEnabled } = useAppContextState();
-  console.log("$$date", user);
+  console.log("$$date", doubleFaEnabled);
 
   const { showModal } = useUserInfosModal();
 

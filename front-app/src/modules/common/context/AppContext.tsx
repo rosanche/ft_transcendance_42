@@ -9,7 +9,6 @@ import Cookies from "js-cookie";
 import { useRouter } from "next/router";
 import { CookieKeys } from "../types";
 
-
 interface AppContext {
   accessToken?: string;
   doubleFaEnabled?: string;

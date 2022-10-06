@@ -11,7 +11,13 @@ const Connexion = () => {
 
   return (
     <Page>
-      <Image width={392} height={175} src="/assets/img/ping-pong.png" />
+      <Image
+        width={392}
+        height={175}
+        layout="responsive"
+        priority={true}
+        src="/assets/img/ping-pong.png"
+      />
       <RoundedContainer className="px-14 py-20 mt-16">
         {router.query["2faEnabled"] === "true" ? (
           <OtpAuthentification />

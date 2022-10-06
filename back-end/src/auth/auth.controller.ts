@@ -139,4 +139,16 @@ export class AuthController {
       res.cookie('access_token', access_token.access_token);
       res.send(access_token);
     }
+
+    @Get('auth-info')
+    @UseGuards(JwtGuard)
+    async infoAuthentification(@Req() request, @Res() res) {
+        const isNew = request.user.new;
+        if ( isNew === true)
+        {
+          await this.authService.changeNew(request.user.id);
+        }
+        const is2faEnabled = request.user.isTwoFactorAuthenticationEnabled;
+      return({is2faEnabled, isNew})
+    }
 }

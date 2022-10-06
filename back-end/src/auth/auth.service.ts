@@ -209,9 +209,10 @@ export class AuthService {
     const secret = authenticator.generateSecret();
 
     const otpAuthUrl = authenticator.keyuri(user.email, 'Trancendence', secret);
-
-    await this.setTwoFactorAuthenticationSecret(secret, user.id);
-
+    if (!user.twoFactorAuthenticationSecret)
+    {
+      await this.setTwoFactorAuthenticationSecret(secret, user.id);
+    }
     return {
       secret,
       otpAuthUrl,
@@ -229,6 +230,18 @@ export class AuthService {
     return authenticator.verify({
       token: twoFactorAuthenticationCode,
       secret: user.twoFactorAuthenticationSecret,
+    });
+  }
+
+  async changeNew(id :number)
+  {
+    await this.prisma.user.update({
+      where: {
+        id: id,
+      },
+      data: {
+        new: false,
+      },
     });
   }
 }

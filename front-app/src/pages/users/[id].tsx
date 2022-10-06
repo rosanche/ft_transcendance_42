@@ -22,7 +22,6 @@ const Profil = () => {
   const { data: users, isLoading, status } = useUsersQuery();
   const userId = parseInt(router.query?.id as string);
   const user = users?.find((user) => user.id === userId);
-  console.log("$$routeeeers", router, router.query.id, users);
 
   const friends = user?.myfriends?.map((friend) => ({
     ...friend,

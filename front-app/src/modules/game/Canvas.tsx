@@ -146,32 +146,27 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
     });
 
     socket.on("user info", (user: { id: number; pseudo: string }) => {
-      console.log(user);
       setIsCreate(false);
       //ID=(ROOMID)
       queryRef.current = router.query.ID;
-      console.log(queryRef.current);
       if (queryRef.current) {
         socket.emit("join", queryRef.current);
         router.replace("/game", undefined, { shallow: true });
       }
       //SPECTATOR=(ID)
       queryRef.current = router.query.SPECTATOR;
-      console.log(queryRef.current);
       if (queryRef.current) {
         socket.emit("spectate", queryRef.current);
         router.replace("/game", undefined, { shallow: true });
       }
       //INVITE=(ID DU HOST)
       queryRef.current = router.query.INVITE;
-      console.log(Number(queryRef.current));
       if (queryRef.current) {
         socket.emit("invite", queryRef.current);
         router.replace("/game", undefined, { shallow: true });
       }
       //CREATE=(ID DU INVITE)
       queryRef.current = router.query.CREATE;
-      console.log("id:", queryRef.current);
       if (queryRef.current) {
         setIsCreate(true);
         router.replace("/game", undefined, { shallow: true });
@@ -189,7 +184,6 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
     });
 
     socket.on("data", (data: PongState) => {
-      //console.log(data);
       setInfo(data);
     });
     socket.on("wait game", () => {
@@ -198,7 +192,6 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
       setIsGame(false);
     });
     socket.on("game start", () => {
-      console.log("test");
       setIsGame(true);
       setIsEndGame(false);
       setIsWaiting(false);
@@ -235,17 +228,23 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
 
   useEffect(() => {
     socket.auth.token = accessToken;
-    console.log("accessToken", accessToken, socket.auth.token);
+    console.log("access_token", accessToken);
     if (accessToken) {
       socket.connect();
+      console.log("socket.connected", socket.connected);
     }
+    setIsGame(false);
+    setIsEndGame(false);
+    setIsWaiting(false);
     return () => {
+      setIsGame(false);
+      setIsEndGame(false);
+      setIsWaiting(false);
       socket.disconnect();
     };
-  }, [accessToken, socket]);
+  }, [accessToken, router]);
 
   useEffect(() => {
-    console.log("handler");
     document.addEventListener("keydown", keyDownHandler);
 
     document.addEventListener("keyup", keyUpHandler);
@@ -376,7 +375,7 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
         </div>
 
         <canvas
-          className="aspect-video w-full rounded"
+          className="aspect-video w-full min-w-[500px] max-w-[1100px] rounded"
           width={1600}
           height={900}
           ref={canvasRef}
@@ -430,8 +429,15 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
               if (isCreate) {
                 socket.emit("create private game", queryRef.current, true);
               } else {
+                socket.auth.token = accessToken;
+                console.log("access_token", accessToken);
+                if (accessToken && !socket.connected) {
+                  socket.connect();
+                  console.log("socket.connected", socket.connected);
+                }
+                console.log("queue bonus");
+                console.log(socket.connected);
                 socket.emit("queue", true);
-                setIsWaiting(true);
               }
             }}
           >
@@ -443,12 +449,17 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
             isLoading={isWaiting}
             onClick={() => {
               if (isCreate) {
-                console.log("create private game");
                 socket.emit("create private game", queryRef.current, false);
               } else {
-                console.log("queue");
+                socket.auth.token = accessToken;
+                console.log("access_token", accessToken);
+                if (accessToken && !socket.connected) {
+                  socket.connect();
+                  console.log("socket.connected", socket.connected);
+                }
+                console.log("queue classic");
+                console.log(socket.connected);
                 socket.emit("queue", false);
-                setIsWaiting(true);
               }
             }}
           >
