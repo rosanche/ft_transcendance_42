@@ -21,11 +21,13 @@ export const useAddFriendModal = ({
   isInChannel = false,
   idsToAvoid = [],
   channelId = 0,
+  ctas = <></>,
 }: {
   title?: string;
   isInChannel: boolean;
   channelId: number;
   idsToAvoid: number[];
+  ctas?: ReactEle;
 }) => {
   const { formState, register, watch } = useForm<FormData>({
     defaultValues: {
