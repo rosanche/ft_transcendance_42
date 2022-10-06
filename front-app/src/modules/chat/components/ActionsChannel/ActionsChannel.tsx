@@ -35,12 +35,28 @@ const ActionsChannel = (a: Props) => {
   const { showModal: showChangeMemberModal } = useAddFriendModal({
     title: "Ban un membre du channel",
     isInChannel: true,
-    idsToAvoid: users?.filter(({ id }) =>
-      idsMember.some((idNotMember) => idNotMember !== id)
-    ),
+    idsToAvoid: users
+      ?.filter(({ id }) => idsMember.some((idNotMember) => idNotMember !== id))
+      .map(({ id }) => id),
     channelId: chatName.id,
     isChangeOnMember: true,
   });
+  const { showModal: showChangeOwnerModal } = useAddFriendModal({
+    title: "Changer le owner du channel",
+    isInChannel: true,
+    idsToAvoid: users
+      ?.filter(({ id }) => idsMember.some((idNotMember) => idNotMember !== id))
+      .map(({ id }) => id),
+    channelId: chatName.id,
+    isChangeOnMember: true,
+  });
+
+  console.log(
+    "$$$almost there",
+    users
+      ?.filter(({ id }) => idsMember.some((idNotMember) => idNotMember !== id))
+      .map(({ id }) => id)
+  );
 
   const changePassword = () => {
     socket.emit("modif channel", {
@@ -90,7 +106,8 @@ const ActionsChannel = (a: Props) => {
                 variant="icon"
                 color="active"
                 onClick={() => {
-                  quit();
+                  showChangeOwnerModal();
+                  // quit();
                 }}
               >
                 <IconQuit />

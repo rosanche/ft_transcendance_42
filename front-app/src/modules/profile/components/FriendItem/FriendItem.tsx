@@ -243,6 +243,8 @@ export const FriendItem = ({
               <IconAddFriend />
             </Button>
           )}
+
+          {/* Recuperer ici l info s il est admin ou owner en la recuperant direct avec ton context, et il faudra dans le bouton "nouveau owner", changer le owner et quit juste apres */}
           {isChangeOnMember && (
             <>
               <Button variant="icon" color="active" onClick={inviteUserChannel}>
