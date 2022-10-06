@@ -16,12 +16,6 @@ export const useAuthenticatedUserQuery = (
   return useQuery<AuthenticatedUser, Error>(
     [enumAuthQueryKeys.LOGIN_USER_42],
     async () => {
-      // const token = await getFreshToken(getFreshTokenOptions)
-
-      // if (!token?.access_token) {
-      //   throw new Error('useAuthenticatedUserQuery: Token is missing')
-      // }
-
       return fetchAuthenticatedUser();
     },
     queryOptions

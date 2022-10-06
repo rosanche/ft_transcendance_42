@@ -143,6 +143,7 @@ export class AuthController {
     @Get('auth-info')
     @UseGuards(JwtGuard)
     async infoAuthentification(@Req() request, @Res() res) {
+      console.log("$$request", request)
         const isNew = request.user.new;
         if ( isNew === true)
         {
