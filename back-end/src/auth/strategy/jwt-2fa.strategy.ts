@@ -41,7 +41,7 @@ export class Jwt2FAStrategy extends PassportStrategy(Strategy, 'jwt-2fa')
         {
             throw new UnauthorizedException('Wrong authentication code');
         }
-        console.log("user, authenticator validate", user);
+        //console.log("user, authenticator validate", user);
         delete user.hash;
         if (!user.isTwoFactorAuthenticationEnabled) {
             return user;
