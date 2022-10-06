@@ -25,9 +25,9 @@ const Profil = () => {
 
   const { showModal } = useUserInfosModal();
 
-  useEffect(() => {
-    !user?.profileImage && showModal();
-  }, []);
+  // useEffect(() => {
+  //   !user?.profileImage && showModal();
+  // }, []);
 
   const friends = user?.myfriends?.map((friend) => ({
     ...friend,
