@@ -9,11 +9,11 @@ import {
 } from "modules/chat/components/Message/Message";
 import { UserMp } from "modules/chat/components/Menu/Messagemp";
 import { useChannelContext } from "modules/chat/context/ChannelContext";
-import { Channel } from "modules/chat/components/Channel/Channel";
-import { users, form, pass, ban, channel } from "modules/chat/types";
+import { usersChannel, form, pass, ban, Channel } from "modules/chat/types";
+import { ChannelItem } from "../Channel/ChannelItem";
 
 interface Props {
-  channels: channel[];
+  channels: Channel[];
 }
 
 export const MenuMessagesChannel = (a: Props) => {
@@ -30,7 +30,7 @@ export const MenuMessagesChannel = (a: Props) => {
           changeChatName(el);
         }}
       >
-        <Channel key={i} info={el} />
+        <ChannelItem key={i} info={el} />
       </Button>
     </div>
   ));

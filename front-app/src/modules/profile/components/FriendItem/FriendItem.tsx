@@ -169,42 +169,45 @@ export const FriendItem = ({
         </div>
       ) : (
         <div className="flex space-x-2">
-          {status !== "playing" ? (
+          {isIn !== "channel" &&
+            (status !== "playing" ? (
+              <Button
+                variant="icon"
+                onClick={() =>
+                  router.push({
+                    pathname: EnumRoutes.GAME,
+                    query:
+                      type === "game_request" ? `INVITE=${id}` : `CREATE=${id}`,
+                  })
+                }
+                color="active"
+              >
+                <IconGame />
+              </Button>
+            ) : (
+              <Button
+                variant="icon"
+                onClick={() =>
+                  router.push({
+                    pathname: EnumRoutes.GAME,
+                    query: { SPECTATOR: id },
+                  })
+                }
+                color="active"
+              >
+                <IconEye />
+              </Button>
+            ))}
+          {isIn !== "channel" && (
             <Button
               variant="icon"
-              onClick={() =>
-                router.push({
-                  pathname: EnumRoutes.GAME,
-                  query:
-                    type === "game_request" ? `INVITE=${id}` : `CREATE=${id}`,
-                })
-              }
+              onClick={blockUser}
               color="active"
+              disabled={isBlocked}
             >
-              <IconGame />
-            </Button>
-          ) : (
-            <Button
-              variant="icon"
-              onClick={() =>
-                router.push({
-                  pathname: EnumRoutes.GAME,
-                  query: { SPECTATOR: id },
-                })
-              }
-              color="active"
-            >
-              <IconEye />
+              <IconBlock />
             </Button>
           )}
-          <Button
-            variant="icon"
-            onClick={blockUser}
-            color="active"
-            disabled={isBlocked}
-          >
-            <IconBlock />
-          </Button>
           {!myProfil?.myfriends?.filter((friend) => friend.id === id)[0] && (
             <Button
               variant="icon"
@@ -219,20 +222,22 @@ export const FriendItem = ({
               <IconAddFriend />
             </Button>
           )}
-          <Button
-            variant="icon"
-            onClick={() =>
-              router.push({
-                pathname: EnumRoutes.CHAT,
-                query: { userId: id, pseudo },
-              })
-            }
-          >
-            <IconMessage />
-          </Button>
+          {isIn !== "channel" && (
+            <Button
+              variant="icon"
+              onClick={() =>
+                router.push({
+                  pathname: EnumRoutes.CHAT,
+                  query: { userId: id, pseudo },
+                })
+              }
+            >
+              <IconMessage />
+            </Button>
+          )}
           {isIn === "channel" && (
             <Button variant="icon" onClick={inviteUserChannel}>
-              <IconAdmin />
+              <IconAddFriend />
             </Button>
           )}
         </div>

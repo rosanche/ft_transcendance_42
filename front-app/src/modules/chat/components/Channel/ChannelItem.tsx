@@ -7,7 +7,7 @@ interface Props {
   info: channel;
 }
 
-export const Channel = (a: Props) => {
+export const ChannelItem = (a: Props) => {
   return (
     <RoundedContainer>
       <span className="text-white">{a.info.name}</span>

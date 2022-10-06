@@ -11,7 +11,7 @@ export type pass = {
   private: boolean;
 };
 
-export type channel = {
+export type Channel = {
   id: number;
   name: string;
   private: boolean;

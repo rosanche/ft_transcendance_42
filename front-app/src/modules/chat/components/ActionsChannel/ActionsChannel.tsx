@@ -30,11 +30,13 @@ const ActionsChannel = (a: Props) => {
   const [pass, setPass] = useState<string>(null);
   const { data: users, isLoading, status } = useUsersQuery();
   const { showModal: showAddUserModal } = useAddFriendModal({
+    title: "Ajouter un utilisateur dans le channel",
     isInChannel: true,
     idsToAvoid: idsMember,
     channelId: chatName.id,
   });
   const { showModal: showBanUserModal } = useAddFriendModal({
+    title: "Ban un membre du channel",
     isInChannel: true,
     idsToAvoid: users?.filter(({ id }) =>
       idsMember.some((idNotMember) => idNotMember !== id)
@@ -83,7 +85,7 @@ const ActionsChannel = (a: Props) => {
   return (
     <div>
       <span>
-        {cha_mp == "channel" && chatName.name != null && (
+        {cha_mp == "channel" && chatName.name != null && chatName.name != "" && (
           <span className="ml-1">
             {chatName.user && (
               <Button

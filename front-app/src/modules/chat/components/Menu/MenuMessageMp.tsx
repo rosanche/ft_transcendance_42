@@ -9,7 +9,7 @@ import {
 } from "modules/chat/components/Message/Message";
 import { UserMp } from "modules/chat/components/Menu/Messagemp";
 import { useChannelContext } from "modules/chat/context/ChannelContext";
-import { users, form, pass, ban, channel } from "modules/chat/types";
+import { users, form, pass, ban, Channel } from "modules/chat/types";
 
 interface Props {
   users: users[];

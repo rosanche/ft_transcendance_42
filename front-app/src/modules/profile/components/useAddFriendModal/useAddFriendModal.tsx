@@ -17,10 +17,12 @@ interface FormData {
 }
 
 export const useAddFriendModal = ({
+  title = "Ajouter un ami(e)",
   isInChannel = false,
   idsToAvoid = [],
   channelId = 0,
 }: {
+  title?: string;
   isInChannel: boolean;
   channelId: number;
   idsToAvoid: number[];
@@ -70,8 +72,6 @@ export const useAddFriendModal = ({
     [searchTerm]
   );
 
-  console.log("$$biatch", users, idsToAvoid);
-
   const UsersList = () => (
     <div className="flex flex-col">
       {!isLoading ? (
@@ -89,7 +89,7 @@ export const useAddFriendModal = ({
                 <FriendItem
                   {...friend}
                   type="friend"
-                  isInChannel={isInChannel}
+                  isIn={isInChannel && "channel"}
                   channelId={channelId}
                 />
               )
@@ -103,6 +103,6 @@ export const useAddFriendModal = ({
 
   return useContentModal({
     content: <UsersList />,
-    headerTitle: "Ajouter un ami(e)",
+    headerTitle: title,
   });
 };

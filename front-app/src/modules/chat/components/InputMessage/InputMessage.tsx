@@ -20,6 +20,10 @@ const InputMessage = (a: Props) => {
   const { cha_mp, changeCha_mp } = useModeChannelMpContext();
   const socket = useSocketContext();
 
+  useEffect(() => {
+    setData({ idSend: data.idSend, idReceive: chatName.id, texte: "" });
+  }, [chatName]);
+
   const sendMessage = async () => {
     console.log(cha_mp);
     if (cha_mp === "channel") {
@@ -36,6 +40,7 @@ const InputMessage = (a: Props) => {
       setData({ idSend: data.idSend, idReceive: chatName.id, texte: "" });
     } else if (cha_mp === "message private") {
       sendPrivate();
+      setData({ idSend: data.idSend, idReceive: chatName.id, texte: "" });
     }
   };
 
