@@ -660,7 +660,7 @@ export class ChatGateway implements OnGatewayInit {
             }
         });
         if (user2 && user) {
-             await this.Prisma.user.updateMany({
+             await this.Prisma.user.update({
                 where: {
                     id : user.id,
                 },
@@ -672,7 +672,7 @@ export class ChatGateway implements OnGatewayInit {
                     }
                 }
             });
-            await this.Prisma.mp.update({
+            await this.Prisma.mp.updateMany({
                 where: {
                     OR:[
                         {

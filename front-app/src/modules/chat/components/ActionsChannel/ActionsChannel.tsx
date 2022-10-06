@@ -51,14 +51,7 @@ const ActionsChannel = (a: Props) => {
     channelId: chatName.id,
     isChangeOnMember: true,
   });
-
-  console.log(
-    "$$$almost there",
-    users
-      ?.filter(({ id }) => idsMember.some((idNotMember) => idNotMember !== id))
-      .map(({ id }) => id)
-  );
-
+  socket.emit();
   const changePassword = () => {
     socket.emit("modif channel", {
       idChannel: chatName.id,
@@ -106,6 +99,10 @@ const ActionsChannel = (a: Props) => {
                 variant="icon"
                 color="active"
                 onClick={() => {
+                  if (!socket.connected) {
+                    socket.connect();
+                  }
+                  socket.emit("list users channel", chatName.id);
                   showChangeOwnerModal();
                   // quit();
                 }}
