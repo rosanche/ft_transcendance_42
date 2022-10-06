@@ -90,6 +90,7 @@ export const useAddFriendModal = ({
               (!isInChannel || idsToAvoid.some((id) => id !== friend.id)) && (
                 <FriendItem
                   {...friend}
+                  key={friend.id}
                   type="friend"
                   isIn={isInChannel ? "channel" : undefined}
                   channelId={channelId}
