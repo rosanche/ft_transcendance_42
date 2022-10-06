@@ -1,5 +1,7 @@
 import { useQuery, UseQueryOptions } from "@tanstack/react-query";
 import Axios from "axios";
+import Cookies from "js-cookie";
+import { CookieKeys } from "modules/common/types";
 import { NewUser } from "../types";
 import { enumAuthQueryKeys } from "./keys";
 
@@ -16,6 +18,7 @@ export const useNewUserQuery = (
   return useQuery<NewUser, Error>(
     [enumAuthQueryKeys.LOGIN_USER_42],
     async () => {
+      if (!Cookies.get(CookieKeys.ACCESS_TOKEN)) return null;
       return fetchNewUser();
     },
     queryOptions
