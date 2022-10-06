@@ -1,6 +1,7 @@
 import { Page } from "modules/common/components/_ui/Page/Page";
 import { RoundedContainer } from "modules/common/components/_ui/RoundedContainer/RoundedContainer";
 import { useSocketContext } from "modules/common/context/SocketContext";
+import { useSocketGameContext } from "modules/common/context/SocketGameContext";
 import Canvas from "modules/game/Canvas";
 
 import React, { useEffect } from "react";
@@ -10,13 +11,12 @@ export default function Game() {
   const socket = useSocketContext();
 
   useEffect(() => {
-    console.log("$$connected", socket.connected);
     if (!socket.connected) {
       socket.connect();
     }
+    return;
   }, [socket]);
 
-  console.log("socket connected", socket.connected);
   return (
     <Page>
       <RoundedContainer className="px-14 py-20 ml-36 mt-16 m-10">

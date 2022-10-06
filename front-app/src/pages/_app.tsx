@@ -11,6 +11,7 @@ import { SideBarContextProvider } from "modules/common/context/SideBarContext";
 import { ChannelContextProvider } from "modules/chat/context/ChannelContext";
 import { ModeChannelMpContextProvider } from "modules/chat/context/ModeChannelMpContext";
 import { UsersChannelContextProvider } from "modules/chat/context/UsersChannelContext";
+import { SocketGameContextProvider } from "modules/common/context/SocketGameContext";
 
 require("typeface-dm-sans");
 
@@ -24,21 +25,23 @@ function MyApp({ Component, pageProps }) {
       <QueryClientProvider client={queryClient}>
         <AppContextProvider>
           <SocketContextProvider>
-            <ModalProvider rootComponent={TransitionGroup}>
-              <SideBarContextProvider>
-                <AuthenticatedGuard>
-                  <SideBar>
-                    <ChannelContextProvider>
-                      <ModeChannelMpContextProvider>
-                        <UsersChannelContextProvider>
-                          <Component {...pageProps} />
-                        </UsersChannelContextProvider>
-                      </ModeChannelMpContextProvider>
-                    </ChannelContextProvider>
-                  </SideBar>
-                </AuthenticatedGuard>
-              </SideBarContextProvider>
-            </ModalProvider>
+            <SocketGameContextProvider>
+              <ModalProvider rootComponent={TransitionGroup}>
+                <SideBarContextProvider>
+                  <AuthenticatedGuard>
+                    <SideBar>
+                      <ChannelContextProvider>
+                        <ModeChannelMpContextProvider>
+                          <UsersChannelContextProvider>
+                            <Component {...pageProps} />
+                          </UsersChannelContextProvider>
+                        </ModeChannelMpContextProvider>
+                      </ChannelContextProvider>
+                    </SideBar>
+                  </AuthenticatedGuard>
+                </SideBarContextProvider>
+              </ModalProvider>
+            </SocketGameContextProvider>
           </SocketContextProvider>
         </AppContextProvider>
       </QueryClientProvider>

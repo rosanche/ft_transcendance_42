@@ -318,6 +318,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   @SubscribeMessage('create private game')
   async handleCreatePrivateGame(client: Socket, arg: string[]){
+    console.log("receive.invite");
     const id1 = this.mapIdSocket.get(client.id);
     const bonus = (arg[1] == "true" ? true : false);
     const id2 = Number(arg[0]);
@@ -345,6 +346,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     game.addPlayer(user2.pseudo, user2.id);
     client.join(game.roomID);
     this.chatGateway.sendAllGameInvitation(id2);
+    console.log("receive.invite id", id1,id2);
     client.emit("wait game");
     setTimeout(this.timeOutinvitationHandler, 100000,this, game, client);
   }
