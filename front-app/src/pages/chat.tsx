@@ -223,7 +223,7 @@ const Chat = () => {
   return (
     <Page title="chat" width="w-2/3">
       <div className="flex flex-1 flex-row h-5/6 scroll-smooth max-h-scren ">
-        <RoundedContainer className="flex-none w-1/3  mu-3 items-start mb-9">
+        <RoundedContainer className="flex-none w-1/3  mu-3 ">
           <MenuChat key="ss" users={users} msgMp={msgMp} channel={channel} />
         </RoundedContainer>
         <div className="flex flex-1 flex-col ml-8 w-2/3 justify-between ">

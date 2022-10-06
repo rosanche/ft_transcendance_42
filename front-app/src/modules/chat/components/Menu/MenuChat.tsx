@@ -27,7 +27,7 @@ export const MenuChat = (a: Props) => {
   });
   return (
     <div>
-      <span className="text-white font-medium text-2xl text-center leading-[3rem]">
+      <span className="text-white justify-between font-medium text-2xl text-center leading-[3rem]">
         {cha_mp}{" "}
         <Button
           className="ml-1 text-lg"
@@ -45,9 +45,9 @@ export const MenuChat = (a: Props) => {
         </Button>
       </span>
       <div>
-        <span className=" flex-initial justify-center">
+        <div className=" flex flex-row text-center justify-between">
           <Button
-            className="ml-1 text-lg"
+            className=" text-lg"
             variant="link"
             disabled={false}
             color=""
@@ -69,7 +69,7 @@ export const MenuChat = (a: Props) => {
             channel
           </Button>
           <Button
-            className="ml-2 text-lg"
+            className=" text-lg"
             variant="link"
             disabled={false}
             onClick={() => {
@@ -79,7 +79,7 @@ export const MenuChat = (a: Props) => {
           >
             message private
           </Button>
-        </span>
+        </div>
         {!create && (
           <div>
             {cha_mp == "message private" && (
