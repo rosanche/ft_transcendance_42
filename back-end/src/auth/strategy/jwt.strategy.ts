@@ -4,14 +4,14 @@ import { PassportStrategy } from "@nestjs/passport";
 import { ExtractJwt, Strategy } from "passport-jwt";
 import { PrismaService } from "../../prisma/prisma.service";
 import { TokenPayload } from "../entities/payload.entity";
-
+import { Request } from "express";
 
 @Injectable()
-export class JwtStrategy extends PassportStrategy(Strategy)
+export class JwtStrategy extends PassportStrategy(Strategy, 'jwt')
 {
     constructor(config: ConfigService, private prisma: PrismaService)
     {
-        const extractJwtFromCookie = (req) => {
+        const extractJwtFromCookie = (req :Request) => {
             let token =  null;
             if (req && req.cookies) {
                 token = req.cookies['access_token'];
@@ -28,12 +28,14 @@ export class JwtStrategy extends PassportStrategy(Strategy)
 
     async validate(payload: TokenPayload)
     {
-        // console.log("jwt, validate payload", payload);
+        console.log("payload, authenticator validate", payload);
         const user = await this.prisma.user.findUnique({
             where: {
                 id: payload.sub
             }
         });
+
+
         delete user.hash;
         return user;
     }

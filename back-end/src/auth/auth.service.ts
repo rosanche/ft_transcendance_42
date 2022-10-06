@@ -183,6 +183,18 @@ export class AuthService {
     });
   }
 
+  async turnOffTwoFactorAuthentication(userId: number) {
+    await this.prisma.user.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        twoFactorAuthenticationSecret: null,
+        isTwoFactorAuthenticationEnabled: false,
+      },
+    });
+  }
+
   async loginWith2fa(user: Partial<User>) {
     const payload = {
       email: user.email,
@@ -197,9 +209,10 @@ export class AuthService {
     const secret = authenticator.generateSecret();
 
     const otpAuthUrl = authenticator.keyuri(user.email, 'Trancendence', secret);
-
-    await this.setTwoFactorAuthenticationSecret(secret, user.id);
-
+    if (!user.twoFactorAuthenticationSecret)
+    {
+      await this.setTwoFactorAuthenticationSecret(secret, user.id);
+    }
     return {
       secret,
       otpAuthUrl,
@@ -218,5 +231,18 @@ export class AuthService {
       token: twoFactorAuthenticationCode,
       secret: user.twoFactorAuthenticationSecret,
     });
+  }
+
+  async changeNew(id :number)
+  {
+    await this.prisma.user.update({
+      where: {
+        id: id,
+      },
+      data: {
+        new: false,
+      },
+    });
+    return;
   }
 }

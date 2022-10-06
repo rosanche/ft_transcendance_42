@@ -13,6 +13,7 @@ import { CookieKeys } from "modules/common/types";
 import { StatsContainer } from "modules/profile/components/StatsContainer/StatsContainer";
 import { AchievementsContainer } from "modules/profile/components/AchievementsContainer/AchievementsContainer";
 import { LeaderboardContainer } from "modules/profile/components/LeaderboardContainer/LeaderboardContainer";
+import { useNewUserQuery } from "modules/auth/queries/useNewUserQuery";
 
 const Profil = () => {
   const { data: user, isLoading: isProfilLoading } = useMyProfileQuery({
@@ -20,14 +21,15 @@ const Profil = () => {
       Cookies.remove(CookieKeys.ACCESS_TOKEN);
     },
   });
+  const { data: newUser, isLoading: isNewUserLoading } = useNewUserQuery();
+
   const { doubleFaEnabled } = useAppContextState();
-  console.log("$$date", user);
 
   const { showModal } = useUserInfosModal();
 
-  // useEffect(() => {
-  //   !user?.profileImage && showModal();
-  // }, []);
+  useEffect(() => {
+    newUser?.isNew && showModal();
+  }, [newUser]);
 
   const friends = user?.myfriends?.map((friend) => ({
     ...friend,
@@ -43,7 +45,7 @@ const Profil = () => {
   console.log("$$usersssss", user);
 
   return (
-    <Page title="Profil" isLoading={isProfilLoading}>
+    <Page title="Profil" isLoading={isProfilLoading || isNewUserLoading}>
       <div className="grid grid-flow-row grid-flow-col gap-3  space-x-3 m-2">
         <div className="flex row-start-1 col-start-1 row-span-2 flex-col items-center  mb-16 space-y-4">
           <div className="flex relative rounded-full border border-gray-100 w-44 h-44 shadow-sm">
@@ -56,10 +58,10 @@ const Profil = () => {
               className="rounded-full border border-gray-100 shadow-sm"
             />
           </div>
-          <span className="text-white text-2xl font-default font-bold italic">
+          <span className="text-white text-2xl text-center font-default font-bold italic">
             A toi de jouer {user?.pseudo} !
           </span>
-          <span className="text-pink text-2xl font-default font-medium italic">
+          <span className="text-pink text-2xl text-center font-default font-medium italic">
             Double authentification {doubleFaEnabled ? "activé" : "désactivé"}
           </span>
           <Button variant="link" onClick={showModal}>

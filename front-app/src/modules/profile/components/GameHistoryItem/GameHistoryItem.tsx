@@ -19,14 +19,11 @@ export const GameHistoryItem = ({
 
   useEffect(() => {
     if (!isLoading) {
-      console.log("usertest", users);
       setUser1(
         users.find((el: ApiFriend) => {
           return el.id == id_1;
         })
       );
-      console.log("user1test", user1);
-      console.log("user2test", user1);
       setUser2(
         users.find((el: ApiFriend) => {
           return el.id == id_2;

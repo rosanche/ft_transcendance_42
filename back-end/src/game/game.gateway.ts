@@ -167,9 +167,11 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     {
       if (this.queueBonus.find(e => e.id == id))
       {
+        client.emit("wait game");
         return;
       }
       this.queueBonus.push({sock: client, id: user.id, pseudo: user.pseudo})
+      client.emit("wait game");
       if (this.queueBonus.length >= 2)
       {
         players = this.queueBonus.splice(0,2);
@@ -181,9 +183,11 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     {
       if (this.queue.find(e => e.id == id))
       {
+        client.emit("wait game");
         return;
       }
       this.queue.push({sock: client, id: user.id, pseudo: user.pseudo});
+      client.emit("wait game");
       if (this.queue.length >= 2)
       {
         players = this.queue.splice(0,2);

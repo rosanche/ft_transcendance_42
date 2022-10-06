@@ -1,14 +1,13 @@
 import { useChangeImgProfileMutation } from "modules/auth/queries/useChangeImgProfile.mutation";
 import { useChangePseudoMutation } from "modules/auth/queries/useChangePseudo.mutation";
+import { useNewUserQuery } from "modules/auth/queries/useNewUserQuery";
 import { useContentModal } from "modules/common/components/modals/useContentModal/useContentModal";
 import { Button } from "modules/common/components/_ui/Button/Button";
 import { TextField } from "modules/common/components/_ui/TextField/TextField";
-import { useAppContextState } from "modules/common/context/AppContext";
 import { useActivate2Fa } from "modules/profile/mutation/useActivate2Fa.mutation";
 import { useGenerate2Fa } from "modules/profile/mutation/useGenerate2Fa.mutation";
 import { useMyProfileQuery } from "modules/profile/queries/useMyProfileQuery";
 import Image from "next/image";
-import { useCallback, useEffect } from "react";
 import { useDropzone } from "react-dropzone";
 
 import { useController, useForm } from "react-hook-form";
@@ -21,6 +20,8 @@ interface FormData {
 
 export const useUserInfosModal = () => {
   const { data: user } = useMyProfileQuery();
+  const { data: newUser } = useNewUserQuery();
+
   const { handleSubmit, formState, register, control, setValue } =
     useForm<FormData>({
       mode: "onTouched",
@@ -31,11 +32,6 @@ export const useUserInfosModal = () => {
       },
     });
 
-  useEffect(() => {
-    setValue("username", user?.pseudo);
-  }, [user?.pseudo]);
-
-  console.log("$$pseudoooo", user?.pseudo);
   const { errors } = formState;
 
   const {
@@ -66,12 +62,12 @@ export const useUserInfosModal = () => {
     multiple: false,
     noClick: true,
     // accept: {
-    //   acceptedTypes: "image/png, image/jpg, image/jpeg, application/pdf",
+    //   "image/png": [".png"],
+    //   "image/jpeg": [".jpg", ".jpeg"],
     // },
     onDropAccepted: (file: File[]) => {
       console.log("$$file", file);
       file && uploadImgProfile(file?.[0]);
-      // onFileLoaded && onFileLoaded(file?.[0]); put the putation here
     },
     onDropRejected: (fileRejections) => {
       changeFile(fileRejections?.[0]?.file);
@@ -80,8 +76,6 @@ export const useUserInfosModal = () => {
 
   const { mutate: changePseudo, isLoading: isChangingPseudo } =
     useChangePseudoMutation();
-
-  const { doubleFaEnabled } = useAppContextState();
 
   const urlImage =
     user?.profileImage &&
@@ -129,27 +123,49 @@ export const useUserInfosModal = () => {
           onSubmit={handleSubmit(({ otp }) => {
             activate2Fa(otp);
           })}
-          className="flex  space-y-4"
         >
-          <span>Scannez ce QR code avec Google Authenticator</span>
-          <Image width={120} height={120} src={QrCode} className="rounded-3x" />
-          <div>
-            <TextField id="otp" {...register("otp")} error={errors.username} />
-            <Button
-              variant="contained"
-              color="active"
-              isLoading={isActivating2Fa}
-            >
-              Activer
-            </Button>
+          <div className="flex flex-1  space-y-4 flex-col items-center">
+            <span className="text-base text-pink font-bold mb-4">
+              Scannez ce QR code avec Google Authenticator
+            </span>
+            <Image
+              width={120}
+              height={120}
+              src={QrCode}
+              className="rounded-3x"
+            />
+            <div className="space-y-4">
+              <TextField
+                id="otp"
+                {...register("otp")}
+                error={errors.username}
+              />
+              <Button
+                variant="contained"
+                color="active"
+                isLoading={isActivating2Fa}
+              >
+                Activer
+              </Button>
+            </div>
           </div>
         </form>
       ) : (
-        <div className="flex flex-1 flex-col">
+        <div className="flex flex-1 space-y-4 flex-col">
           <span className="text-pink text-2xl font-default font-medium italic">
-            Double authentification {doubleFaEnabled ? "activé" : "désactivé"}
+            Double authentification{" "}
+            {newUser?.is2FaEnabled ? "activé" : "désactivé"}
           </span>
-          {!doubleFaEnabled && (
+          {newUser?.is2FaEnabled ? (
+            <Button
+              variant="contained"
+              color="active"
+              onClick={() => generateQrCode()}
+              isLoading={isGeneratingQrCode}
+            >
+              Désactiver
+            </Button>
+          ) : (
             <Button
               variant="contained"
               color="active"

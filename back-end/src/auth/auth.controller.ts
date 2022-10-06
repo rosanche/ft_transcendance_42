@@ -1,10 +1,11 @@
 import { UnauthorizedException } from "@nestjs/common";
-import { Body, Controller, Get, HttpCode, HttpStatus, Post, Req, Res, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, Patch, HttpCode, HttpStatus, Post, Req, Res, UseGuards } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { AuthGuard } from "@nestjs/passport";
 import { User } from "@prisma/client";
 import { Request, Response } from "express";
 import { AuthService } from "./auth.service";
+import { GetUser } from "./decorator";
 import { AuthInDto,AuthUpDto, CodeAuthDto } from "./dto";
 import { Jwt2FAGuard, JwtGuard } from "./guard";
 
@@ -66,7 +67,7 @@ export class AuthController {
         const access_token = await this.authService.login(user);
         res.cookie('access_token', access_token.access_token);
 
-        res.redirect(`http://${this.config.get("HOST")}:${this.config.get("NEXT_PORT")}/connexion?2faEnabled=${req.user['isTwoFactorAuthenticationEnabled']}`);
+        res.redirect(`http://${this.config.get("HOST")}:${this.config.get("NEXT_PORT")}/connexion?2faEnabled=${req.user['isTwoFactorAuthenticationEnabled']}&new=${user.new}`);
     }
 
     //2FA Auth
@@ -106,6 +107,16 @@ export class AuthController {
       res.send(access_token);
     }
 
+    @Patch('2fa/turn-off')
+    @UseGuards(Jwt2FAGuard)
+    async turnOffTwoFactorAuthentication(@Req() request, @Res() res) {
+// // console.log("$$body", body);
+        await this.authService.turnOffTwoFactorAuthentication(request.user.id);
+        const access_token = await this.authService.loginWith2fa(request.user);
+      res.cookie('access_token', access_token.access_token);
+      res.send(access_token);
+    }
+
     @Post('2fa/authenticate')
     @HttpCode(200)
     @UseGuards(JwtGuard)
@@ -128,5 +139,18 @@ export class AuthController {
         const access_token = await this.authService.loginWith2fa(request.user);
       res.cookie('access_token', access_token.access_token);
       res.send(access_token);
+    }
+
+    @Get('auth-info')
+    @UseGuards(JwtGuard)
+    async infoAuthentification(@GetUser() user: User) {
+        const isNew = user.new;
+        if ( isNew === true)
+        {
+          this.authService.changeNew(user.id);
+        }
+        const is2faEnabled = user.isTwoFactorAuthenticationEnabled;
+        console.log({is2faEnabled, isNew});
+      return({is2faEnabled: is2faEnabled, isNew: isNew});
     }
 }
