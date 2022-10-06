@@ -58,10 +58,10 @@ const Profil = () => {
               className="rounded-full border border-gray-100 shadow-sm"
             />
           </div>
-          <span className="text-white text-2xl font-default font-bold italic">
+          <span className="text-white text-2xl text-center font-default font-bold italic">
             A toi de jouer {user?.pseudo} !
           </span>
-          <span className="text-pink text-2xl font-default font-medium italic">
+          <span className="text-pink text-2xl text-center font-default font-medium italic">
             Double authentification {doubleFaEnabled ? "activé" : "désactivé"}
           </span>
           <Button variant="link" onClick={showModal}>

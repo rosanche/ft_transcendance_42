@@ -27,8 +27,12 @@ export const MenuChat = (a: Props) => {
   });
   return (
     <div>
+<<<<<<< HEAD
       <span className="text-white justify-between font-medium text-2xl text-center leading-[3rem]">
         {cha_mp}{" "}
+=======
+      <span className="text-white font-medium text-2xl text-center leading-[3rem]">
+>>>>>>> refs/remotes/origin/main
         <Button
           className="ml-1 text-lg"
           variant="link"
