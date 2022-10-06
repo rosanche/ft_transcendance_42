@@ -32,7 +32,7 @@ const SideBarContextProvider: React.FC<PropsWithChildren> = ({ children }) => {
   const changePage = (url: EnumRoutes) => {
     console.log("$$passss", url);
     setPage(url);
-    router.replace(url);
+    router.push(url);
   };
 
   return (

@@ -149,6 +149,6 @@ export class AuthController {
           await this.authService.changeNew(request.user.id);
         }
         const is2faEnabled = request.user.isTwoFactorAuthenticationEnabled;
-      return({is2faEnabled, isNew})
+      return({is2faEnabled, isNew});
     }
 }

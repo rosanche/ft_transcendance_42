@@ -65,10 +65,10 @@ export const useUserInfosModal = () => {
   const { open: openFileDialogHandler } = useDropzone({
     multiple: false,
     noClick: true,
-    accept: {
-      "image/png": [".png"],
-      "image/jpeg": [".jpg", ".jpeg"],
-    },
+    // accept: {
+    //   "image/png": [".png"],
+    //   "image/jpeg": [".jpg", ".jpeg"],
+    // },
     onDropAccepted: (file: File[]) => {
       console.log("$$file", file);
       file && uploadImgProfile(file?.[0]);

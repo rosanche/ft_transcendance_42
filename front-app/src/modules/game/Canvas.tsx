@@ -233,16 +233,11 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
       socket.connect();
       console.log("socket.connected", socket.connected);
     }
-    setIsGame(false);
-    setIsEndGame(false);
-    setIsWaiting(false);
+
     return () => {
-      setIsGame(false);
-      setIsEndGame(false);
-      setIsWaiting(false);
       socket.disconnect();
     };
-  }, [accessToken, router]);
+  }, [accessToken]);
 
   useEffect(() => {
     document.addEventListener("keydown", keyDownHandler);
@@ -426,15 +421,15 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
             color="active"
             isLoading={isWaiting}
             onClick={() => {
+              socket.auth.token = accessToken;
+              console.log("access_token", accessToken);
+              if (accessToken && !socket.connected) {
+                socket.connect();
+                console.log("socket.connected", socket.connected);
+              }
               if (isCreate) {
                 socket.emit("create private game", queryRef.current, true);
               } else {
-                socket.auth.token = accessToken;
-                console.log("access_token", accessToken);
-                if (accessToken && !socket.connected) {
-                  socket.connect();
-                  console.log("socket.connected", socket.connected);
-                }
                 console.log("queue bonus");
                 console.log(socket.connected);
                 socket.emit("queue", true);
@@ -448,15 +443,15 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
             color="active"
             isLoading={isWaiting}
             onClick={() => {
+              socket.auth.token = accessToken;
+              console.log("access_token", accessToken);
+              if (accessToken && !socket.connected) {
+                socket.connect();
+                console.log("socket.connected", socket.connected);
+              }
               if (isCreate) {
                 socket.emit("create private game", queryRef.current, false);
               } else {
-                socket.auth.token = accessToken;
-                console.log("access_token", accessToken);
-                if (accessToken && !socket.connected) {
-                  socket.connect();
-                  console.log("socket.connected", socket.connected);
-                }
                 console.log("queue classic");
                 console.log(socket.connected);
                 socket.emit("queue", false);

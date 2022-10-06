@@ -7,7 +7,7 @@ import { TokenPayload } from "../entities/payload.entity";
 
 
 @Injectable()
-export class JwtStrategy extends PassportStrategy(Strategy)
+export class JwtStrategy extends PassportStrategy(Strategy, 'jwt')
 {
     constructor(config: ConfigService, private prisma: PrismaService)
     {
