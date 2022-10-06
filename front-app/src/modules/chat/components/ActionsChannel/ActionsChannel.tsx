@@ -1,20 +1,17 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
   IconAddFriend,
-  IconBlock,
+  IconDots,
 } from "modules/common/components/_icons/icons";
 import { Button } from "modules/common/components/_ui/Button/Button";
 import { useChannelContext } from "modules/chat/context/ChannelContext";
 import { useSocketContext } from "modules/common/context/SocketContext";
 import { useModeChannelMpContext } from "modules/chat/context/ModeChannelMpContext";
 import { useAddFriendModal } from "modules/profile/components/useAddFriendModal/useAddFriendModal";
-import IconEye from "modules/common/components/_icons/eye";
-import IconAdmin from "modules/common/components/_icons/admin";
 import IconEdit from "modules/common/components/_icons/edit";
 import IconEnter from "modules/common/components/_icons/enter";
 import IconQuit from "modules/common/components/_icons/quit";
 import { useUsersQuery } from "modules/profile/queries/useUsersQuery";
-import { FriendItem } from "modules/profile/components/FriendItem/FriendItem";
 
 interface Props {
   usersChannelId: number[];
@@ -35,13 +32,14 @@ const ActionsChannel = (a: Props) => {
     idsToAvoid: idsMember,
     channelId: chatName.id,
   });
-  const { showModal: showBanUserModal } = useAddFriendModal({
+  const { showModal: showChangeMemberModal } = useAddFriendModal({
     title: "Ban un membre du channel",
     isInChannel: true,
     idsToAvoid: users?.filter(({ id }) =>
       idsMember.some((idNotMember) => idNotMember !== id)
     ),
     channelId: chatName.id,
+    isChangeOnMember: true,
   });
 
   const changePassword = () => {
@@ -133,16 +131,6 @@ const ActionsChannel = (a: Props) => {
                   color="active"
                   onClick={() => {
                     socket.emit("list users channel", chatName.id);
-                    showBanUserModal();
-                  }}
-                >
-                  <IconBlock />
-                </Button>
-                <Button
-                  variant="icon"
-                  color="active"
-                  onClick={() => {
-                    socket.emit("list users channel", chatName.id);
                     showAddUserModal();
                   }}
                 >
@@ -159,7 +147,7 @@ const ActionsChannel = (a: Props) => {
                     >
                       <IconEdit />
                     </Button>
-                    <Button
+                    {/* <Button
                       variant="icon"
                       color="active"
                       onClick={() => {
@@ -167,9 +155,19 @@ const ActionsChannel = (a: Props) => {
                       }}
                     >
                       <IconAdmin />
-                    </Button>
+                    </Button> */}
                   </span>
                 )}
+                <Button
+                  variant="icon"
+                  color="active"
+                  onClick={() => {
+                    socket.emit("list users channel", chatName.id);
+                    showChangeMemberModal();
+                  }}
+                >
+                  <IconDots />
+                </Button>
               </span>
             )}
             <div>

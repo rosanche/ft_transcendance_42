@@ -51,6 +51,7 @@ export const NotificationsContainer = ({ friends }: Props) => {
             key={friend.id}
             type="friend_request"
             isIn="notification"
+            isBlocked={false}
           />
         ))}
         {users?.map(
@@ -61,6 +62,7 @@ export const NotificationsContainer = ({ friends }: Props) => {
                 key={user.id}
                 type="game_request"
                 isIn="notification"
+                isBlocked={false}
               />
             )
         )}

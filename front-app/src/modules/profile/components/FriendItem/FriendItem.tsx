@@ -7,6 +7,7 @@ import {
   IconAddFriend,
   IconBlock,
   IconGame,
+  IconMute,
 } from "modules/common/components/_icons/icons";
 import IconMessage from "modules/common/components/_icons/message";
 import IconRefuse from "modules/common/components/_icons/refuse";
@@ -24,7 +25,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useEffect, useMemo, useState } from "react";
+import { ReactNode, useEffect, useMemo, useState } from "react";
 
 interface UsersStatus {
   id: number;
@@ -39,11 +40,13 @@ export const FriendItem = ({
   channelId = 0,
   profileImage,
   id,
+  isChangeOnMember,
 }: ApiFriend & {
   type: FriendType;
   isBlocked: boolean;
-  isIn: "channel" | "notification" | "friend";
-  channelId: number;
+  isIn?: "channel" | "notification" | "friend";
+  channelId?: number;
+  isChangeOnMember?: boolean;
 }) => {
   const socket = useSocketContext();
   const queryClient = useQueryClient();
@@ -235,10 +238,23 @@ export const FriendItem = ({
               <IconMessage />
             </Button>
           )}
-          {isIn === "channel" && (
+          {isIn === "channel" && !isChangeOnMember && (
             <Button variant="icon" onClick={inviteUserChannel}>
               <IconAddFriend />
             </Button>
+          )}
+          {isChangeOnMember && (
+            <>
+              <Button variant="icon" color="active" onClick={inviteUserChannel}>
+                <IconBlock />
+              </Button>
+              <Button variant="icon" onClick={inviteUserChannel}>
+                <IconMute />
+              </Button>
+              <Button variant="icon" onClick={inviteUserChannel}>
+                <IconAdmin />
+              </Button>
+            </>
           )}
         </div>
       )}

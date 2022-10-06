@@ -1,6 +1,9 @@
+import Cookies from "js-cookie";
 import { useSideBarContext } from "modules/common/context/SideBarContext";
 import { EnumRoutes } from "modules/common/routes";
+import { CookieKeys } from "modules/common/types";
 import { PropsWithChildren } from "react";
+import IconEnter from "../../_icons/enter";
 import IconGame from "../../_icons/game";
 import IconMessage from "../../_icons/message";
 import IconProfil from "../../_icons/profil";
@@ -63,6 +66,17 @@ export const SideBar: React.FC<PropsWithChildren<Props>> = ({ children }) => {
           >
             <IconGame className="w-7 h-7" />
           </Button>
+          <Button
+            variant="icon"
+            onClick={() => {
+              Cookies.remove(CookieKeys.ACCESS_TOKEN);
+              changePage(EnumRoutes.LOGIN);
+            }}
+            color="active"
+          >
+            <IconEnter className="w-7 h-7" />
+          </Button>
+          ;
         </div>
       )}
       {children}

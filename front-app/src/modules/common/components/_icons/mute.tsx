@@ -9,30 +9,42 @@ const IconMute = (props) => (
     {...props}
   >
     <path
-      d="M16 16L20 16"
+      d="M12.0001 18.9999C11.1581 18.9999 10.3151 18.8219 9.49609 18.5049"
       stroke="currentColor"
       strokeWidth="1.5"
       strokeLinecap="round"
       strokeLinejoin="round"
     />
     <path
-      d="M15.89 8.02001L20 8.00001"
+      d="M20.882 12.468C18.99 15.967 15.495 19 12 19"
       stroke="currentColor"
       strokeWidth="1.5"
       strokeLinecap="round"
       strokeLinejoin="round"
     />
     <path
-      d="M15.89 12L22 12"
+      d="M19.0791 8.9209C19.7701 9.7299 20.3841 10.6119 20.8821 11.5329C21.0391 11.8239 21.0391 12.1769 20.8821 12.4679"
       stroke="currentColor"
       strokeWidth="1.5"
       strokeLinecap="round"
       strokeLinejoin="round"
     />
     <path
-      fillRule="evenodd"
-      clipRule="evenodd"
-      d="M10.884 11.257L12.196 7.97601C12.545 7.10201 11.605 6.27301 10.782 6.73001L2.342 11.419C1.887 11.672 1.887 12.326 2.342 12.579L10.782 17.268C11.605 17.725 12.546 16.896 12.196 16.022L10.884 12.741C10.693 12.266 10.693 11.734 10.884 11.257Z"
+      d="M5 19L19 5"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M9.77309 14.2271C8.54309 12.9971 8.54309 11.0021 9.77309 9.77211C11.0031 8.54211 12.9981 8.54211 14.2281 9.77211"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M17.044 6.956C15.497 5.759 13.748 5 12 5C8.50499 5 5.00999 8.033 3.11799 11.533C2.96099 11.824 2.96099 12.177 3.11799 12.468C4.06399 14.217 5.40999 15.849 6.95599 17.045"
       stroke="currentColor"
       strokeWidth="1.5"
       strokeLinecap="round"

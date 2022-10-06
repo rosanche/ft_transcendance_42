@@ -8,7 +8,7 @@ import { useGenerate2Fa } from "modules/profile/mutation/useGenerate2Fa.mutation
 import { useMyProfileQuery } from "modules/profile/queries/useMyProfileQuery";
 import { useUsersQuery } from "modules/profile/queries/useUsersQuery";
 import Image from "next/image";
-import { useCallback, useEffect, useMemo } from "react";
+import { ReactNode, useCallback, useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { FriendItem } from "../FriendItem/FriendItem";
 
@@ -21,13 +21,13 @@ export const useAddFriendModal = ({
   isInChannel = false,
   idsToAvoid = [],
   channelId = 0,
-  ctas = <></>,
+  isChangeOnMember = false,
 }: {
   title?: string;
-  isInChannel: boolean;
-  channelId: number;
-  idsToAvoid: number[];
-  ctas?: ReactEle;
+  isInChannel?: boolean;
+  channelId?: number;
+  idsToAvoid?: number[];
+  isChangeOnMember?: boolean;
 }) => {
   const { formState, register, watch } = useForm<FormData>({
     defaultValues: {
@@ -91,8 +91,10 @@ export const useAddFriendModal = ({
                 <FriendItem
                   {...friend}
                   type="friend"
-                  isIn={isInChannel && "channel"}
+                  isIn={isInChannel ? "channel" : undefined}
                   channelId={channelId}
+                  isChangeOnMember={isChangeOnMember}
+                  isBlocked={false}
                 />
               )
           )}
