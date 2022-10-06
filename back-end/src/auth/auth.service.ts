@@ -243,5 +243,6 @@ export class AuthService {
         new: false,
       },
     });
+    return;
   }
 }

@@ -5,6 +5,7 @@ import { AuthGuard } from "@nestjs/passport";
 import { User } from "@prisma/client";
 import { Request, Response } from "express";
 import { AuthService } from "./auth.service";
+import { GetUser } from "./decorator";
 import { AuthInDto,AuthUpDto, CodeAuthDto } from "./dto";
 import { Jwt2FAGuard, JwtGuard } from "./guard";
 
@@ -142,14 +143,14 @@ export class AuthController {
 
     @Get('auth-info')
     @UseGuards(JwtGuard)
-    async infoAuthentification(@Req() request, @Res() res) {
-      console.log("$$request", request)
-        const isNew = request.user.new;
+    async infoAuthentification(@GetUser() user: User) {
+        const isNew = user.new;
         if ( isNew === true)
         {
-          await this.authService.changeNew(request.user.id);
+          this.authService.changeNew(user.id);
         }
-        const is2faEnabled = request.user.isTwoFactorAuthenticationEnabled;
-      return({is2faEnabled, isNew});
+        const is2faEnabled = user.isTwoFactorAuthenticationEnabled;
+        console.log({is2faEnabled, isNew});
+      return({is2faEnabled: is2faEnabled, isNew: isNew});
     }
 }

@@ -8,7 +8,9 @@ import { enumAuthQueryKeys } from "./keys";
 const fetchNewUser = async () => {
   const apiUrl = `http://localhost:3000/auth/auth-info`;
 
-  const { data } = await Axios.get<NewUser>(apiUrl);
+  const { data } = await Axios.get<NewUser>(apiUrl, {
+    withCredentials: true,
+  });
   return data;
 };
 
