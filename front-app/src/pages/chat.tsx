@@ -207,7 +207,7 @@ const Chat = () => {
 
     socket.on("chatToClient", (src: form) => {
       console.log("AAAAAAAAAAAAAAAAa");
-      log(src);
+      setMsg((m) => [...m, src]);
     });
 
     socket.on("chatToClientMp", (src: form) => {

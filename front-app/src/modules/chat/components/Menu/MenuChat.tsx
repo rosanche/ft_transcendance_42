@@ -25,6 +25,14 @@ export const MenuChat = (a: Props) => {
     idsToAvoid: [],
     channelId: chatName.id,
   });
+  const socket = useSocketContext();
+
+  useEffect(() => {
+    socket.on("creat new channel success", (cha: Channel) => {
+      changeChatName(cha);
+      setCreate(false);
+    });
+  }, [socket]);
   return (
     <div>
       <span className="text-white font-medium text-2xl text-center leading-[3rem]">

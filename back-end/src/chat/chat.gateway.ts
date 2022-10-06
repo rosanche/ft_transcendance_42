@@ -399,16 +399,14 @@ export class ChatGateway implements OnGatewayInit {
                 iduser: user.id,
             }
         }); 
-        // // console.log("yo");
         if  (!ban || (await this.commons.banupdate(ban))) {
-            console.log("yo");
+                console.log("yo");
                 await this.creatPost(user.id, cha.id, 0, message.texte);
                 this.wss.to(cha.name).emit('chatToClient', message);
                 console.log("yo");
             }
     }
 
-    //admin channel
 
     @SubscribeMessage('invite channel')
     async inviteCha(client: Socket,  info : {inviteId : number , channelId : number}) {
@@ -686,11 +684,9 @@ export class ChatGateway implements OnGatewayInit {
     @SubscribeMessage('creatcha')
     async creatChan(client: Socket, chan : pass)
     {
-        // // console.log("oui");
         const user = await this.authService.getUserFromSocket(client);
         if (!user)
             return;
-            // // console.log(user);
         const hash : string = (chan.password == "") ?  null : await bcrypt.hash(chan.password, 3);
             
             const channel = await this.Prisma.channel.create({
@@ -715,7 +711,13 @@ export class ChatGateway implements OnGatewayInit {
                 client.join(channel.name);
                 if (!chan.private) {
                     this.wss.except(client.id).emit("new channel pub");
-                    this.wss.to(client.id).emit("creat new channel success");
+                    this.wss.to(client.id).emit("creat new channel success",{id: channel.id, 
+                        name: channel.name, 
+                        private: channel.private, 
+                        user: true,
+                        admin: true, 
+                        owner: true  ,
+                        password: (channel.hash !== null)});
                     this.listChannels(client);
                 }
                 else

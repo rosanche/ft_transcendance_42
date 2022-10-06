@@ -34,7 +34,6 @@ const ActionsChannel = (a: Props) => {
     isInChannel: true,
     idsToAvoid: idsMember,
     channelId: chatName.id,
-    ctas:
   });
   const { showModal: showBanUserModal } = useAddFriendModal({
     title: "Ban un membre du channel",
