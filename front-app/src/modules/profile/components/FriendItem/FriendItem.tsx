@@ -1,5 +1,6 @@
 import { useQueryClient } from "@tanstack/react-query";
 import clsx from "clsx";
+import { useChannelContext } from "modules/chat/context/ChannelContext";
 import IconAccept from "modules/common/components/_icons/accept";
 import IconAdmin from "modules/common/components/_icons/admin";
 import IconEye from "modules/common/components/_icons/eye";
@@ -49,6 +50,7 @@ export const FriendItem = ({
   isChangeOnMember?: boolean;
 }) => {
   const socket = useSocketContext();
+  const chatName = useChannelContext();
   const queryClient = useQueryClient();
   const { data: myProfil } = useMyProfileQuery();
   const [status, setStatus] = useState<UserStatus>("offline");
@@ -99,6 +101,19 @@ export const FriendItem = ({
     console.log("$$friend connected?", socket.connected);
     console.log("$$friend connected?", channelId);
     socket.emit("invite channel", { inviteId: id, channelId: channelId });
+  };
+
+  const BanUserChannel = () => {
+    socket.emit("banUserChannel", { UserbanId: id, channelId: channelId });
+  };
+
+  const MuteUserChannel = () => {
+    socket.emit("muteUserChannel", { UserbanId: id, channelId: channelId });
+  };
+
+  const NewAdminUserChannel = () => {
+    console.log("AAAAAA AAAAA", id, channelId);
+    socket.emit("newAdminUserChannel", { UserbanId: id, channelId: channelId });
   };
 
   const blockUser = async () => {
@@ -211,20 +226,21 @@ export const FriendItem = ({
               <IconBlock />
             </Button>
           )}
-          {!myProfil?.myfriends?.filter((friend) => friend.id === id)[0] && (
-            <Button
-              variant="icon"
-              onClick={addFriend}
-              color="active"
-              disabled={
-                !!myProfil?.friendReqSend?.filter(
-                  (friend) => friend.id === id
-                )[0]
-              }
-            >
-              <IconAddFriend />
-            </Button>
-          )}
+          {!myProfil?.myfriends?.filter((friend) => friend.id === id)[0] &&
+            isIn !== "channel" && (
+              <Button
+                variant="icon"
+                onClick={addFriend}
+                color="active"
+                disabled={
+                  !!myProfil?.friendReqSend?.filter(
+                    (friend) => friend.id === id
+                  )[0]
+                }
+              >
+                <IconAddFriend />
+              </Button>
+            )}
           {isIn !== "channel" && (
             <Button
               variant="icon"
@@ -247,15 +263,17 @@ export const FriendItem = ({
           {/* Recuperer ici l info s il est admin ou owner en la recuperant direct avec ton context, et il faudra dans le bouton "nouveau owner", changer le owner et quit juste apres */}
           {isChangeOnMember && (
             <>
-              <Button variant="icon" color="active" onClick={inviteUserChannel}>
+              <Button variant="icon" color="active" onClick={BanUserChannel}>
                 <IconBlock />
               </Button>
-              <Button variant="icon" onClick={inviteUserChannel}>
+              <Button variant="icon" onClick={MuteUserChannel}>
                 <IconMute />
               </Button>
-              <Button variant="icon" onClick={inviteUserChannel}>
-                <IconAdmin />
-              </Button>
+              {chatName?.owner && (
+                <Button variant="icon" onClick={NewAdminUserChannel}>
+                  <IconAdmin />
+                </Button>
+              )}
             </>
           )}
         </div>

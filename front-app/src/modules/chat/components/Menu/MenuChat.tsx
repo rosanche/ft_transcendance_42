@@ -23,7 +23,7 @@ export const MenuChat = (a: Props) => {
   const { showModal: showAddUserModal } = useAddFriendModal({
     isInChannel: false,
     idsToAvoid: [],
-    channelId: chatName.id,
+    channelId: chatName?.id,
   });
   const socket = useSocketContext();
 

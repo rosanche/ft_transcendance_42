@@ -24,6 +24,7 @@ const ActionsChannel = (a: Props) => {
   const [password, setPassWord] = useState<string>("");
   const [adminMode, setAdminMode] = useState<number>(0);
   const [idsMember, setIdsMember] = useState<number[]>([]);
+  const [modifPassword, setModifPassword] = useState<Boolean>(false);
   const [pass, setPass] = useState<string>(null);
   const { data: users, isLoading, status } = useUsersQuery();
   const { showModal: showAddUserModal } = useAddFriendModal({
@@ -67,8 +68,6 @@ const ActionsChannel = (a: Props) => {
   };
 
   useEffect(() => {
-    // socket.emit("list users channel", chatName.id);
-
     socket.on("channel users", (ids: number[]) => {
       console.log("$$ids babe", ids);
       setIdsMember(ids);
@@ -86,7 +85,8 @@ const ActionsChannel = (a: Props) => {
 
   const quit = async () => {
     console.log();
-    await socket.emit("quit", chatName.id);
+    if (!chatName.owner) await socket.emit("quit", chatName.id);
+    else await socket.emit("quit", chatName.id);
   };
 
   const block = async () => {
@@ -159,7 +159,7 @@ const ActionsChannel = (a: Props) => {
                       variant="icon"
                       color="active"
                       onClick={() => {
-                        setAdminMode(2);
+                        setModifPassword(!modifPassword);
                       }}
                     >
                       <IconEdit />
@@ -200,7 +200,7 @@ const ActionsChannel = (a: Props) => {
                 </div>
               )} */}
 
-              {adminMode === 2 && (
+              {modifPassword && (
                 <div>
                   <input
                     className=" px-2 py-1 text-black"

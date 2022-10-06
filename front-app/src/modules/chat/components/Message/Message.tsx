@@ -2,6 +2,7 @@ import { useUsersQuery } from "modules/profile/queries/useUsersQuery";
 import { FriendItem } from "modules/profile/components/FriendItem/FriendItem";
 //import  {form } from "pages/chat";
 import { form } from "modules/chat/types";
+import { useSocketContext } from "modules/common/context/SocketContext";
 
 interface Props {
   message: form;

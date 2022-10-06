@@ -273,6 +273,7 @@ export class ChatGateway implements OnGatewayInit {
     @SubscribeMessage('quit')
     async handleRoomLeave(client: Socket, idCha: number) {
         const user = await this.authService.getUserFromSocket(client);
+        console.log("j'en suis a la fin")
         if (!user)
             return;
         const channelup = await this.Prisma.channel.findUnique({
@@ -478,58 +479,80 @@ export class ChatGateway implements OnGatewayInit {
         //return a;
     }
 
-    @SubscribeMessage('blockedChannel')
-    async blockedChannel(client: Socket, src: ban) {
-        const user = await this.authService.getUserFromSocket(client);
-        // // console.log(src);
-        if (!user)
-            return ;
-        const cha = await this.Prisma.channel.findFirst({
+    async ChannelBan(idChannel: number,   idAdmin : number , idUser : number )  {
+
+        return ( await this.Prisma.channel.findFirst({
             where: {
-                id: src.idChannel, 
+                id: idChannel, 
                 users: {
                     some: {
-                        id: src.idUser,
+                        id: idUser,
                     }
                 },
+                OR:[{
                 admin: {
                     some:{
-                        id : user.id,
+                        id : idAdmin,
                     },
                     none:{
-                        id: src.idUser,
+                        id: idUser,
                     }
                 }
             },
-        });
-        if (cha) {
-            if (src.mute_ban !== "ban" && src.mute_ban !== "mute")
-                return;
-            const ban = await this.Prisma.ban.create({
-                data:
-                {
-                    timeBan: +src.time,
-                    finshBan: Date.now() + 60000 * +src.time,
-                    muteBan: src.mute_ban,
-                    active: true,
-                    iduser: src.idUser,
-                    bandef: (src.mute_ban === 'ban' && src.time === 0),
-                    Channel:{
-                            connect : { 
-                                id: cha.id,
-                            }
-                    }
-                }
-            });  
-            if (src.mute_ban === "ban") {
-                this.wss.in(this.iddd[src.idUser]).socketsLeave(cha.name);
-                if (ban.bandef)
-                await this.quitChannel(src.idUser, cha.id)
+            {
+                createurID: idAdmin,
             }
-            this.wss.to(cha.name).emit('you ban_mute', src);
-            //this.wss.to(cha.name).emit('info ban_mute', src);
+        ],
+            }
+        }));
+
+    };
+
+    async createBan(idChannel: number, idUser : number, type: string) {
+        return (await this.Prisma.ban.create({
+            data:
+            {
+                timeBan: 2,
+                finshBan: Date.now() + 60000 * 2,
+                muteBan: type,
+                active: true,
+                iduser: +idUser,
+                bandef: false,
+                Channel:{
+                        connect : { 
+                            id: idChannel,
+                        },
+                },
+            }}));
+    };
+
+    @SubscribeMessage("muteUserChannel")
+    async muteUserChanne ( client: Socket, src: {UserbanId: number, channelId: number }) {
+        const user = await this.authService.getUserFromSocket(client);
+        if (!user)
+            return ;
+        const cha = await this.ChannelBan(src.channelId,  user.id , src.UserbanId);
+        if (cha)
+        {
+            const ban = await this.createBan(src.channelId,  src.UserbanId, "ban")
+            this.wss.to(cha.name).emit('you ban_mute');
         }
-    }
+    };
+
+
+    @SubscribeMessage("banUserChannel")
+    async banUserChanne ( client: Socket, src: {UserbanId: number, channelId: number }) {
+        const user = await this.authService.getUserFromSocket(client);
+        if (!user)
+            return ;
+        const cha = await this.ChannelBan(src.channelId,  user.id , src.UserbanId);
+        if (cha)
+        {
+            const ban = await this.createBan(src.channelId, src.UserbanId, "ban")
+            this.wss.in(this.iddd[src.UserbanId]).socketsLeave(cha.name);
+            this.wss.to(cha.name).emit('you ban_mute');
+        }
+    };
     
         // chef channel
     @SubscribeMessage('change owner')
@@ -557,12 +580,12 @@ export class ChatGateway implements OnGatewayInit {
         }
     }
 
-    @SubscribeMessage('new admin')
-    async newAdmin(client: Socket, src: ban) {
+    @SubscribeMessage('newAdminUserChannel')
+    async newAdmin(client: Socket, src: {UserbanId: number, channelId: number }) {
         const user = await this.authService.getUserFromSocket(client);
         if (!user)
             return null;
-            const Channel = await this.verifChannelOwener(src.idChannel, user.id, src.idUser); 
+            const Channel = await this.verifChannelOwener(src.channelId, user.id, src.UserbanId); 
             if (!Channel)
                 return null;
          await this.Prisma.channel.update({
@@ -572,7 +595,7 @@ export class ChatGateway implements OnGatewayInit {
             data: {
                 admin: {
                     connect: [{
-                        id: src.idUser
+                        id: src.UserbanId
                     }]
                 }
             }
@@ -615,14 +638,14 @@ export class ChatGateway implements OnGatewayInit {
             select:{
                 myblocked:{ 
                     select: {
-                        pseudo: true 
+                        id: true 
                     }
                 }
             }
         });
-        var re = new Array<string>();
+        var re = new Array<number>();
             for (let i : number = 0; block.myblocked.length !== i; ++i) {
-                re.push(block.myblocked[i].pseudo);
+                re.push(block.myblocked[i].id);
             }
         this.wss.to(client.id).emit("use info block", re)
     }
@@ -637,7 +660,7 @@ export class ChatGateway implements OnGatewayInit {
             }
         });
         if (user2 && user) {
-             await this.Prisma.user.update({
+             await this.Prisma.user.updateMany({
                 where: {
                     id : user.id,
                 },
@@ -649,6 +672,22 @@ export class ChatGateway implements OnGatewayInit {
                     }
                 }
             });
+            await this.Prisma.mp.update({
+                where: {
+                    OR:[
+                        {
+                            userID1: src,
+                            
+                        },
+                        {
+                            userID2: src,
+                        },
+                    ],
+                },
+                data: {
+                    blocked: true,
+                    }
+                });
             this.wss.to(client.id).emit("block user infos", src);
             return ;
         }

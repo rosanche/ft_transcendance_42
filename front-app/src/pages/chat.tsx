@@ -87,7 +87,7 @@ const Chat = () => {
 
     socket.on("use info block", (c: string[]) => {
       //  setChannel((u)=> [...u,c]);
-      console.log("oui 2");
+      // console.log("oui 2");
     });
 
     socket.on("use info", (c: users) => {

@@ -40,7 +40,7 @@ export const TitreChannel = () => {
   return (
     <span className="text-white font-medium text-2xl text-center leading-[3rem]">
       <span>
-        {chatName.name}
+        {chatName?.name}
         {chatName.admin && chatName.owner && (
           <span className="ml-1">(owner)</span>
         )}

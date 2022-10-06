@@ -109,7 +109,8 @@ export class Chat_Commons {
                     {
                         userID2: user.id,
                     },
-                ]
+                ],
+                blocked: false,
         },
         select: {
             post:{

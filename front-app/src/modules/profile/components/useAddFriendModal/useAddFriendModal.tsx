@@ -74,6 +74,17 @@ export const useAddFriendModal = ({
     [searchTerm]
   );
 
+  console.log(
+    "$$problemmsss",
+    users,
+    idsToAvoid,
+    users?.map(
+      (friend) =>
+        friend.id !== profil?.id &&
+        (!isInChannel || idsToAvoid.some((id) => id !== friend.id))
+    )
+  );
+
   const UsersList = () => (
     <div className="flex flex-col">
       {!isLoading ? (
