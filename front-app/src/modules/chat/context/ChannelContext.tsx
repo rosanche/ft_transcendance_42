@@ -30,7 +30,7 @@ const ChannelContext = createContext<ChannelContext>(null);
 const ChannelContextProvider: React.FC<PropsWithChildren> = ({ children }) => {
   const [chatName, setChannel] = useState<Channel>({
     id: 0,
-    name: "oui",
+    name: "",
     private: false,
     user: false,
     admin: false,
@@ -38,10 +38,11 @@ const ChannelContextProvider: React.FC<PropsWithChildren> = ({ children }) => {
     password: false,
   });
 
-  console.log("$$passss");
+  console.log("$$context2");
 
   const changeChatName = (channel: Channel) => {
-    console.log("$$passss", channel);
+    console.log("$$context2 premier", chatName);
+    console.log("$$context2", channel);
     setChannel(channel);
   };
 

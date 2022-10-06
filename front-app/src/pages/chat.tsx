@@ -1,36 +1,21 @@
 import { RoundedContainer } from "modules/common/components/_ui/RoundedContainer/RoundedContainer";
 import React, { useState, useRef, useEffect } from "react";
-import socketio from "socket.io-client";
 import { useRouter } from "next/router";
 import { useSocketContext } from "modules/common/context/SocketContext";
-import { UserMp } from "modules/chat/components/Menu/Messagemp";
-
-import { MessagesChannel } from "modules/chat/components/Messages/MessagesChannel";
-
-import { MessagesMp } from "modules/chat/components/Messages/MessagesMp";
-import { Channel } from "modules/chat/components/Channel/Channel";
 import { Page } from "modules/common/components/_ui/Page/Page";
-
-import Image from "next/image";
-import {
-  IconAddFriend,
-  IconBlock,
-} from "modules/common/components/_icons/icons";
 import { useChannelContext } from "modules/chat/context/ChannelContext";
 import { TitreChannel } from "modules/chat/components/Titre/TitreChannel";
 import { MenuChat } from "modules/chat/components/Menu/MenuChat";
 import Messages from "modules/chat/components/Messages/Messages";
 import { useModeChannelMpContext } from "modules/chat/context/ModeChannelMpContext";
 import InputMessage from "modules/chat/components/InputMessage/InputMessage";
-import { usersChannel, form, pass, ban } from "modules/chat/types";
+import { usersChannel, form, pass, ban, Channel } from "modules/chat/types";
 
 const Chat = () => {
-  const { chatName, changeChatName } = useChannelContext();
+  const { chatName, changeChatName, changeChatNameleft } = useChannelContext();
   const socket = useSocketContext();
-  const { cha_mp, changeCha_mp } = useModeChannelMpContext();
-  const [channel, setChannel] = useState<usersChannel[]>([]);
-  const [newOwner, setNewOwner] = useState<boolean>(false);
-  const [create, setCreate] = useState<boolean>(false);
+  const { changeCha_mp } = useModeChannelMpContext();
+  const [channel, setChannel] = useState<Channel[]>([]);
   const [me, setMe] = useState<usersChannel>({
     id: 0,
     pseudo: "",
@@ -43,13 +28,7 @@ const Chat = () => {
   const [msgMp, setMsgMp] = useState<form[]>([]);
   const [users, setUsers] = useState<usersChannel[]>([]);
   const [game, setGame] = useState<Number>(0);
-  const [ban, setBan] = useState<ban>({
-    mute_ban: "",
-    idChannel: 0,
-    idUser: 0,
-    time: 0,
-    motif: "",
-  });
+
   const [isConnected, setIsConnected] = useState(socket.connected);
   const router = useRouter();
 
@@ -75,94 +54,6 @@ const Chat = () => {
     router.push("http://localhost:3001/game?INVITE=" + game);
   };
 
-  const joinPass = async (passj: pass) => {
-    await socket.emit("joins channel password", passj);
-    await setPassj({ name: "", password: "", private: false });
-  };
-
-  const demfriend = async (el: usersChannel) => {
-    console.log(el);
-    await socket.emit("dem friend", el.id);
-  };
-
-  const acceptfriend = async (el: usersChannel) => {
-    console.log(el);
-    await socket.emit("accept friend", el.id);
-  };
-
-  const supdemfirend = async (el: usersChannel) => {
-    console.log(el);
-    await socket.emit("sup dem friend", el.id);
-  };
-
-  const supfriend = async (el: usersChannel) => {
-    console.log(el);
-    await socket.emit("sup friend", el.id);
-  };
-
-  const refusefriend = async (el: usersChannel) => {
-    console.log(el);
-    await socket.emit("refuse friend", el.id);
-  };
-
-  const changeChaMp = async (val: string) => {
-    changeChatName({
-      id: 0,
-      name: "",
-      private: false,
-      admin: false,
-      password: false,
-    });
-    setData({ pseudo: data.pseudo, channel: "", texte: "" });
-  };
-
-  const quit = async () => {
-    console.log();
-    await socket.emit("quit", chatName.id);
-    const u = await channel.filter((el) => channel.name !== el.name);
-    console.log(u);
-    await setChannel(u);
-
-    console.log(channel);
-    await changeChatName({
-      id: 0,
-      name: "",
-      private: false,
-      admin: false,
-      password: false,
-    });
-    await console.log(chatName);
-    const a: channel = await channel.at(0);
-    console.log(a.name);
-    await setData({ pseudo: data.pseudo, channel: a.name, texte: "" });
-  };
-  const changefriendmode = async (i: number) => {
-    changeChatName({
-      id: 0,
-      name: "",
-      private: false,
-      admin: false,
-      password: false,
-    });
-    setData({ pseudo: data.pseudo, channel: "", texte: "" });
-    setFriendMode(i);
-  };
-  const addAdmin = async (cha: ban) => {
-    console.log(cha);
-    socket.emit("new admin", cha);
-  };
-
-  const changeOwner = async (cha: ban) => {
-    console.log(cha);
-    socket.emit("change owner", cha);
-  };
-
-  const creatCha = async (cha: pass) => {
-    console.log(cha);
-    socket.emit("creatcha", cha);
-    setPassj({ name: "", password: "", private: false });
-  };
-
   const Ban = async () => {
     await socket.emit("blockedChannel", ban);
     console.log(`a ouai c'est toi ${ban.idChannel}`);
@@ -172,32 +63,6 @@ const Chat = () => {
     await console.log(chatName);
   };
 
-  const test = async () => {
-    console.log("A");
-  };
-
-  const changechannel = async (el: channel) => {
-    console.log(el);
-    //await setData({ idSend: me.id, idReceive: el.id, texte: "" });
-    console.log(data);
-    // await changeChatName(el);
-  };
-
-  const joinchannel = async (el: channel) => {
-    console.log(el);
-    if (el.password === false) {
-      await socket.emit("joins channel", el.id);
-      console.log(el);
-    } else {
-      setPassj({
-        idChannel: el.id,
-        name: el.name,
-        password: "",
-        private: el.private,
-      });
-    }
-  };
-
   const demParti = (el: form) => {
     console.log(el);
     router.push(
@@ -205,26 +70,7 @@ const Chat = () => {
     );
   };
 
-  const BlockedUser = (el: form) => {
-    //console.log(el)
-
-    socket.emit("blockedUser", el);
-  };
-
-  const log = (ms: form) => {
-    console.log(ms);
-    console.log("success");
-    setMsg((m) => [...m, ms]);
-  };
   useEffect(() => {
-    /*
-    socket.on("mp list", (c: channel[]) => {
-      console.log("oui 5");
-      console.log(c);
-     // setMyMp(c);
-    });
-*/
-
     socket.on("cha users", (c: number[]) => {
       //  setChannel((u)=> [...u,c]);
       console.log("oui 3");
@@ -253,11 +99,13 @@ const Chat = () => {
     const test = async () => {
       console.log("A");
     };
+    /*
     socket.on("owner no left", (c: channel) => {
       //  setChannel((u)=> [...u,c]);
       changeChatName(c);
       setNewOwner(true);
     });
+
     socket.on("my new channel pub", (c: channel) => {
       setChannel((u) => [...u, c]);
       changeChatName(c);
@@ -265,7 +113,7 @@ const Chat = () => {
       console.log(c);
       setData({ channel: c.name, pseudo: data.pseudo, texte: "" });
     });
-
+*/
     socket.on("message join channel", (c: form[]) => {
       console.log(c);
       console.log("oui");
@@ -274,7 +122,7 @@ const Chat = () => {
       setMsg(newArrayForm);
     });
 
-    socket.on("new channel pub", (c: channel) => {
+    socket.on("new channel pub", (c: Channel) => {
       socket.emit("listchannels");
       //setChannel((a) => [...a, c]);
     });
@@ -287,34 +135,32 @@ const Chat = () => {
       console.log("AAAAls");
     });
 
-    socket.on("join channel true", (ret: channel) => {
+    socket.on("join channel true", (ret: Channel) => {
       console.log("enfin une nouvellle fiture");
-      setChannel((channels) => [...channels, ret]);
+      //setChannel((channels) => [...channels, ret]);
+      changeChatName(ret);
       //changechannel(ret);
       //modifpub(ret)
       //
     });
 
-    socket.on("channels list", (channels: channel[]) => {
+    socket.on("channels list", (channels: Channel[]) => {
       console.log("channels list");
       console.log(channels);
       setChannel(channels);
     });
     ("join channel false password");
 
-    socket.on("join channel false password", (channels: channel[]) => {
+    socket.on("join channel false password", (channels: Channel[]) => {
       //socket.off("join channel false password");
     });
 
     socket.on("info channel", (mm: form[]) => {
-      //socket.off('info channel');
       console.log(mm);
-
       console.log("oui 1000");
       setMsg(mm);
     });
     socket.on("info mp", (mm: form[]) => {
-      //socket.off('info channel');
       console.log(mm);
       console.log("oui 1000");
       setMsgMp(mm);
@@ -323,7 +169,18 @@ const Chat = () => {
       console.log(id);
       setGame(id);
     });
-    socket.on("left chanel", async (room: channel) => {});
+
+    socket.on("left chanel", async (id: number) => {
+      changeChatName({
+        id: chatName.id,
+        name: chatName.name,
+        private: chatName.private,
+        user: false,
+        admin: false,
+        owner: false,
+        password: chatName.password,
+      });
+    });
 
     socket.on("connect", () => {
       setIsConnected(true);

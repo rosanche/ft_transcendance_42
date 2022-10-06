@@ -7,6 +7,7 @@ import {
   IconAddFriend,
   IconBlock,
   IconGame,
+  IconMute,
 } from "modules/common/components/_icons/icons";
 import IconMessage from "modules/common/components/_icons/message";
 import IconRefuse from "modules/common/components/_icons/refuse";
@@ -24,7 +25,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useEffect, useMemo, useState } from "react";
+import { ReactNode, useEffect, useMemo, useState } from "react";
 
 interface UsersStatus {
   id: number;
@@ -39,11 +40,13 @@ export const FriendItem = ({
   channelId = 0,
   profileImage,
   id,
+  isChangeOnMember,
 }: ApiFriend & {
   type: FriendType;
   isBlocked: boolean;
-  isIn: "channel" | "notification" | "friend";
-  channelId: number;
+  isIn?: "channel" | "notification" | "friend";
+  channelId?: number;
+  isChangeOnMember?: boolean;
 }) => {
   const socket = useSocketContext();
   const queryClient = useQueryClient();
@@ -169,42 +172,45 @@ export const FriendItem = ({
         </div>
       ) : (
         <div className="flex space-x-2">
-          {status !== "playing" ? (
+          {isIn !== "channel" &&
+            (status !== "playing" ? (
+              <Button
+                variant="icon"
+                onClick={() =>
+                  router.push({
+                    pathname: EnumRoutes.GAME,
+                    query:
+                      type === "game_request" ? `INVITE=${id}` : `CREATE=${id}`,
+                  })
+                }
+                color="active"
+              >
+                <IconGame />
+              </Button>
+            ) : (
+              <Button
+                variant="icon"
+                onClick={() =>
+                  router.push({
+                    pathname: EnumRoutes.GAME,
+                    query: { SPECTATOR: id },
+                  })
+                }
+                color="active"
+              >
+                <IconEye />
+              </Button>
+            ))}
+          {isIn !== "channel" && (
             <Button
               variant="icon"
-              onClick={() =>
-                router.push({
-                  pathname: EnumRoutes.GAME,
-                  query:
-                    type === "game_request" ? `INVITE=${id}` : `CREATE=${id}`,
-                })
-              }
+              onClick={blockUser}
               color="active"
+              disabled={isBlocked}
             >
-              <IconGame />
-            </Button>
-          ) : (
-            <Button
-              variant="icon"
-              onClick={() =>
-                router.push({
-                  pathname: EnumRoutes.GAME,
-                  query: { SPECTATOR: id },
-                })
-              }
-              color="active"
-            >
-              <IconEye />
+              <IconBlock />
             </Button>
           )}
-          <Button
-            variant="icon"
-            onClick={blockUser}
-            color="active"
-            disabled={isBlocked}
-          >
-            <IconBlock />
-          </Button>
           {!myProfil?.myfriends?.filter((friend) => friend.id === id)[0] && (
             <Button
               variant="icon"
@@ -219,21 +225,36 @@ export const FriendItem = ({
               <IconAddFriend />
             </Button>
           )}
-          <Button
-            variant="icon"
-            onClick={() =>
-              router.push({
-                pathname: EnumRoutes.CHAT,
-                query: { userId: id, pseudo },
-              })
-            }
-          >
-            <IconMessage />
-          </Button>
-          {isIn === "channel" && (
-            <Button variant="icon" onClick={inviteUserChannel}>
-              <IconAdmin />
+          {isIn !== "channel" && (
+            <Button
+              variant="icon"
+              onClick={() =>
+                router.push({
+                  pathname: EnumRoutes.CHAT,
+                  query: { userId: id, pseudo },
+                })
+              }
+            >
+              <IconMessage />
             </Button>
+          )}
+          {isIn === "channel" && !isChangeOnMember && (
+            <Button variant="icon" onClick={inviteUserChannel}>
+              <IconAddFriend />
+            </Button>
+          )}
+          {isChangeOnMember && (
+            <>
+              <Button variant="icon" color="active" onClick={inviteUserChannel}>
+                <IconBlock />
+              </Button>
+              <Button variant="icon" onClick={inviteUserChannel}>
+                <IconMute />
+              </Button>
+              <Button variant="icon" onClick={inviteUserChannel}>
+                <IconAdmin />
+              </Button>
+            </>
           )}
         </div>
       )}

@@ -187,7 +187,7 @@ export class ChatGateway implements OnGatewayInit {
         }
     }
 
-    async quitChannel(userID : number, chanelID) {
+    async quitChannel(userID : number, chanelID : number) {
         return await this.Prisma.channel.update({
             where: {
                 id: chanelID
@@ -257,7 +257,14 @@ export class ChatGateway implements OnGatewayInit {
            });
             client.join(channel.name);
             await this.listChannels(client);
-            this.wss.to(channel.name).emit('message join channel', channel.id)
+            this.wss.to(channel.name).emit('join channel true', {id: channel.id, 
+                name: channel.name, 
+                private: channel.private, 
+                user: true,
+                admin: false, 
+                owner: false  ,
+                password: (channel.hash !== null)})
+                await this.postChannel(client);
         } 
         else 
            this.wss.to(this.iddd[user.id]).emit('join channel false', channel.id);
@@ -300,8 +307,11 @@ export class ChatGateway implements OnGatewayInit {
             this.wss.to(client.id).emit('owner no left', idCha);
         }
         client.leave(channelup.name);
-        this.wss.to(client.id).emit('left chanel', idCha)   
         await this.listChannels(client);
+        console.log(idCha);
+
+        this.wss.to(client.id).emit('left chanel', idCha);
+        await this.postChannel(client);
     }
 
     async verifChannelUsers(idCha : number, idUser : number) {
@@ -371,7 +381,7 @@ export class ChatGateway implements OnGatewayInit {
 
     @SubscribeMessage('channelToServer')
     async handleMessage(client: Socket, message: form) {
-
+            console.log("oui")
         const user = await this.authService.getUserFromSocket(client);
         if (!user)
             return null;
@@ -391,8 +401,10 @@ export class ChatGateway implements OnGatewayInit {
         }); 
         // // console.log("yo");
         if  (!ban || (await this.commons.banupdate(ban))) {
+            console.log("yo");
                 await this.creatPost(user.id, cha.id, 0, message.texte);
                 this.wss.to(cha.name).emit('chatToClient', message);
+                console.log("yo");
             }
     }
 

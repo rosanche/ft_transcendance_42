@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo } from "react";
 import Image from "next/image";
 import { Page } from "modules/common/components/_ui/Page/Page";
 import { useMyProfileQuery } from "modules/profile/queries/useMyProfileQuery";
@@ -10,14 +10,11 @@ import { NotificationsContainer } from "modules/profile/components/Notifications
 import { GameHistoryContainer } from "modules/profile/components/GameHistoryContainer/GameHistoryContainer";
 import Cookies from "js-cookie";
 import { CookieKeys } from "modules/common/types";
-import Router, { useRouter } from "next/router";
-import { EnumRoutes } from "modules/common/routes";
 import { StatsContainer } from "modules/profile/components/StatsContainer/StatsContainer";
 import { AchievementsContainer } from "modules/profile/components/AchievementsContainer/AchievementsContainer";
 import { LeaderboardContainer } from "modules/profile/components/LeaderboardContainer/LeaderboardContainer";
 
 const Profil = () => {
-  const router = useRouter();
   const { data: user, isLoading: isProfilLoading } = useMyProfileQuery({
     onError: () => {
       Cookies.remove(CookieKeys.ACCESS_TOKEN);
@@ -28,18 +25,9 @@ const Profil = () => {
 
   const { showModal } = useUserInfosModal();
 
-  console.log(
-    "$$friends, blocked",
-    user?.myfriends,
-    user?.myblocked,
-    user?.myfriends?.map((friend) => ({
-      ...friend,
-      status:
-        user?.myblocked?.filter((user) => user.id === friend.id)[0] &&
-        "blocked",
-    })),
-    user?.myblocked?.filter((user) => user.id === 2)
-  );
+  useEffect(() => {
+    !user?.profileImage && showModal();
+  }, []);
 
   const friends = user?.myfriends?.map((friend) => ({
     ...friend,

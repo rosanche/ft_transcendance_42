@@ -1,5 +1,4 @@
 import { useAppContextState } from "modules/common/context/AppContext";
-import { useSideBarContext } from "modules/common/context/SidebarContext";
 import { EnumRoutes } from "modules/common/routes";
 import { useRouter } from "next/router";
 import { PropsWithChildren, useEffect } from "react";

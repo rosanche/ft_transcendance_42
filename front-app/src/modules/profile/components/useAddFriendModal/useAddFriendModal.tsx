@@ -8,7 +8,7 @@ import { useGenerate2Fa } from "modules/profile/mutation/useGenerate2Fa.mutation
 import { useMyProfileQuery } from "modules/profile/queries/useMyProfileQuery";
 import { useUsersQuery } from "modules/profile/queries/useUsersQuery";
 import Image from "next/image";
-import { useCallback, useEffect, useMemo } from "react";
+import { ReactNode, useCallback, useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { FriendItem } from "../FriendItem/FriendItem";
 
@@ -17,13 +17,17 @@ interface FormData {
 }
 
 export const useAddFriendModal = ({
+  title = "Ajouter un ami(e)",
   isInChannel = false,
   idsToAvoid = [],
   channelId = 0,
+  isChangeOnMember = false,
 }: {
-  isInChannel: boolean;
-  channelId: number;
-  idsToAvoid: number[];
+  title?: string;
+  isInChannel?: boolean;
+  channelId?: number;
+  idsToAvoid?: number[];
+  isChangeOnMember?: boolean;
 }) => {
   const { formState, register, watch } = useForm<FormData>({
     defaultValues: {
@@ -70,8 +74,6 @@ export const useAddFriendModal = ({
     [searchTerm]
   );
 
-  console.log("$$biatch", users, idsToAvoid);
-
   const UsersList = () => (
     <div className="flex flex-col">
       {!isLoading ? (
@@ -89,8 +91,10 @@ export const useAddFriendModal = ({
                 <FriendItem
                   {...friend}
                   type="friend"
-                  isInChannel={isInChannel}
+                  isIn={isInChannel ? "channel" : undefined}
                   channelId={channelId}
+                  isChangeOnMember={isChangeOnMember}
+                  isBlocked={false}
                 />
               )
           )}
@@ -103,6 +107,6 @@ export const useAddFriendModal = ({
 
   return useContentModal({
     content: <UsersList />,
-    headerTitle: "Ajouter un ami(e)",
+    headerTitle: title,
   });
 };
