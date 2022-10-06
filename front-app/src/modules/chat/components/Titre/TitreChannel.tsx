@@ -41,10 +41,10 @@ export const TitreChannel = () => {
     <span className="text-white font-medium text-2xl text-center leading-[3rem]">
       <span>
         {chatName.name}
-        {chatName.admin && !chatName.owner && (
-          <span className="ml-1">(admin)</span>
+        {chatName.admin && chatName.owner && (
+          <span className="ml-1">(owner)</span>
         )}
-        {chatName.admin && chatName.owner && <span>(admin)</span>}
+        {chatName.admin && !chatName.owner && <span>(admin)</span>}
         <ActionsChannel />
       </span>
     </span>

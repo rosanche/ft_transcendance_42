@@ -710,7 +710,7 @@ export class ChatGateway implements OnGatewayInit {
             {
                 client.join(channel.name);
                 if (!chan.private) {
-                    this.wss.except(client.id).emit("new channel pub");
+                    await this.wss.except(client.id).emit("new channel pub");
                     this.wss.to(client.id).emit("creat new channel success",{id: channel.id, 
                         name: channel.name, 
                         private: channel.private, 
@@ -718,11 +718,18 @@ export class ChatGateway implements OnGatewayInit {
                         admin: true, 
                         owner: true  ,
                         password: (channel.hash !== null)});
-                    this.listChannels(client);
+                    await this.listChannels(client);
                 }
                 else
                 {
-                    this.listChannels(client);
+                    await this.listChannels(client);
+                    this.wss.to(client.id).emit("creat new channel success",{id: channel.id, 
+                        name: channel.name, 
+                        private: channel.private, 
+                        user: true,
+                        admin: true, 
+                        owner: true  ,
+                        password: (channel.hash !== null)});
                 }
             }
             return;
