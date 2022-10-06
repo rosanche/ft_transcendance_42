@@ -119,23 +119,35 @@ export const useUserInfosModal = () => {
           onSubmit={handleSubmit(({ otp }) => {
             activate2Fa(otp);
           })}
-          className="flex  space-y-4"
         >
-          <span>Scannez ce QR code avec Google Authenticator</span>
-          <Image width={120} height={120} src={QrCode} className="rounded-3x" />
-          <div>
-            <TextField id="otp" {...register("otp")} error={errors.username} />
-            <Button
-              variant="contained"
-              color="active"
-              isLoading={isActivating2Fa}
-            >
-              Activer
-            </Button>
+          <div className="flex flex-1  space-y-4 flex-col items-center">
+            <span className="text-base text-pink font-bold mb-4">
+              Scannez ce QR code avec Google Authenticator
+            </span>
+            <Image
+              width={120}
+              height={120}
+              src={QrCode}
+              className="rounded-3x"
+            />
+            <div className="space-y-4">
+              <TextField
+                id="otp"
+                {...register("otp")}
+                error={errors.username}
+              />
+              <Button
+                variant="contained"
+                color="active"
+                isLoading={isActivating2Fa}
+              >
+                Activer
+              </Button>
+            </div>
           </div>
         </form>
       ) : (
-        <div className="flex flex-1 flex-col">
+        <div className="flex flex-1 space-y-4 flex-col">
           <span className="text-pink text-2xl font-default font-medium italic">
             Double authentification{" "}
             {newUser?.is2FaEnabled ? "activé" : "désactivé"}

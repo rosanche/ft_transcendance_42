@@ -28,7 +28,6 @@ export const MenuChat = (a: Props) => {
   return (
     <div>
       <span className="text-white font-medium text-2xl text-center leading-[3rem]">
-        {cha_mp}{" "}
         <Button
           className="ml-1 text-lg"
           variant="link"
