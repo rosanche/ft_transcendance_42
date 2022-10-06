@@ -1,11 +1,14 @@
 import { Button } from "modules/common/components/_ui/Button/Button";
 import { RoundedContainer } from "modules/common/components/_ui/RoundedContainer/RoundedContainer";
-import { ApiFriend, Friend, FriendType } from "modules/profile/types";
+import { ApiFriend, Friend, FriendType, User } from "modules/profile/types";
 import { FriendItem } from "../FriendItem/FriendItem";
 import { useAddFriendModal } from "../useAddFriendModal/useAddFriendModal";
 
 interface Props {
-  friends: ApiFriend[] & FriendType;
+  friends: (User &
+    FriendType & {
+      isBlocked: boolean;
+    })[];
   withAddFriendButton: boolean;
 }
 
@@ -30,14 +33,17 @@ export const FriendsContainer = ({
       }
     >
       <div className="flex flex-col">
-        {friends?.map((friend) => (
-          <FriendItem
-            {...friend}
-            key={friend.id}
-            type="friend"
-            isBlocked={false}
-          />
-        ))}
+        {friends?.map((friend) => {
+          const { id, pseudo, legend, profileImage } = friend;
+          return (
+            <FriendItem
+              {...{ id, pseudo, legend, profileImage }}
+              isBlocked={friend.isBlocked}
+              key={friend.id}
+              type="friend"
+            />
+          );
+        })}
       </div>
     </RoundedContainer>
   );

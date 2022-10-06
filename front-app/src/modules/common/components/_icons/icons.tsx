@@ -13,6 +13,7 @@ import IconQuit from "./quit";
 import IconEnter from "./enter";
 import IconEdit from "./edit";
 import IconLock from "./lock";
+import IconDots from "./dots";
 
 export {
   IconCross,
@@ -30,4 +31,5 @@ export {
   IconEnter,
   IconEdit,
   IconLock,
+  IconDots,
 };

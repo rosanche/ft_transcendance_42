@@ -47,8 +47,6 @@ export const useUserInfosModal = () => {
   const { mutate: uploadImgProfile, isLoading: isUploadingImg } =
     useChangeImgProfileMutation();
 
-  // console.log("$$big status", status);
-
   const { mutateAsync: activate2Fa, isLoading: isActivating2Fa } =
     useActivate2Fa();
 
