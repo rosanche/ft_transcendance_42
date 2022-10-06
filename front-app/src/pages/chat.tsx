@@ -1,5 +1,5 @@
 import { RoundedContainer } from "modules/common/components/_ui/RoundedContainer/RoundedContainer";
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { useSocketContext } from "modules/common/context/SocketContext";
 import { Page } from "modules/common/components/_ui/Page/Page";
@@ -9,10 +9,10 @@ import { MenuChat } from "modules/chat/components/Menu/MenuChat";
 import Messages from "modules/chat/components/Messages/Messages";
 import { useModeChannelMpContext } from "modules/chat/context/ModeChannelMpContext";
 import InputMessage from "modules/chat/components/InputMessage/InputMessage";
-import { usersChannel, form, pass, ban, Channel } from "modules/chat/types";
+import { usersChannel, form, Channel } from "modules/chat/types";
 
 const Chat = () => {
-  const { chatName, changeChatName, changeChatNameleft } = useChannelContext();
+  const { chatName, changeChatName } = useChannelContext();
   const socket = useSocketContext();
   const { changeCha_mp } = useModeChannelMpContext();
   const [channel, setChannel] = useState<Channel[]>([]);
@@ -71,27 +71,19 @@ const Chat = () => {
   };
 
   useEffect(() => {
-    socket.on("cha users", (c: number[]) => {
-      //  setChannel((u)=> [...u,c]);
-      console.log("oui 3");
-      //setUsers(c);
-      console.log(c);
-    });
+    socket.on("cha users", (c: number[]) => {});
 
     socket.on("user list", (c: users[]) => {
-      //  setChannel((u)=> [...u,c]);
       console.log("oui 3");
       setUsers(c);
       console.log(c);
     });
 
     socket.on("use info block", (c: string[]) => {
-      //  setChannel((u)=> [...u,c]);
       console.log("oui 2");
     });
 
     socket.on("use info", (c: users) => {
-      //  setChannel((u)=> [...u,c]);
       console.log("nija");
       console.log(c);
       setMe(c);
@@ -99,21 +91,7 @@ const Chat = () => {
     const test = async () => {
       console.log("A");
     };
-    /*
-    socket.on("owner no left", (c: channel) => {
-      //  setChannel((u)=> [...u,c]);
-      changeChatName(c);
-      setNewOwner(true);
-    });
 
-    socket.on("my new channel pub", (c: channel) => {
-      setChannel((u) => [...u, c]);
-      changeChatName(c);
-      setCreate(false);
-      console.log(c);
-      setData({ channel: c.name, pseudo: data.pseudo, texte: "" });
-    });
-*/
     socket.on("message join channel", (c: form[]) => {
       console.log(c);
       console.log("oui");
@@ -124,7 +102,6 @@ const Chat = () => {
 
     socket.on("new channel pub", (c: Channel) => {
       socket.emit("listchannels");
-      //setChannel((a) => [...a, c]);
     });
     socket.on("you ban_mute", (ret: ban) => {
       socket.off("you ban_mute");
@@ -137,11 +114,7 @@ const Chat = () => {
 
     socket.on("join channel true", (ret: Channel) => {
       console.log("enfin une nouvellle fiture");
-      //setChannel((channels) => [...channels, ret]);
       changeChatName(ret);
-      //changechannel(ret);
-      //modifpub(ret)
-      //
     });
 
     socket.on("channels list", (channels: Channel[]) => {
@@ -231,16 +204,11 @@ const Chat = () => {
   }, [socket]);
 
   useEffect(() => {
-    console.log("oui!!!!!!!!!!!!!!!!!!!!!!!!!");
-    //   if (typeof document != "undefined") {
-    console.log("ouissssss");
     const cookieValue = document.cookie
       .split("; ")
       .find((row) => row.startsWith("access_token"))
       ?.split("=")[1];
-    // console.log(cookieValue);Message
     socket.auth.token = cookieValue;
-    //   console.log(router.query)
     socket.connect();
     console.log(isConnected);
     socket.emit("channelinit");
@@ -250,17 +218,10 @@ const Chat = () => {
     socket.emit("list users");
     socket.emit("list mps");
     socket.emit("list user channel");
-
-    console.log("finish !!!!!!!!!!!!!!!!!!!!!!!!!");
-    //}
-
-    /*return () => {
-      socket.disconnect();
-    };*/
   }, [isConnected]);
 
   return (
-    <Page title="chat" width=" w-2/3">
+    <Page title="chat" width="w-2/3">
       <div className="flex flex-1 flex-row h-5/6 scroll-smooth max-h-scren ">
         <RoundedContainer className="flex-none w-1/3  mu-3 items-start mb-9">
           <MenuChat key="ss" users={users} msgMp={msgMp} channel={channel} />

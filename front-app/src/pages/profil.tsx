@@ -13,6 +13,7 @@ import { CookieKeys } from "modules/common/types";
 import { StatsContainer } from "modules/profile/components/StatsContainer/StatsContainer";
 import { AchievementsContainer } from "modules/profile/components/AchievementsContainer/AchievementsContainer";
 import { LeaderboardContainer } from "modules/profile/components/LeaderboardContainer/LeaderboardContainer";
+import { useNewUserQuery } from "modules/auth/queries/useNewUserQuery";
 
 const Profil = () => {
   const { data: user, isLoading: isProfilLoading } = useMyProfileQuery({
@@ -20,14 +21,15 @@ const Profil = () => {
       Cookies.remove(CookieKeys.ACCESS_TOKEN);
     },
   });
+  const { data: newUser, isLoading: isNewUserLoading } = useNewUserQuery();
+
   const { doubleFaEnabled } = useAppContextState();
-  console.log("$$date", doubleFaEnabled);
 
   const { showModal } = useUserInfosModal();
 
-  // useEffect(() => {
-  //   !user?.profileImage && showModal();
-  // }, []);
+  useEffect(() => {
+    newUser?.isNew && showModal();
+  }, [newUser]);
 
   const friends = user?.myfriends?.map((friend) => ({
     ...friend,
@@ -43,7 +45,7 @@ const Profil = () => {
   console.log("$$usersssss", user);
 
   return (
-    <Page title="Profil" isLoading={isProfilLoading}>
+    <Page title="Profil" isLoading={isProfilLoading || isNewUserLoading}>
       <div className="grid grid-flow-row grid-flow-col gap-3  space-x-3 m-2">
         <div className="flex row-start-1 col-start-1 row-span-2 flex-col items-center  mb-16 space-y-4">
           <div className="flex relative rounded-full border border-gray-100 w-44 h-44 shadow-sm">

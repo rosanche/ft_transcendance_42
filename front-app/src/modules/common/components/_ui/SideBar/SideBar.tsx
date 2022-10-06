@@ -1,3 +1,4 @@
+import { useQueryClient } from "@tanstack/react-query";
 import Cookies from "js-cookie";
 import { useSideBarContext } from "modules/common/context/SideBarContext";
 import { EnumRoutes } from "modules/common/routes";
@@ -18,6 +19,7 @@ interface Props {
 
 export const SideBar: React.FC<PropsWithChildren<Props>> = ({ children }) => {
   const { page, changePage } = useSideBarContext();
+  const queryClient = useQueryClient();
 
   return (
     <div className="flex flex-1 relative">
@@ -70,6 +72,7 @@ export const SideBar: React.FC<PropsWithChildren<Props>> = ({ children }) => {
             variant="icon"
             onClick={() => {
               Cookies.remove(CookieKeys.ACCESS_TOKEN);
+              queryClient.clear();
               changePage(EnumRoutes.LOGIN);
             }}
             color="active"

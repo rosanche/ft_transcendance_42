@@ -4,32 +4,26 @@ import {
   UseMutationOptions,
   useQueryClient,
 } from "@tanstack/react-query";
-import { enumProfileQueryKeys } from "modules/profile/queries/keys";
+import { enumProfileQueryKeys } from "../queries/keys";
 
-const patchChangePseudo = async (pseudo: string) => {
-  const apiUrl = `http://localhost:3000/users/me/modif`;
+const patchDesactivate2Fa = async () => {
+  const apiUrl = `http://localhost:3000/auth/2fa/turn-off`;
 
-  const { data } = await axios.patch<string>(
-    apiUrl,
-    {
-      pseudo,
-    },
-    {
-      withCredentials: true,
-    }
-  );
+  const { data } = await axios.patch<string>(apiUrl, null, {
+    withCredentials: true,
+  });
   return data;
 };
 
-export const useChangePseudoMutation = (
+export const useDesactivate2Fa = (
   mutationOptions?: UseMutationOptions<string, void, string>
 ) => {
   const { onSuccess, ...otherMutationOptions } = mutationOptions || {};
   const queryClient = useQueryClient();
 
   return useMutation<string, void, string>(
-    async (pseudo) => {
-      return patchChangePseudo(pseudo);
+    async () => {
+      return patchDesactivate2Fa();
     },
     {
       onSuccess: (...args) => {
