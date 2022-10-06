@@ -1,6 +1,7 @@
 import { Button } from "modules/common/components/_ui/Button/Button";
 import { RoundedContainer } from "modules/common/components/_ui/RoundedContainer/RoundedContainer";
 import { useSocketContext } from "modules/common/context/SocketContext";
+import { useUsersQuery } from "modules/profile/queries/useUsersQuery";
 import { ApiFriend, Friend } from "modules/profile/types";
 import { useEffect, useState } from "react";
 import { FriendItem } from "../FriendItem/FriendItem";
@@ -11,7 +12,8 @@ interface Props {
 
 export const NotificationsContainer = ({ friends }: Props) => {
   const socket = useSocketContext();
-  const [gameInvitations, setGameInvitations] = useState<number[]>([]);
+  const { data: users, isLoading, status } = useUsersQuery();
+  const [gameInvitationsIds, setGameInvitationsIds] = useState<number[]>([]);
 
   useEffect(() => {
     if (!socket.connected) {
@@ -19,13 +21,22 @@ export const NotificationsContainer = ({ friends }: Props) => {
     }
 
     socket.on("list game invitations", (invitations: number[]) => {
-      setGameInvitations(invitations);
+      setGameInvitationsIds(invitations);
       console.log("$$Status invitations", invitations);
-      console.log("$$Status user", status);
+      console.log("$$Status gameInvitationsIds ", gameInvitationsIds);
     });
 
     socket.emit("Get Game Invitations");
   }, []);
+
+  useEffect(() => {
+    console.log(
+      "$$merde",
+      users,
+      gameInvitationsIds,
+      users?.map((user) => gameInvitationsIds.some((id) => id === user.id))
+    );
+  }, [isLoading, status]);
 
   return (
     <RoundedContainer
@@ -35,8 +46,24 @@ export const NotificationsContainer = ({ friends }: Props) => {
     >
       <div className="flex flex-col">
         {friends?.map((friend) => (
-          <FriendItem {...friend} key={friend.id} type="friend_request" />
+          <FriendItem
+            {...friend}
+            key={friend.id}
+            type="friend_request"
+            isIn="notification"
+          />
         ))}
+        {users?.map(
+          (user) =>
+            gameInvitationsIds.some((id) => id === user.id) && (
+              <FriendItem
+                {...user}
+                key={user.id}
+                type="game_request"
+                isIn="notification"
+              />
+            )
+        )}
       </div>
     </RoundedContainer>
   );

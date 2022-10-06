@@ -35,14 +35,14 @@ export const FriendItem = ({
   pseudo,
   type = "friend_request",
   isBlocked,
-  isInChannel = false,
+  isIn = "friend",
   channelId = 0,
   profileImage,
   id,
 }: ApiFriend & {
   type: FriendType;
   isBlocked: boolean;
-  isInChannel: boolean;
+  isIn: "channel" | "notification" | "friend";
   channelId: number;
 }) => {
   const socket = useSocketContext();
@@ -147,16 +147,16 @@ export const FriendItem = ({
               isBlocked && "text-red"
             )}
           >
-            {type === "friend" || "friend_resume"
-              ? state[status]
-              : type === "friend_request"
-              ? "Demande d'ami"
-              : "Demande de partie"}
+            {type === "friend" && isIn !== "notification" && state[status]}
+            {isIn === "notification" &&
+              (type === "friend_request"
+                ? "Demande d'ami"
+                : "Demande de partie")}
           </span>
         </div>
       </div>
 
-      {type === "friend_resume" || id === myProfil?.id ? (
+      {id === myProfil?.id ? (
         <></>
       ) : type === "friend_request" ? (
         <div className="flex ml-2 space-x-1">
@@ -175,7 +175,8 @@ export const FriendItem = ({
               onClick={() =>
                 router.push({
                   pathname: EnumRoutes.GAME,
-                  query: { CREATE: id },
+                  query:
+                    type === "game_request" ? `INVITE=${id}` : `CREATE=${id}`,
                 })
               }
               color="active"
@@ -229,7 +230,7 @@ export const FriendItem = ({
           >
             <IconMessage />
           </Button>
-          {isInChannel && (
+          {isIn === "channel" && (
             <Button variant="icon" onClick={inviteUserChannel}>
               <IconAdmin />
             </Button>
