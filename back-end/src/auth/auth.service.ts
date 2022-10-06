@@ -183,6 +183,18 @@ export class AuthService {
     });
   }
 
+  async turnOffTwoFactorAuthentication(userId: number) {
+    await this.prisma.user.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        twoFactorAuthenticationSecret: null,
+        isTwoFactorAuthenticationEnabled: false,
+      },
+    });
+  }
+
   async loginWith2fa(user: Partial<User>) {
     const payload = {
       email: user.email,

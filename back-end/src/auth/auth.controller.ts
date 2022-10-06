@@ -1,5 +1,5 @@
 import { UnauthorizedException } from "@nestjs/common";
-import { Body, Controller, Get, HttpCode, HttpStatus, Post, Req, Res, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, Patch, HttpCode, HttpStatus, Post, Req, Res, UseGuards } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { AuthGuard } from "@nestjs/passport";
 import { User } from "@prisma/client";
@@ -101,6 +101,16 @@ export class AuthController {
         }
         await this.authService.turnOnTwoFactorAuthentication(request.user.id);
 
+        const access_token = await this.authService.loginWith2fa(request.user);
+      res.cookie('access_token', access_token.access_token);
+      res.send(access_token);
+    }
+
+    @Patch('2fa/turn-off')
+    @UseGuards(Jwt2FAGuard)
+    async turnOffTwoFactorAuthentication(@Req() request, @Res() res) {
+// // console.log("$$body", body);
+        await this.authService.turnOffTwoFactorAuthentication(request.user.id);
         const access_token = await this.authService.loginWith2fa(request.user);
       res.cookie('access_token', access_token.access_token);
       res.send(access_token);
