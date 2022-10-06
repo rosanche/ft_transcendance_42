@@ -5,6 +5,7 @@ import { Spinner } from "../Spinner/Spinner";
 interface Props {
   title?: string;
   isLoading?: boolean;
+  width?: string;
 }
 
 export const Page: React.FC<PropsWithChildren<Props>> = ({
@@ -17,7 +18,11 @@ export const Page: React.FC<PropsWithChildren<Props>> = ({
     <div className="flex flex-1 flex-col items-center">
       {title && <HeaderTitle title={title} />}
 
-      <div className={"flex flex-1 flex-col content-around justify-center " + width }>
+      <div
+        className={
+          "flex flex-1 flex-col content-around justify-center " + width
+        }
+      >
         {isLoading ? (
           <Spinner className="text-white h-8 w-8 mb-10" />
         ) : (
