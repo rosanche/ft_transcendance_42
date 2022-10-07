@@ -15,6 +15,7 @@ import {
   IconLock,
 } from "modules/common/components/_icons/icons";
 import ActionsChannel from "../ActionsChannel/ActionsChannel";
+import { useModeChannelMpContext } from "modules/chat/context/ModeChannelMpContext";
 
 type form = {
   idSend: number;
@@ -37,7 +38,8 @@ interface Props {
 }
 
 export const TitreChannel = () => {
-  const { chatName, changeChatName } = useChannelContext();
+  const { chatName } = useChannelContext();
+  const { cha_mp } = useModeChannelMpContext();
   return (
     <div className="text-white justify-center align-middle flex flex-col font-medium text-2xl text-center leading-[3rem]">
       <span>
@@ -52,8 +54,10 @@ export const TitreChannel = () => {
                  
                 }}
               ><IconLock /> </Button> }
-        <ActionsChannel />
-      </span>
+            {
+              cha_mp === "channel" &&
+              <ActionsChannel />
+            }</span>
     </div>
   );
 };

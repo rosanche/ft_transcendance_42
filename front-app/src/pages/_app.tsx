@@ -24,21 +24,21 @@ function MyApp({ Component, pageProps }) {
       <QueryClientProvider client={queryClient}>
         <AppContextProvider>
           <SocketContextProvider>
+          <ChannelContextProvider>
+          <ModeChannelMpContextProvider>
+          <UsersChannelContextProvider>
             <ModalProvider rootComponent={TransitionGroup}>
               <SideBarContextProvider>
                 <AuthenticatedGuard>
                   <SideBar>
-                    <ChannelContextProvider>
-                      <ModeChannelMpContextProvider>
-                        <UsersChannelContextProvider>
-                          <Component {...pageProps} />
-                        </UsersChannelContextProvider>
-                      </ModeChannelMpContextProvider>
-                    </ChannelContextProvider>
+                    <Component {...pageProps} />
                   </SideBar>
                 </AuthenticatedGuard>
               </SideBarContextProvider>
             </ModalProvider>
+            </UsersChannelContextProvider>
+                      </ModeChannelMpContextProvider>
+                    </ChannelContextProvider>
           </SocketContextProvider>
         </AppContextProvider>
       </QueryClientProvider>

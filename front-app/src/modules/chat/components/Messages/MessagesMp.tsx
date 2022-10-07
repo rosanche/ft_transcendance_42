@@ -20,7 +20,7 @@ export const MessagesMp = (a: Props) => {
   return a.msgMp
     ?.filter((e) => e.idReceive == a.idCourant)
     .map((el, i) => (
-      <div className="m-1.5">
+      <div className="m-1.5" key={i}>
         {el.idSend != a.idme && (
           <div className="flex justify-start">
             <OtherMessage key={i} message={el} />

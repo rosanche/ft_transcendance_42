@@ -115,75 +115,79 @@ export class ChatGateway implements OnGatewayInit {
         }) == null);
      }
 
+     async listChannelsUser(client : Socket, user : User){
+        const  channels = await this.Prisma.channel.findMany({
+            where:{
+                users:{
+                some: {
+                id: user.id,
+                }}
+            },
+            select:{
+                id: true,
+                createurID: true,
+                name: true,
+                private: true,
+                admin:{
+                    where:{
+                        id : user.id,
+                    },
+                    select:{
+                    id : true
+                    }
+                },
+                hash: true,
+            }
+        });
+        var re = new Array<channel>();
+        for (let i : number = 0; channels.length != 0 && channels[i]; ++i) {
+            const ban  = await this.Prisma.ban.findMany({
+                where: {
+                    active: true,
+                    Channel: {
+                        some: {
+                            name: channels[i].name
+                        }
+                    },
+                    iduser: user.id,
+                    muteBan: "ban"
+                }
+            });
+            
+            if (client && (ban.length === 0 || await this.commons.banupdate(ban)))
+                client.join(channels[i].name);
+            re.push({id: channels[i].id, 
+                    name: channels[i].name, 
+                    private: channels[i].private, 
+                    user: true,
+                    admin: ((channels[i].admin.length !== 0)), 
+                    owner: (channels[i].createurID === user.id)  ,
+                    password: (channels[i].hash !== null)});
+        }
+        const  channels_2 = await this.Prisma.channel.findMany({
+            where:{
+                NOT:{
+                users:{
+                some: {
+                id: user.id,
+                }}
+                },
+                private: false,
+            }})
+        for (let i : number = 0; channels_2[i]; ++i) {
+            if (await this.bandef(user.id, channels_2[i].id))
+                re.push({id: channels_2[i].id, name: channels_2[i].name, private: channels_2[i].private, user: false ,admin: (false), owner : (false),password: (channels_2[i].hash !== null)});
+        }
+        return re;
+     }
+
     @SubscribeMessage('listchannels')
     async listChannels(client: Socket)
     {
         const user = await this.authService.getUserFromSocket(client);
         if (user)
         {
-            const  channels = await this.Prisma.channel.findMany({
-                where:{
-                    users:{
-                    some: {
-                    id: user.id,
-                    }}
-                },
-                select:{
-                    id: true,
-                    createurID: true,
-                    name: true,
-                    private: true,
-                    admin:{
-                        where:{
-                            id : user.id,
-                        },
-                        select:{
-                        id : true
-                        }
-                    },
-                    hash: true,
-                }
-            });
-            var re = new Array<channel>();
-            for (let i : number = 0; channels.length != 0 && channels[i]; ++i) {
-                const ban  = await this.Prisma.ban.findMany({
-                    where: {
-                        active: true,
-                        Channel: {
-                            some: {
-                                name: channels[i].name
-                            }
-                        },
-                        iduser: user.id,
-                        muteBan: "ban"
-                    }
-                });
-                
-                if (ban.length === 0 || await this.commons.banupdate(ban))
-                    client.join(channels[i].name);
-                re.push({id: channels[i].id, 
-                        name: channels[i].name, 
-                        private: channels[i].private, 
-                        user: true,
-                        admin: ((channels[i].admin.length !== 0)), 
-                        owner: (channels[i].createurID === user.id)  ,
-                        password: (channels[i].hash !== null)});
-            }
-            const  channels_2 = await this.Prisma.channel.findMany({
-                where:{
-                    NOT:{
-                    users:{
-                    some: {
-                    id: user.id,
-                    }}
-                    },
-                    private: false,
-                }})
-            for (let i : number = 0; channels_2[i]; ++i) {
-                if (await this.bandef(user.id, channels_2[i].id))
-                    re.push({id: channels_2[i].id, name: channels_2[i].name, private: channels_2[i].private, user: false ,admin: (false), owner : (false),password: (channels_2[i].hash !== null)});
-            }
-            this.wss.to(this.iddd[user.id]).emit('channels list',re);
+            this.wss.to(this.iddd[user.id]).emit('channels list', await this.listChannelsUser(client,user));
         }
     }
 
@@ -257,7 +261,7 @@ export class ChatGateway implements OnGatewayInit {
            });
             client.join(channel.name);
             await this.listChannels(client);
-            this.wss.to(channel.name).emit('join channel true', {id: channel.id, 
+            client.emit('join channel true', {id: channel.id, 
                 name: channel.name, 
                 private: channel.private, 
                 user: true,
@@ -444,9 +448,8 @@ export class ChatGateway implements OnGatewayInit {
                  },
              }
          })
-          // console.log("enfin")
-         this.wss.to(client.id).emit('invite sucess');
-         this.wss.to(this.iddd[user.id]).emit('join channel true');
+          // console.log("enfin")this.wss.to(client.id).emit('change owner sucess', src);
+            await this.actionChannel(user2, info.channelId);
     }
 
     @SubscribeMessage('list users channel')
@@ -526,16 +529,27 @@ export class ChatGateway implements OnGatewayInit {
             }}));
     };
 
+    async actionChannel(user2 : User, channelId : number)
+    {
+        const chanew =  await this.listChannelsUser(null,user2);
+        await this.wss.to(this.iddd[user2.id]).emit('channels list',  chanew);
+        this.wss.to(this.iddd[user2.id]).emit('action channel', chanew.find((e) => e.id === channelId));
+    }
+
     @SubscribeMessage("muteUserChannel")
     async muteUserChanne ( client: Socket, src: {UserbanId: number, channelId: number }) {
         const user = await this.authService.getUserFromSocket(client);
-        if (!user)
-            return ;
+        const user2 = await this.Prisma.user.findUnique({
+            where: {
+                id : src.UserbanId,
+            }});
+        if (!user || !user2)
+            return null;
         const cha = await this.ChannelBan(src.channelId,  user.id , src.UserbanId);
         if (cha)
         {
-            const ban = await this.createBan(src.channelId,  src.UserbanId, "ban")
-            this.wss.to(cha.name).emit('you ban_mute');
+            const ban = await this.createBan(src.channelId,  src.UserbanId, "mute")
+            await this.actionChannel(user2, src.channelId);
         }
     };
 
@@ -543,25 +557,31 @@ export class ChatGateway implements OnGatewayInit {
     @SubscribeMessage("banUserChannel")
     async banUserChanne ( client: Socket, src: {UserbanId: number, channelId: number }) {
         const user = await this.authService.getUserFromSocket(client);
-        if (!user)
-            return ;
+        const user2 = await this.Prisma.user.findUnique({
+            where: {
+                id : src.UserbanId,
+            }});
+        if (!user || !user2)
+            return null;
         const cha = await this.ChannelBan(src.channelId,  user.id , src.UserbanId);
         if (cha)
         {
             const ban = await this.createBan(src.channelId, src.UserbanId, "ban")
-            this.wss.in(this.iddd[src.UserbanId]).socketsLeave(cha.name);
-            this.wss.to(cha.name).emit('you ban_mute');
+            await this.actionChannel(user2, src.channelId);
         }
     };
     
         // chef channel
     @SubscribeMessage('change owner')
-    async newOwner(client: Socket, src: ban) {
-        const user = await this.authService.getUserFromSocket(client);
-
-        if (!user )
+    async newOwner(client: Socket, src: {UserId: number, channelId: number }) {
+        const user = await this.authService.getUserFromSocket(client); 
+        const user2 = await this.Prisma.user.findUnique({
+            where: {
+                id : src.UserId,
+            }});
+        if (!user || !user2)
             return null;
-        const cha = await this.verifChannelOwener(src.idChannel, user.id, src.idUser); 
+        const cha = await this.verifChannelOwener(src.channelId, user.id, src.UserId); 
         if (cha) {
                 await this.Prisma.channel.update({
                     where:{
@@ -569,21 +589,29 @@ export class ChatGateway implements OnGatewayInit {
                 },
                 data:{
 
-                    createurID: src.idUser,
+                    createurID: src.UserId,
                     admin: { 
                         connect: {
-                            id: src.idUser
+                            id: src.UserId
                         }
                     }
                 }
             });
+            this.wss.to(client.id).emit('change owner sucess', src);
+            await this.actionChannel(user2, src.channelId);
         }
+        
     }
 
     @SubscribeMessage('newAdminUserChannel')
     async newAdmin(client: Socket, src: {UserbanId: number, channelId: number }) {
         const user = await this.authService.getUserFromSocket(client);
-        if (!user)
+        const user2 = await this.Prisma.user.findUnique({
+            where: {
+                id : src.UserbanId,
+            }});
+        console.log("log")
+        if (!user || !user2)
             return null;
             const Channel = await this.verifChannelOwener(src.channelId, user.id, src.UserbanId); 
             if (!Channel)
@@ -600,6 +628,8 @@ export class ChatGateway implements OnGatewayInit {
                 }
             }
         });
+        this.wss.to(client.id).emit('change owner sucess', src);
+        await this.actionChannel(user2, src.channelId);
     }
 
     @SubscribeMessage('modif channel')
@@ -648,6 +678,7 @@ export class ChatGateway implements OnGatewayInit {
                 re.push(block.myblocked[i].id);
             }
         this.wss.to(client.id).emit("use info block", re)
+        this.wss.to(client.id).emit('info mp', await this.commons.listPostMyMps(user));
     }
 
 
@@ -688,7 +719,8 @@ export class ChatGateway implements OnGatewayInit {
                     blocked: true,
                     }
                 });
-            this.wss.to(client.id).emit("block user infos", src);
+                await this.userBlock(client)
+                this.wss.to(client.id).emit('info mp', await this.commons.listPostMyMps(user));
             return ;
         }
         return null;
@@ -716,6 +748,7 @@ export class ChatGateway implements OnGatewayInit {
                 }
             });
             this.wss.to(client.id).emit("deblock use", src);
+            this.wss.to(client.id).emit('info mp', await this.commons.listPostMyMps(user));
         }
         return null;
     }
