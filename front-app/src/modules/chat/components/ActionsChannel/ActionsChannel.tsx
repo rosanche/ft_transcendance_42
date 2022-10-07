@@ -26,7 +26,7 @@ const ActionsChannel = () => {
   const [adminMode, setAdminMode] = useState<number>(0);
   const [idsMember, setIdsMember] = useState<number[]>([]);
   const [modifPassword, setModifPassword] = useState<Boolean>(false);
-  const [pass, setPass] = useState<string>(null);
+  const [pass, setPass] = useState<string>("");
   const { data: users, isLoading, status } = useUsersQuery();
   const { showModal: showAddUserModal } = useAddFriendModal({
     title: "Ajouter un utilisateur dans le channel",
@@ -57,6 +57,7 @@ const ActionsChannel = () => {
       password: password,
     });
     setPassWord("");
+    setModifPassword(false);
   };
 
   /*useEffect(() => {
@@ -190,7 +191,7 @@ const ActionsChannel = () => {
                   <input
                     className=" px-2 py-1 text-black"
                     type="password"
-                    value={password}
+                    value={password || ""}
                     onChange={(e) => {
                       setPassWord(e.target.value);
                     }}
@@ -202,7 +203,6 @@ const ActionsChannel = () => {
                   />
                 </div>
               )}
-              {adminMode === 3 && <div></div>}
             </div>
           </span>
         )}
