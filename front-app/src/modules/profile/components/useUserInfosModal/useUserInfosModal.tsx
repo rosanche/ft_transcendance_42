@@ -113,7 +113,7 @@ export const useUserInfosModal = () => {
             loading="eager"
             loader={() => urlImage || "/assets/img/42.png"}
             src={urlImage || "/assets/img/42.png"}
-            priority={false}
+            priority={true}
             className="rounded-full border border-gray-100 shadow-sm"
           />
         </div>
