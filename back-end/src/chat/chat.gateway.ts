@@ -277,7 +277,6 @@ export class ChatGateway implements OnGatewayInit {
     @SubscribeMessage('quit')
     async handleRoomLeave(client: Socket, idCha: number) {
         const user = await this.authService.getUserFromSocket(client);
-        console.log("j'en suis a la fin")
         if (!user)
             return;
         const channelup = await this.Prisma.channel.findUnique({
@@ -313,7 +312,6 @@ export class ChatGateway implements OnGatewayInit {
         }
         client.leave(channelup.name);
         await this.listChannels(client);
-        console.log(idCha);
 
         this.wss.to(client.id).emit('left chanel', idCha);
         await this.postChannel(client);
@@ -334,8 +332,6 @@ export class ChatGateway implements OnGatewayInit {
 
     async verifChanneladmin(idCha : number, idUser : number) {
 
-        console.log(idCha);
-        console.log(idUser);
         return await this.Prisma.channel.findFirst({
             where:{
                 AND:[
@@ -386,7 +382,7 @@ export class ChatGateway implements OnGatewayInit {
 
     @SubscribeMessage('channelToServer')
     async handleMessage(client: Socket, message: form) {
-            console.log("oui")
+
         const user = await this.authService.getUserFromSocket(client);
         if (!user || !message || message.texte.length == 0)
             return null;
@@ -1184,7 +1180,8 @@ export class ChatGateway implements OnGatewayInit {
 
     @SubscribeMessage('list users')
     async listMp(client: Socket) {
-        const id : number = (await this.authService.getUserFromSocket(client)).id;
+        const user = await (this.authService.getUserFromSocket(client));
+        const id = user?.id;
         if (id !== undefined) {
             const users : users[] = await this.commons.listMp(id)
             // // console.log(users);

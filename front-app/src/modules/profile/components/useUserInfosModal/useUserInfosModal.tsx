@@ -44,7 +44,6 @@ export const useUserInfosModal = () => {
   };
 
   const onDropAccepted = useCallback((file: File[]) => {
-    console.log("$$file", file);
     file && uploadImgProfile(file?.[0]);
   }, []);
 
@@ -52,9 +51,7 @@ export const useUserInfosModal = () => {
     changeFile(fileRejections?.[0]?.file);
   }, []);
 
-  const onDrop = useCallback((acceptedFiles) => {
-    console.log(acceptedFiles);
-  }, []);
+  const onDrop = useCallback((acceptedFiles) => {}, []);
 
   // Disable click and keydown behavior on the <Dropzone>
 
@@ -111,7 +108,7 @@ export const useUserInfosModal = () => {
             width={96}
             height={96}
             loading="eager"
-            loader={() => (urlImage || "/assets/img/42.png")}
+            loader={() => urlImage || "/assets/img/42.png"}
             src={urlImage || "/assets/img/42.png"}
             priority={true}
             className="rounded-full border border-gray-100 shadow-sm"
@@ -216,7 +213,6 @@ export const useUserInfosModal = () => {
               variant="contained"
               color="active"
               onClick={() => {
-                console.log("generateQrCode");
                 generateQrCode();
               }}
               isLoading={isGeneratingQrCode}

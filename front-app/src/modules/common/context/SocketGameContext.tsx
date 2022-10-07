@@ -17,7 +17,7 @@ const SocketGameContextProvider: React.FC<PropsWithChildren> = ({
   children,
 }) => {
   const { accessToken: token } = useAppContextState();
-  console.log("$$autoconnect", !!accessToken);
+
   const socket = socketio("http://localhost:3000/game", {
     autoConnect: false,
     auth: {

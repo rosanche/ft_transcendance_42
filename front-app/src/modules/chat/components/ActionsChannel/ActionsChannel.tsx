@@ -32,14 +32,14 @@ const ActionsChannel = () => {
     title: "Ajouter un utilisateur dans le channel",
     isInChannel: true,
     idsToAvoid: idsMember,
-    usersChannel: false, 
+    usersChannel: false,
     channelId: chatName.id,
   });
   const { showModal: showChangeMemberModal } = useAddFriendModal({
     title: "Ban un membre du channel",
     isInChannel: true,
     idsToAvoid: idsMember,
-    usersChannel: true, 
+    usersChannel: true,
     channelId: chatName.id,
     isChangeOnMember: true,
   });
@@ -47,7 +47,7 @@ const ActionsChannel = () => {
     title: "Changer le owner du channel",
     isInChannel: true,
     idsToAvoid: idsMember,
-    usersChannel: true, 
+    usersChannel: true,
     channelId: chatName.id,
     isChangeOnMember: true,
   });
@@ -62,18 +62,16 @@ const ActionsChannel = () => {
 
   /*useEffect(() => {
     socket.on("channel users", (ids: number[]) => {
-      console.log("$$ids babe", ids);
+
       setIdsMember(ids);
     });
-    
+
   }, [chatName]);*/
 
   useEffect(() => {
     socket.on("channel users", (ids: number[]) => {
-      console.log("$$ids babe dd", ids);
       setIdsMember(ids);
     });
-    
   }, [socket]);
 
   const join = async () => {
@@ -86,15 +84,13 @@ const ActionsChannel = () => {
   };
 
   const quit = async () => {
-    console.log();
     if (!chatName.owner) await socket.emit("quit", chatName.id);
     else await socket.emit("quit", chatName.id);
   };
 
   const block = async () => {
-    console.log(chatName.id);
     // await socket.emit("list users channel", chatName.id);
-    console.log(a.usersChannelId);
+
     setAdminMode(1);
   };
 
@@ -112,8 +108,9 @@ const ActionsChannel = () => {
                     socket.connect();
                   }
                   socket.emit("list users channel", chatName.id);
-                  idsMember.length != 1 && chatName.owner ? (showChangeOwnerModal()):
-                  (quit())
+                  idsMember.length != 1 && chatName.owner
+                    ? showChangeOwnerModal()
+                    : quit();
                 }}
               >
                 <IconQuit />
@@ -128,7 +125,6 @@ const ActionsChannel = () => {
                     value={pass}
                     onChange={(e) => {
                       setPass(e.target.value);
-                      console.log(pass);
                     }}
                     placeholder="Enter password"
                     onKeyPress={(event) => {
@@ -154,7 +150,7 @@ const ActionsChannel = () => {
                   color="active"
                   onClick={() => {
                     socket.emit("list users channel", chatName.id);
-                    console.log()
+
                     showAddUserModal();
                   }}
                 >

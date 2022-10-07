@@ -38,11 +38,7 @@ const ChannelContextProvider: React.FC<PropsWithChildren> = ({ children }) => {
     password: false,
   });
 
-  console.log("$$context2");
-
   const changeChatName = (channel: Channel) => {
-    console.log("$$context2 premier", chatName);
-    console.log("$$context2", channel);
     setChannel(channel);
   };
 

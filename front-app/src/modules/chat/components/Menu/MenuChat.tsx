@@ -35,12 +35,11 @@ export const MenuChat = (a: Props) => {
   }, [socket]);
   return (
     <div className="flex flex-col">
-      <div className=" flex rounded bg-black flex-row text-center justify-between">
+      <div className="flex flex-row text-center justify-between">
         <Button
-          className=" text-lg"
-          variant="contained"
-          disabled={false}
-          color={cha_mp !== "channel" ? "active" : ""}
+          className="text-lg"
+          variant="link"
+          color="active"
           onClick={() => {
             changeCha_mp("channel");
             changeChatName({
@@ -53,31 +52,30 @@ export const MenuChat = (a: Props) => {
               password: false,
             });
             setCreate(false);
-            console.log(chatName);
           }}
+          disabled={cha_mp === "channel" }
         >
           Channels
         </Button>
         <Button
           className=" text-lg"
-          variant="contained"
-          color={cha_mp === "channel" ? "active" : ""}
-          disabled={false}
+          variant="link"
+          color="active"
           onClick={() => {
             changeCha_mp("message private");
             setCreate(false);
           }}
+          disabled={cha_mp !== "channel" }
         >
           Messages Privés
         </Button>
       </div>
-      <div className="text-white flex flex-row justify-between align-middle font-medium text-2xl text-center leading-[3rem]">
-        <span>{cha_mp === "channel" ? "Channels" : "Messages Privés"}</span>
+      <div className="text-white flex flex-1 justify-center align-center m-4">
         {cha_mp === "channel" ? (
           <Button
             className="text-center"
             variant="contained"
-            color=""
+            color="active"
             onClick={() => {
               setCreate(!create);
             }}
@@ -88,25 +86,25 @@ export const MenuChat = (a: Props) => {
           <Button
             className="text-center "
             variant="contained"
-            color=""
+            color="active"
             onClick={showModal}
           >
-            Users
+            Nouveau message
           </Button>
         )}
       </div>
       <div>
         {!create && (
-          <div>
+          <div className="m-4">
             {cha_mp == "message private" && (
               <MenuMessagesMp users={a.users} msgMp={a.msgMp} />
             )}
             {cha_mp == "channel" && (
-              <MenuMessagesChannel  channels={a.channel} />
+              <MenuMessagesChannel channels={a.channel} />
             )}
           </div>
         )}
-        {create && <div>{cha_mp == "channel" && <ChannelCreate />}</div>}
+        {create && <div className="m-4">{cha_mp == "channel" && <ChannelCreate />}</div>}
       </div>
     </div>
   );

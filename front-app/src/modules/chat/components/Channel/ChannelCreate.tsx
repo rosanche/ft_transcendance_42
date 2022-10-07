@@ -19,8 +19,6 @@ export const ChannelCreate = () => {
   });
   const socket = useSocketContext();
   const creatCha = async (cha: pass) => {
-    console.log(cha);
-    console.log(socket.isConnected);
     socket.emit("creatcha", cha);
     setPassj({ name: "", password: "", private: false });
   };
@@ -33,7 +31,7 @@ export const ChannelCreate = () => {
 
   return (
     <div className="text-white">
-       name:{" "}
+      name:{" "}
       <input
         className=" px-2 py-1 text-black"
         type="text"
@@ -48,49 +46,50 @@ export const ChannelCreate = () => {
         placeholder="name channel"
         name="chat"
       />
-      {
-      !passj.private &&
-      <>password:{" "}
-      <input
-        className=" px-2 py-1 text-black"
-        type="password"
-        value={passj.password}
-        onChange={(e) => {
-          setPassj({
-            name: passj.name,
-            password: e.target.value,
-            private: passj.private,
-          });
-        }}
-        placeholder="Enter password"
-        name="chat"
-      />
-      </>
-      }
+      {!passj.private && (
+        <>
+          password:{" "}
+          <input
+            className=" px-2 py-1 text-black"
+            type="password"
+            value={passj.password}
+            onChange={(e) => {
+              setPassj({
+                name: passj.name,
+                password: e.target.value,
+                private: passj.private,
+              });
+            }}
+            placeholder="Enter password"
+            name="chat"
+          />
+        </>
+      )}
       <div>
-      <Button
+        <Button
           className="ml-3 px-2 py-1"
           variant="icon"
           color="active"
-          onClick={() => { setPassj({
-            name: passj.name,
-            password: passj.password,
-            private: !passj.private,
-          });
-        }}
+          onClick={() => {
+            setPassj({
+              name: passj.name,
+              password: passj.password,
+              private: !passj.private,
+            });
+          }}
         >
           <IconLock />
         </Button>
-        {passj.private ? (<>private</>) : <>public</>}
+        {passj.private ? <>private</> : <>public</>}
       </div>
       {passj.name != "" && (
         <Button
-          className="ml-3 px-2 py-1"
+          className="m-4 px-2 py-1"
           variant="contained"
           color="active"
           onClick={() => creatCha(passj)}
         >
-          Envoie
+          Créer channel
         </Button>
       )}
     </div>

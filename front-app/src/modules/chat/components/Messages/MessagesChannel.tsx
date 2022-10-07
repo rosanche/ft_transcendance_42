@@ -17,14 +17,11 @@ export const MessagesChannel = (a: Props) => {
   const [blocked, SetBlocked] = useState<number[]>([]);
 
   useEffect(() => {
-    console.log(socket.connected);
-    if (socket.connected)
-    {
+    if (socket.connected) {
       socket.emit("me blocks");
     }
     socket.on("use info block", (c: number[]) => {
       SetBlocked(c);
-      console.log("toi et vous", c);
     });
   }, [socket]);
 

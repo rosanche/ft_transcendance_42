@@ -42,7 +42,8 @@ const BUTTON_THEME: ButtonTheme = {
   link: {
     base: "text-white hover:text-pink-pressed inline-flex justify-center relative font-default text-base italic appearance-none",
     active: {
-      default: "text-pink hover:text-pink-pressed",
+      default: "hover:text-pink-pressed",
+      disabled: "text-pink",
     },
   },
   icon: {

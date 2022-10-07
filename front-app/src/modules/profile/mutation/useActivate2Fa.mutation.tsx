@@ -9,7 +9,6 @@ import { enumProfileQueryKeys } from "../queries/keys";
 const postActivate2Fa = async (twoFactorAuthenticationCode: string) => {
   const apiUrl = `http://localhost:3000/auth/2fa/turn-on`;
 
-  console.log("$$endpoint", twoFactorAuthenticationCode);
   const { data } = await axios.post<string>(
     apiUrl,
     {

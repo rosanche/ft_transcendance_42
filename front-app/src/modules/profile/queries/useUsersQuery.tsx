@@ -10,7 +10,7 @@ const fetchUsers = async () => {
   const { data } = await Axios.get<User[]>(apiUrl, {
     withCredentials: true,
   });
-  console.log("$$data almost here", data);
+
   return data;
 };
 

@@ -46,7 +46,6 @@ const Chat = () => {
   }, [router.query]);
 
   const inviteChan = async (p: ban) => {
-    console.log(p);
     socket.emit("invite channel", p);
   };
 
@@ -56,15 +55,12 @@ const Chat = () => {
 
   const Ban = async () => {
     await socket.emit("blockedChannel", ban);
-    console.log(`a ouai c'est toi ${ban.idChannel}`);
+
     await socket.emit("list user channel", ban.idChannel);
     //const u =  await channel.filter(el => v.name !== el.name);
-    await console.log(ban);
-    await console.log(chatName);
   };
 
   const demParti = (el: form) => {
-    console.log(el);
     router.push(
       "http://localhost:3001/game?CREATE=" + el.idSend + "&BONUS=FALSE"
     );
@@ -74,48 +70,29 @@ const Chat = () => {
     socket.on("cha users", (c: number[]) => {});
 
     socket.on("user list", (c: users[]) => {
-      console.log("oui 3");
       setUsers(c);
-      console.log(c);
     });
 
     socket.on("use info", (c: users) => {
-      console.log("nija");
-      console.log(c);
       setMe(c);
     });
-    const test = async () => {
-      console.log("A");
-    };
+    const test = async () => {};
 
     socket.on("message join channel", (c: form[]) => {
-      console.log(c);
-      console.log("oui");
       const newArrayForm = [...msg, ...c];
-      console.log(newArrayForm);
+
       setMsg(newArrayForm);
     });
 
     socket.on("new channel pub", (c: Channel) => {
       socket.emit("listchannels");
     });
-    socket.on("you ban_mute", (ret: ban) => {
-      socket.off("you ban_mute");
-      if (ret.mute_ban === "ban") {
-      } else {
-        console.log("AAAAls");
-      }
-      console.log("AAAAls");
-    });
 
     socket.on("join channel true", (ret: Channel) => {
-      console.log("enfin une nouvellle fiture");
       changeChatName(ret);
     });
 
     socket.on("channels list", (channels: Channel[]) => {
-      console.log("channels list");
-      console.log(channels);
       setChannel(channels);
     });
     ("join channel false password");
@@ -125,24 +102,18 @@ const Chat = () => {
     });
 
     socket.on("info channel", (mm: form[]) => {
-      console.log(mm);
-      console.log("oui 1000");
       setMsg(mm);
     });
 
     socket.on("action channel", (cha: Channel) => {
-      console.log("Aaaa 12", cha, chatName);
       if (cha && cha.id == chatName.id && cha_mp === "channel")
         changeChatName(cha);
     });
 
     socket.on("info mp", (mm: form[]) => {
-      console.log(mm);
-      console.log("oui 1000");
       setMsgMp(mm);
     });
     socket.on("New Invitation Game", (id: Number) => {
-      console.log(id);
       setGame(id);
     });
 
@@ -164,13 +135,6 @@ const Chat = () => {
 
     socket.on("cha users", (you: number[]) => {
       setUsersChannel_(you);
-      console.log("oui");
-      console.log(`toi et moi ${you}`);
-    });
-
-    socket.on("user info", (user: { id: number; pseudo: string }) => {
-      console.log(user);
-      setData({ channel: "", pseudo: user.pseudo, texte: "" });
     });
 
     socket.on("auth error", () => {
@@ -182,7 +146,6 @@ const Chat = () => {
     });
 
     socket.on("chatToClient", (src: form) => {
-      console.log("AAAAAAAAAAAAAAAAa");
       setMsg((m) => [...m, src]);
     });
 
@@ -207,22 +170,21 @@ const Chat = () => {
   }, [socket]);
 
   useEffect(() => {
-    if (!socket.connected)
-      socket.connect();
+    if (!socket.connected) socket.connect();
     const cookieValue = document.cookie
       .split("; ")
       .find((row) => row.startsWith("access_token"))
       ?.split("=")[1];
     socket.auth.token = cookieValue;
-    console.log(isConnected);
+
     if (socket.connected) {
-    socket.emit("channelinit");
-    socket.emit("listchannels");
-    socket.emit("me info");
-    socket.emit("me blocks");
-    socket.emit("list users");
-    socket.emit("list mps");
-    socket.emit("list user channel");
+      socket.emit("channelinit");
+      socket.emit("listchannels");
+      socket.emit("me info");
+      socket.emit("me blocks");
+      socket.emit("list users");
+      socket.emit("list mps");
+      socket.emit("list user channel");
     }
   }, [isConnected]);
 
@@ -231,7 +193,7 @@ const Chat = () => {
   return (
     <Page title="Chat" width="w-2/3">
       <div className="flex flex-1 flex-row h-5/6 scroll-smooth max-h-scren ">
-        <RoundedContainer className="flex-none w-1/3  mu-3 ">
+        <RoundedContainer className="flex-none w-1/3 p-8  mu-3 ">
           <MenuChat key="ss" users={users} msgMp={msgMp} channel={channel} />
         </RoundedContainer>
         <div className="flex flex-1 flex-col ml-8 w-2/3 justify-between ">

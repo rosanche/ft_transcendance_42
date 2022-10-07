@@ -26,8 +26,6 @@ export const OtpAuthentification = () => {
     isLoading,
   } = useAuthenticate2Fa({ onSuccess: () => router.push("/profil") });
 
-  console.log("$$faaaaa", fa, fas);
-
   return (
     <>
       <span className="text-white text-3xl font-default font-bold mb-16">

@@ -45,7 +45,6 @@ export const SideBar: React.FC<PropsWithChildren<Props>> = ({ children }) => {
             variant="icon"
             onClick={() => {
               changePage(EnumRoutes.CHAT);
-              console.log("$$passss", page, changePage(EnumRoutes.CHAT));
             }}
             className={
               page === EnumRoutes.CHAT &&

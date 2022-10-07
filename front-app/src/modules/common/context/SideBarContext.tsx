@@ -27,10 +27,8 @@ const SideBarContextProvider: React.FC<PropsWithChildren> = ({ children }) => {
       setPage(router.pathname as EnumRoutes);
     else setPage(null);
   }, [router]);
-  console.log("$$passss");
 
   const changePage = (url: EnumRoutes) => {
-    console.log("$$passss", url);
     setPage(url);
     router.replace(url);
   };

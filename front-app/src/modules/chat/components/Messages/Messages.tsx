@@ -20,13 +20,10 @@ const Messages = (a: Props) => {
   const [blocked, SetBlocked] = useState<number[]>([]);
 
   useEffect(() => {
-    if (!socket.connected)
-        socket.connect();
-    if (socket.connected)
-      socket.emit("me blocks");
+    if (!socket.connected) socket.connect();
+    if (socket.connected) socket.emit("me blocks");
     socket.on("use info block", (c: number[]) => {
       SetBlocked(c);
-      console.log("toi et moi", c);
     });
   }, [socket]);
 
@@ -37,11 +34,7 @@ const Messages = (a: Props) => {
       )}
       {cha_mp === "message private" &&
         blocked.find((el) => el === chatName.id) === undefined && (
-          <MessagesMp
-            msgMp={a.msgMp}
-            idme={a.idme}
-            idCourant={chatName.id}
-          />
+          <MessagesMp msgMp={a.msgMp} idme={a.idme} idCourant={chatName.id} />
         )}
     </div>
   );

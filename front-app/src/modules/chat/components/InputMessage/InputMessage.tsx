@@ -25,11 +25,7 @@ const InputMessage = (a: Props) => {
   }, [chatName]);
 
   const sendMessage = async () => {
-    console.log(cha_mp);
     if (cha_mp === "channel") {
-      console.log("ouiiiiiiiii");
-
-      console.log("UN JOUR PEUT ETRE");
       await setData({
         idSend: data.idSend,
         idReceive: chatName.id,
@@ -45,7 +41,6 @@ const InputMessage = (a: Props) => {
   };
 
   const sendPrivate = async () => {
-    console.log(data);
     await socket.emit("message mp", data);
   };
 
@@ -61,11 +56,9 @@ const InputMessage = (a: Props) => {
             idReceive: chatName.id,
             texte: e.target.value,
           });
-          console.log(data);
         }}
         placeholder="Enter Character Name"
         onKeyPress={(event) => {
-          console.log(chatName);
           event.key === "Enter" && sendMessage();
         }}
       ></input>

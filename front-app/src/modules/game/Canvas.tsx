@@ -148,7 +148,7 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
       setIsCreate(false);
       setIsConnected(true);
       //ID=(ROOMID)
-      console.log(socket.connected);
+
       queryRef.current = router.query.ID;
       if (router.query.ID) {
         socket.emit("join", router.query.ID);
@@ -227,9 +227,8 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
 
   useEffect(() => {
     socket.auth.token = accessToken;
-    console.log("access_token", accessToken);
+
     socket.connect();
-    console.log("socket.connected", socket.connected);
 
     return () => {
       socket.disconnect();
@@ -435,13 +434,10 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
             isLoading={isWaiting}
             onClick={() => {
               if (isCreate) {
-                console.log("socket.connected isCreate", socket.connected);
                 socket.emit("create private game", router.query.CREATE, "true");
                 router.replace("/game", undefined, { shallow: true });
                 setIsCreate(false);
               } else {
-                console.log("queue bonus");
-                console.log(socket.connected);
                 socket.emit("queue", true);
               }
             }}
@@ -454,7 +450,6 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
             isLoading={isWaiting}
             onClick={() => {
               if (isCreate) {
-                console.log("socket.connected isCreate", socket.connected);
                 socket.emit(
                   "create private game",
                   router.query.CREATE,
@@ -463,8 +458,6 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
                 router.replace("/game", undefined, { shallow: true });
                 setIsCreate(false);
               } else {
-                console.log("queue classic");
-                console.log(socket.connected);
                 socket.emit("queue", false);
               }
             }}

@@ -15,7 +15,7 @@ const accessToken = Cookies.get(CookieKeys.ACCESS_TOKEN);
 // }
 const SocketContextProvider: React.FC<PropsWithChildren> = ({ children }) => {
   const { accessToken: token } = useAppContextState();
-  console.log("$$autoconnect", !!accessToken);
+
   const socket = socketio("http://localhost:3000/chat", {
     autoConnect: !!accessToken,
     auth: {

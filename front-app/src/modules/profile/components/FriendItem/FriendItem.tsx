@@ -64,8 +64,6 @@ export const FriendItem = ({
     blocked: "Bloqué(e)",
   };
 
-  console.log("$$Status component", status, socket.connected);
-
   useEffect(() => {
     if (!socket.connected) {
       socket.connect();
@@ -80,7 +78,6 @@ export const FriendItem = ({
       setStatus(usersStatus?.find((user) => user.id === id).status);
     });
 
-    console.log("$$Status emitttt");
     socket.emit("Get status");
 
     return () => {
@@ -91,15 +88,10 @@ export const FriendItem = ({
   }, [socket]);
 
   const acceptFriendRequest = async () => {
-    console.log("$$friend accepted", id);
-    console.log("$$friend connected?", socket.connected);
     socket.emit("accept friend", id);
   };
 
   const inviteUserChannel = async () => {
-    console.log("oui");
-    console.log("$$friend connected?", socket.connected);
-    console.log("$$friend connected?", channelId);
     socket.emit("invite channel", { inviteId: id, channelId: channelId });
   };
 
@@ -112,28 +104,23 @@ export const FriendItem = ({
   };
 
   const NewAdminUserChannel = () => {
-    console.log("AAAAAA AAAAA", id, channelId);
     socket.emit("newAdminUserChannel", { UserbanId: id, channelId: channelId });
   };
 
   const NewOwnerUserChannel = () => {
-    console.log("AAAAAA AAAAA", id, channelId);
-    socket.emit("NewOwnerUserChannel",  {UserId: id, channelId: channelId });
+    socket.emit("NewOwnerUserChannel", { UserId: id, channelId: channelId });
   };
 
   const blockUser = async () => {
-    console.log("$$user blocked", id);
     socket.emit("Get status");
     socket.emit("block user", id);
   };
 
   const addFriend = async () => {
-    console.log("$$friend added", id);
     socket.emit("dem friend", id);
   };
 
   const refuseFriendRequest = async () => {
-    console.log("$$friend refused", id);
     socket.emit("refuse friend", id);
   };
 
@@ -276,13 +263,15 @@ export const FriendItem = ({
               <Button variant="icon" onClick={MuteUserChannel}>
                 <IconMute />
               </Button>
-              {chatName?.owner && (<>
-                <Button variant="icon" onClick={NewAdminUserChannel}>
-                  <IconAdmin />
-                </Button>
-                <Button variant="icon" onClick={NewOwnerUserChannel}>
-                new owner
-              </Button></>
+              {chatName?.owner && (
+                <>
+                  <Button variant="icon" onClick={NewAdminUserChannel}>
+                    <IconAdmin />
+                  </Button>
+                  <Button variant="icon" onClick={NewOwnerUserChannel}>
+                    new owner
+                  </Button>
+                </>
               )}
             </>
           )}

@@ -23,10 +23,7 @@ const UsersChannelContextProvider: React.FC<PropsWithChildren> = ({
 }) => {
   const [usersChannel, setUsersChannel] = useState<users>([]);
 
-  console.log("$$passss");
-
   const changeChatName = (users: users[]) => {
-    console.log("$$passss", users);
     setUsersChannel(users);
   };
 

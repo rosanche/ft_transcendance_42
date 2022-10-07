@@ -18,49 +18,26 @@ export const useAddFriendModal = ({
   idsToAvoid = [],
   channelId = 0,
   isChangeOnMember = false,
-  usersChannel = false
+  usersChannel = false,
 }: {
   title?: string;
   isInChannel?: boolean;
   channelId?: number;
   idsToAvoid?: number[];
   isChangeOnMember?: boolean;
-  usersChannel?: boolean
+  usersChannel?: boolean;
 }) => {
   const { formState, register, watch } = useForm<FormData>({
     defaultValues: {
       searchTerm: "",
     },
   });
-  console.log("$$BOBNJOUUURR", idsToAvoid);
+
   const { errors } = formState;
   const { data: users, isLoading, status } = useUsersQuery();
   const { data: profil } = useMyProfileQuery();
 
   const searchTerm = watch("searchTerm");
-
-  console.log(
-    "$$data almost here2",
-    users,
-    status,
-    users,
-    users
-      ?.filter((value) => value != null)
-      .filter((value) => {
-        return String(value).toLowerCase().includes(searchTerm.toLowerCase());
-      })
-  );
-
-  console.log(
-    "$$users Addmodal bordel",
-    users,
-    users?.map(
-      (friend) =>
-        friend.id !== profil?.id && idsToAvoid.some((id) => id !== friend.id)
-    ),
-    idsToAvoid.some((idMember) => idMember === 1),
-    idsToAvoid
-  );
 
   const usersFiltered = useMemo(
     () =>
@@ -70,17 +47,6 @@ export const useAddFriendModal = ({
           return String(value).toLowerCase().includes(searchTerm.toLowerCase());
         }),
     [searchTerm]
-  );
-
-  console.log(
-    "$$problemmsss",
-    users,
-    idsToAvoid,
-    users?.map(
-      (friend) =>
-        friend.id !== profil?.id &&
-        (!isInChannel || idsToAvoid.some((id) => id !== friend.id))
-    )
   );
 
   const UsersList = () => (
@@ -96,7 +62,10 @@ export const useAddFriendModal = ({
           {users?.map(
             (friend) =>
               friend.id !== profil?.id &&
-              (!isInChannel || (usersChannel ? (idsToAvoid.some((id) => id === friend.id)) : !(idsToAvoid.some((id) => id === friend.id) ))) && (
+              (!isInChannel ||
+                (usersChannel
+                  ? idsToAvoid.some((id) => id === friend.id)
+                  : !idsToAvoid.some((id) => id === friend.id))) && (
                 <FriendItem
                   {...friend}
                   key={friend.id}
