@@ -50,9 +50,9 @@ export const TitreChannel = () => {
         {chatName.admin && chatName.owner && (
           <span className="ml-1">(owner)</span>
         )}
-        {chatName.admin && !chatName.owner && <span className="ml-1">(admin)</span>}
+        {cha_mp === "channel" && <>{chatName.admin && !chatName.owner && <span className="ml-1">(admin)</span>}
         {!chatName.admin && !chatName.owner && chatName.user &&<span className="ml-1">(user)</span> }
-        {!chatName.admin && !chatName.owner && !chatName.user &&<span className="ml-1">(no join)</span> } 
+        {!chatName.admin && !chatName.owner && !chatName.user &&<span className="ml-1">(no join)</span> }</>}
             {
               cha_mp === "channel" &&
               <ActionsChannel />

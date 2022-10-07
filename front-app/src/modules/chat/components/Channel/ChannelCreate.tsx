@@ -67,6 +67,22 @@ export const ChannelCreate = () => {
       />
       </>
       }
+      <div>
+      <Button
+          className="ml-3 px-2 py-1"
+          variant="icon"
+          color="active"
+          onClick={() => { setPassj({
+            name: passj.name,
+            password: passj.password,
+            private: !passj.private,
+          });
+        }}
+        >
+          <IconLock />
+        </Button>
+        {passj.private ? (<>private</>) : <>public</>}
+      </div>
       {passj.name != "" && (
         <Button
           className="ml-3 px-2 py-1"
