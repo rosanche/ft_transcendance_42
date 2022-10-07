@@ -62,7 +62,7 @@ export const MenuChat = (a: Props) => {
               changeCha_mp("channel");
               changeChatName({
                 id: 0,
-                name: null,
+                name: "",
                 private: false,
                 user: false,
                 admin: false,

@@ -138,10 +138,10 @@ export class Chat_Commons {
 
             for (let i : number = 0; mp.length != i; ++i) {
                 if ( mp[i].user[0].id === user.id && mp[i].user.length == 2)
-                        na = {idSend: user.id, idReceive: mp[i].user[1].id, texte: ""}
+                        na = {idSend: mp[i].user[1].id, idReceive: mp[i].user[1].id, texte: ""}
                     else if (mp[i].user.length > 0)
                     {
-                        na = {idSend: user.id, idReceive: mp[i].user[0].id, texte: ""}
+                        na = {idSend: mp[i].user[0].id, idReceive: mp[i].user[0].id, texte: ""}
                     }
                         for (let n : number = 0; mp[i].post.length != n; ++n) {
 

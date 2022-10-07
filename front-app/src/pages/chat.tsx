@@ -78,11 +78,6 @@ const Chat = () => {
       setUsers(c);
       console.log(c);
     });
-    /*
-    socket.on("use info block", (c: string[]) => {
-      //  setChannel((u)=> [...u,c]);
-      // console.log("oui 2");
-    });*/
 
     socket.on("use info", (c: users) => {
       console.log("nija");
@@ -136,7 +131,7 @@ const Chat = () => {
     });
 
     socket.on("action channel", (cha: Channel) => {
-      console.log("Aaaa", cha, chatName);
+      console.log("Aaaa 12", cha, chatName);
       if (cha  && cha.id == chatName.id && cha_mp === "channel")
         changeChatName(cha)
     });
@@ -241,7 +236,9 @@ const Chat = () => {
           <RoundedContainer className="flex overflow-auto overscroll-contain h-3/4  mu-3  mb-9">
             <Messages key="SS" msg={msg} msgMp={msgMp} idme={me.id} />
           </RoundedContainer>
+          {chatName.id != 0 && chatName.name &&
           <InputMessage id={me.id} />
+          }
         </div>
       </div>
     </Page>
@@ -262,10 +259,7 @@ const Chat = () => {
           <span className="text-white">Kelly</span>
           <div className="flex justify-end h-8   mr-5 mb-10">
             <input className="rounded-lg ml-5 " type="text"></input>
-            {true && (
-              <div>
-                {msg
-                  .filter(
+            {true && (mp.create
                     (el) =>
                       el.idReceive === data.idReceive &&
                       users.find((u) => u.myblocked) === undefined

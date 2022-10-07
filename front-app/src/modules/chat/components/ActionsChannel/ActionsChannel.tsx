@@ -32,23 +32,22 @@ const ActionsChannel = () => {
     title: "Ajouter un utilisateur dans le channel",
     isInChannel: true,
     idsToAvoid: idsMember,
+    usersChannel: false, 
     channelId: chatName.id,
   });
   const { showModal: showChangeMemberModal } = useAddFriendModal({
     title: "Ban un membre du channel",
     isInChannel: true,
-    idsToAvoid: users
-      ?.filter(({ id }) => idsMember.some((idNotMember) => idNotMember !== id))
-      .map(({ id }) => id),
+    idsToAvoid: idsMember,
+    usersChannel: true, 
     channelId: chatName.id,
     isChangeOnMember: true,
   });
   const { showModal: showChangeOwnerModal } = useAddFriendModal({
     title: "Changer le owner du channel",
     isInChannel: true,
-    idsToAvoid: users
-      ?.filter(({ id }) => idsMember.some((idNotMember) => idNotMember !== id))
-      .map(({ id }) => id),
+    idsToAvoid: idsMember,
+    usersChannel: true, 
     channelId: chatName.id,
     isChangeOnMember: true,
   });
@@ -61,9 +60,17 @@ const ActionsChannel = () => {
     setPassWord("");
   };
 
-  useEffect(() => {
+  /*useEffect(() => {
     socket.on("channel users", (ids: number[]) => {
       console.log("$$ids babe", ids);
+      setIdsMember(ids);
+    });
+    
+  }, [chatName]);*/
+
+  useEffect(() => {
+    socket.on("channel users", (ids: number[]) => {
+      console.log("$$ids babe dd", ids);
       setIdsMember(ids);
     });
     
@@ -147,6 +154,7 @@ const ActionsChannel = () => {
                   color="active"
                   onClick={() => {
                     socket.emit("list users channel", chatName.id);
+                    console.log()
                     showAddUserModal();
                   }}
                 >
@@ -163,15 +171,6 @@ const ActionsChannel = () => {
                     >
                       <IconEdit />
                     </Button>
-                    {/* <Button
-                      variant="icon"
-                      color="active"
-                      onClick={() => {
-                        setAdminMode(3);
-                      }}
-                    >
-                      <IconAdmin />
-                    </Button> */}
                   </span>
                 )}
                 <Button
@@ -187,18 +186,6 @@ const ActionsChannel = () => {
               </span>
             )}
             <div>
-              {/* {adminMode === 1 && (
-                <div>
-                  {users
-                    ?.filter(
-                      (el) => a.usersChannelId?.find(el.id) === undefined
-                    )
-                    .map((element, i) => (
-                      <FriendItem {...element} />
-                    ))}
-                </div>
-              )} */}
-
               {modifPassword && (
                 <div>
                   <input
@@ -220,17 +207,6 @@ const ActionsChannel = () => {
             </div>
           </span>
         )}
-        {/*
-      <Button variant="icon" color="active">
-        <IconBlock />
-      </Button>
-      <Button variant="icon" color="active">
-        <IconBlock />
-      </Button>
-      <Button variant="icon" color="active">
-        <IconBlock />
-      </Button>
-      */}
       </span>
     </div>
   );
