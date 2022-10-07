@@ -207,13 +207,15 @@ const Chat = () => {
   }, [socket]);
 
   useEffect(() => {
+    if (!socket.connected)
+      socket.connect();
     const cookieValue = document.cookie
       .split("; ")
       .find((row) => row.startsWith("access_token"))
       ?.split("=")[1];
     socket.auth.token = cookieValue;
-    socket.connect();
     console.log(isConnected);
+    if (socket.connected) {
     socket.emit("channelinit");
     socket.emit("listchannels");
     socket.emit("me info");
@@ -221,6 +223,7 @@ const Chat = () => {
     socket.emit("list users");
     socket.emit("list mps");
     socket.emit("list user channel");
+    }
   }, [isConnected]);
 
   const { cha_mp } = useModeChannelMpContext();
