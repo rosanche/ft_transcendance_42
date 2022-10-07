@@ -84,12 +84,12 @@ export const ChannelCreate = () => {
       </div>
       {passj.name != "" && (
         <Button
-          className="m-4 px-2 py-1"
+          className="m-2 px-2 py-1"
           variant="contained"
           color="active"
           onClick={() => creatCha(passj)}
         >
-          Créer channel
+          Nouveau channel
         </Button>
       )}
     </div>

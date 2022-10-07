@@ -80,7 +80,7 @@ export const MenuChat = (a: Props) => {
               setCreate(!create);
             }}
           >
-            Créer une channel
+            Nouveau channel
           </Button>
         ) : (
           <Button
