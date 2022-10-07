@@ -20,7 +20,7 @@ export const MenuChat = (a: Props) => {
   const { cha_mp, changeCha_mp } = useModeChannelMpContext();
   const { chatName, changeChatName } = useChannelContext();
   const [create, setCreate] = useState<boolean>(false);
-  const { showModal: showAddUserModal } = useAddFriendModal({
+  const { showModal } = useAddFriendModal({
     isInChannel: false,
     // idsToAvoid: [],
     // channelId: chatName?.id,
@@ -34,59 +34,68 @@ export const MenuChat = (a: Props) => {
     });
   }, [socket]);
   return (
-    <div>
-      <span className="text-white justify-between font-medium text-2xl text-center leading-[3rem]">
-        {cha_mp}{" "}
+    <div className="flex flex-col">
+      <div className=" flex rounded bg-black flex-row text-center justify-between">
         <Button
-          className="ml-1 text-lg"
-          variant="link"
-          color=""
+          className=" text-lg"
+          variant="contained"
+          disabled={false}
+          color={cha_mp !== "channel" ? "active" : ""}
           onClick={() => {
-            !create && { showAddUserModal };
-            cha_mp === "message private";
-            setCreate(!create);
+            changeCha_mp("channel");
+            changeChatName({
+              id: 0,
+              name: null,
+              private: false,
+              user: false,
+              admin: false,
+              owner: false,
+              password: false,
+            });
+            setCreate(false);
+            console.log(chatName);
           }}
         >
-          {cha_mp === "channel" && "create Channel"}
-          {cha_mp === "message private" && "search user"}
+          Channels
         </Button>
-      </span>
-      <div>
-        <div className=" flex flex-row text-center justify-between">
+        <Button
+          className=" text-lg"
+          variant="contained"
+          color={cha_mp === "channel" ? "active" : ""}
+          disabled={false}
+          onClick={() => {
+            changeCha_mp("message private");
+            setCreate(false);
+          }}
+        >
+          Messages Privés
+        </Button>
+      </div>
+      <div className="text-white flex flex-row justify-between align-middle font-medium text-2xl text-center leading-[3rem]">
+        <span>{cha_mp === "channel" ? "Channels" : "Messages Privés"}</span>
+        {cha_mp === "channel" ? (
           <Button
-            className=" text-lg"
-            variant="link"
-            disabled={false}
+            className="text-center"
+            variant="contained"
             color=""
             onClick={() => {
-              changeCha_mp("channel");
-              changeChatName({
-                id: 0,
-                name: "",
-                private: false,
-                user: false,
-                admin: false,
-                owner: false,
-                password: false,
-              });
-              setCreate(false);
-              console.log(chatName);
+              setCreate(!create);
             }}
           >
-            channel
+            Créer une channel
           </Button>
+        ) : (
           <Button
-            className=" text-lg"
-            variant="link"
-            disabled={false}
-            onClick={() => {
-              changeCha_mp("message private");
-              setCreate(false);
-            }}
+            className="text-center "
+            variant="contained"
+            color=""
+            onClick={showModal}
           >
-            message private
+            Users
           </Button>
-        </div>
+        )}
+      </div>
+      <div>
         {!create && (
           <div>
             {cha_mp == "message private" && (
