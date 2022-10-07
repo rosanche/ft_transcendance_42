@@ -208,12 +208,9 @@ export class GamePong {
     if (deleteBonus.length != 0)
     {
       deleteBonus.sort().reverse();
-      //// console.log(deleteBonus);
-      //// console.log(this.info.bonus);
       deleteBonus.forEach(element => {
         this.info.bonus.splice(element, 1);
       });
-      //// console.log(this.info.bonus);
     }
     
     return (this.info);
@@ -224,11 +221,11 @@ export class GamePong {
     let angle: number;
     if (Px >= 0)
     {
-      angle = Py * (Math.PI / 4);
+      angle = Py * (Math.PI / 5);
     }
     else
     {
-        angle = Math.PI - (Py * (Math.PI / 4));
+        angle = Math.PI - (Py * (Math.PI / 5));
     }
 
     return angle;
@@ -357,7 +354,7 @@ export class GamePong {
   private newBonus() : BonusPong
   {
     const x = (Math.random() * 800) + 400;
-    const y = (Math.random() * 100) + 400;
+    const y = (Math.random() * 600) + 150;
     const type = typeBonus[Math.floor(Math.random() * typeBonus.length)];
     const owner = null;
     const date = Date.now()
@@ -367,13 +364,6 @@ export class GamePong {
   private handleBonus()
   {
     let bonus : BonusPong = this.newBonus();
-    // if (this.isBonusActive(typeBonus[0],1) === false)
-    // {
-      
-    //   bonus.owner = 1;
-    //   bonus.type = typeBonus[0];
-    //   this.info.bonus.push(bonus)
-    // }
     if (this.isBonusActive(typeBonus[0],1) && this.paddleHeight1 != paddleHeight * 2)
     {
       this.paddleHeight1 = paddleHeight * 2

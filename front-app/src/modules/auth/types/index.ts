@@ -5,5 +5,5 @@ export interface AuthenticatedUser {
 
 export interface NewUser {
   isNew: boolean;
-  is2FaEnabled: boolean;
+  is2faEnabled: boolean;
 }

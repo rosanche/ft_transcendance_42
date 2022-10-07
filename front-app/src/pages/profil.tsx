@@ -46,14 +46,14 @@ const Profil = () => {
 
   return (
     <Page title="Profil" isLoading={isProfilLoading || isNewUserLoading}>
-      <div className="grid grid-flow-row grid-flow-col gap-3  space-x-3 m-2">
+      <div className="grid grid-flow-row  gap-3  space-x-3 m-2">
         <div className="flex row-start-1 col-start-1 row-span-2 flex-col items-center  mb-16 space-y-4">
           <div className="flex relative rounded-full border border-gray-100 w-44 h-44 shadow-sm">
             <Image
               layout="fixed"
               width={176}
               height={176}
-              unoptimized={true}
+              loading="eager"
               loader={() => urlImage || "/assets/img/42.png"}
               src={urlImage || "/assets/img/42.png"}
               priority={true}
@@ -64,21 +64,22 @@ const Profil = () => {
             A toi de jouer {user?.pseudo} !
           </span>
           <span className="text-pink text-2xl text-center font-default font-medium italic">
-            Double authentification {doubleFaEnabled ? "activé" : "désactivé"}
+            Double authentification{" "}
+            {newUser?.is2faEnabled === true ? "activé" : "désactivé"}
           </span>
           <Button variant="link" onClick={showModal}>
             Modifier
           </Button>
         </div>
+        <FriendsContainer friends={friends} withAddFriendButton />
         <div className="row-start-3 col-start-1 row-span-1">
           <StatsContainer id={user?.id} />
         </div>
-        <FriendsContainer friends={friends} withAddFriendButton />
+        <AchievementsContainer id={user?.id} />
         <GameHistoryContainer id={user?.id} />
 
-        <LeaderboardContainer id={user?.id} />
         <NotificationsContainer friends={user?.friendReqReceive} />
-        <AchievementsContainer id={user?.id} />
+        <LeaderboardContainer id={user?.id} />
       </div>
     </Page>
   );
