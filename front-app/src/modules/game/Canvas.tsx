@@ -1,8 +1,9 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import socketio from "socket.io-client";
 import { useRouter } from "next/router";
 import { Button } from "modules/common/components/_ui/Button/Button";
 import { useAppContextState } from "modules/common/context/AppContext";
+import { useSocketGameContext } from "modules/common/context/SocketGameContext";
+import socketio from "socket.io-client";
 
 type PongProps = {
   player1: string;
@@ -43,17 +44,17 @@ type PongState = {
   name2: string;
 };
 
-const bonusSize = 25;
-const paddleHeight = 100;
-const paddleWidth = 15;
-const ballSize = 12;
-
 const socket = socketio("http://localhost:3000/game", {
   autoConnect: false,
   auth: {
     token: "",
   },
 });
+
+const bonusSize = 25;
+const paddleHeight = 100;
+const paddleWidth = 15;
+const ballSize = 12;
 
 type CanvasProps = React.DetailedHTMLProps<
   React.CanvasHTMLAttributes<HTMLCanvasElement>,
@@ -62,6 +63,7 @@ type CanvasProps = React.DetailedHTMLProps<
 
 const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
   const { accessToken, doubleFaEnabled } = useAppContextState();
+
   const router = useRouter();
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const queryRef = useRef<string | null>(null);
@@ -141,35 +143,33 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
   }, [direction]);
 
   useEffect(() => {
-    socket.on("connect", () => {
-      setIsConnected(true);
-    });
+    socket.on("connect", () => {});
 
     socket.on("user info", (user: { id: number; pseudo: string }) => {
       setIsCreate(false);
+      setIsConnected(true);
       //ID=(ROOMID)
+      console.log("user info");
+      console.log(socket.connected);
       queryRef.current = router.query.ID;
-      if (queryRef.current) {
-        socket.emit("join", queryRef.current);
+      if (router.query.ID) {
+        socket.emit("join", router.query.ID);
         router.replace("/game", undefined, { shallow: true });
       }
       //SPECTATOR=(ID)
       queryRef.current = router.query.SPECTATOR;
-      if (queryRef.current) {
-        socket.emit("spectate", queryRef.current);
+      if (router.query.SPECTATOR) {
+        socket.emit("spectate", router.query.SPECTATOR);
         router.replace("/game", undefined, { shallow: true });
       }
       //INVITE=(ID DU HOST)
-      queryRef.current = router.query.INVITE;
-      if (queryRef.current) {
-        socket.emit("invite", queryRef.current);
+      if (router.query.INVITE) {
+        socket.emit("invite", router.query.INVITE);
         router.replace("/game", undefined, { shallow: true });
       }
       //CREATE=(ID DU INVITE)
-      queryRef.current = router.query.CREATE;
-      if (queryRef.current) {
+      if (router.query.CREATE) {
         setIsCreate(true);
-        router.replace("/game", undefined, { shallow: true });
       }
     });
 
@@ -229,15 +229,31 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
   useEffect(() => {
     socket.auth.token = accessToken;
     console.log("access_token", accessToken);
-    if (accessToken) {
-      socket.connect();
-      console.log("socket.connected", socket.connected);
-    }
+    socket.connect();
+    console.log("socket.connected", socket.connected);
 
     return () => {
       socket.disconnect();
     };
-  }, [accessToken]);
+  }, []);
+
+  // useEffect(() => {
+  //   const handleRouteChange = (url, { shallow }) => {
+  //     console.log(
+  //       `App is changing to ${url} ${
+  //         shallow ? "with" : "without"
+  //       } shallow routing`
+  //     );
+  //   };
+
+  //   router.events.on("routeChangeStart", handleRouteChange);
+
+  //   // If the component is unmounted, unsubscribe
+  //   // from the event with the `off` method:
+  //   return () => {
+  //     router.events.off("routeChangeStart", handleRouteChange);
+  //   };
+  // }, []);
 
   useEffect(() => {
     document.addEventListener("keydown", keyDownHandler);
@@ -421,14 +437,10 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
             color="active"
             isLoading={isWaiting}
             onClick={() => {
-              socket.auth.token = accessToken;
-              console.log("access_token", accessToken);
-              if (accessToken && !socket.connected) {
-                socket.connect();
-                console.log("socket.connected", socket.connected);
-              }
               if (isCreate) {
-                socket.emit("create private game", queryRef.current, true);
+                console.log("socket.connected isCreate", socket.connected);
+                socket.emit("create private game", router.query.CREATE, true);
+                router.replace("/game", undefined, { shallow: true });
               } else {
                 console.log("queue bonus");
                 console.log(socket.connected);
@@ -443,14 +455,10 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
             color="active"
             isLoading={isWaiting}
             onClick={() => {
-              socket.auth.token = accessToken;
-              console.log("access_token", accessToken);
-              if (accessToken && !socket.connected) {
-                socket.connect();
-                console.log("socket.connected", socket.connected);
-              }
               if (isCreate) {
-                socket.emit("create private game", queryRef.current, false);
+                console.log("socket.connected isCreate", socket.connected);
+                socket.emit("create private game", router.query.CREATE, false);
+                router.replace("/game", undefined, { shallow: true });
               } else {
                 console.log("queue classic");
                 console.log(socket.connected);

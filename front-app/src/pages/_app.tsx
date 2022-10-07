@@ -11,6 +11,7 @@ import { SideBarContextProvider } from "modules/common/context/SideBarContext";
 import { ChannelContextProvider } from "modules/chat/context/ChannelContext";
 import { ModeChannelMpContextProvider } from "modules/chat/context/ModeChannelMpContext";
 import { UsersChannelContextProvider } from "modules/chat/context/UsersChannelContext";
+import { SocketGameContextProvider } from "modules/common/context/SocketGameContext";
 
 require("typeface-dm-sans");
 
@@ -23,7 +24,9 @@ function MyApp({ Component, pageProps }) {
     <div className="flex flex-col min-h-screen bg-black">
       <QueryClientProvider client={queryClient}>
         <AppContextProvider>
+          
           <SocketContextProvider>
+          <SocketGameContextProvider>
           <ChannelContextProvider>
           <ModeChannelMpContextProvider>
           <UsersChannelContextProvider>
@@ -37,8 +40,9 @@ function MyApp({ Component, pageProps }) {
               </SideBarContextProvider>
             </ModalProvider>
             </UsersChannelContextProvider>
-                      </ModeChannelMpContextProvider>
-                    </ChannelContextProvider>
+          </ModeChannelMpContextProvider>
+          </ChannelContextProvider>
+          </SocketGameContextProvider>
           </SocketContextProvider>
         </AppContextProvider>
       </QueryClientProvider>

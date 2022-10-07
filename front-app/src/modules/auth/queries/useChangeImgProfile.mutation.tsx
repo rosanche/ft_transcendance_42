@@ -9,6 +9,7 @@ import { enumProfileQueryKeys } from "modules/profile/queries/keys";
 const postChangeImgProfile = async (file: File) => {
   const apiUrl = `http://localhost:3000/users/me/uploadPP`;
   const formData = new FormData();
+  formData.append("file", file);
   const { data } = await axios.post<File>(apiUrl, formData, {
     withCredentials: true,
     headers: {

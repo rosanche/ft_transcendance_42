@@ -146,10 +146,11 @@ export const FriendItem = ({
       >
         <div className="w-7 h-7 shadow-sm mt-2 relative">
           <Image
-            layout="fill"
-            unoptimized={true}
+            layout="fixed"
+            width={28}
+            height={28}
             loader={() => urlImage}
-            src={urlImage || "/assets/img/42.png"}
+            src={urlImage != null ? urlImage : "/assets/img/42.png"}
             priority={true}
             className="rounded-full"
           />

@@ -14,15 +14,17 @@ export const UserItem = ({
         {!reverse && (
           <div className="w-7 h-7 shadow-sm mt-3 relative">
             <Image
-              layout="fill"
+              layout="fixed"
+              width={28}
+              height={28}
               loader={() =>
                 profileImage &&
                 `http://localhost:3000/users/me/pp/${profileImage}`
               }
               src={
-                (profileImage &&
-                  `http://localhost:3000/users/me/pp/${profileImage}`) ||
-                "/assets/img/42.png"
+                profileImage
+                  ? `http://localhost:3000/users/me/pp/${profileImage}`
+                  : "/assets/img/42.png"
               }
               priority={true}
               className="rounded-full"
@@ -37,7 +39,9 @@ export const UserItem = ({
         {reverse && (
           <div className="w-7 h-7 shadow-sm mt-3 relative">
             <Image
-              layout="fill"
+              layout="fixed"
+              width={28}
+              height={28}
               loader={() =>
                 profileImage &&
                 `http://localhost:3000/users/me/pp/${profileImage}`
