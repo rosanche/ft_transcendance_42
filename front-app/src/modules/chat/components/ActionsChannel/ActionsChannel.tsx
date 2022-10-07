@@ -51,7 +51,6 @@ const ActionsChannel = () => {
     channelId: chatName.id,
     isChangeOnMember: true,
   });
-  socket.emit();
   const changePassword = () => {
     socket.emit("modif channel", {
       idChannel: chatName.id,

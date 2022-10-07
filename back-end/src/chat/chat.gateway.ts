@@ -572,7 +572,7 @@ export class ChatGateway implements OnGatewayInit {
     };
     
         // chef channel
-    @SubscribeMessage('change owner')
+    @SubscribeMessage('NewOwnerUserChannel')
     async newOwner(client: Socket, src: {UserId: number, channelId: number }) {
         const user = await this.authService.getUserFromSocket(client); 
         const user2 = await this.Prisma.user.findUnique({
@@ -1139,7 +1139,10 @@ export class ChatGateway implements OnGatewayInit {
             });
             this.wss.to(this.iddd[user.id]).emit('chatToClientMp', mp);
             if (user.id !=  user2.id)
-            this.wss.to(this.iddd[user2.id]).emit('chatToClientMp', mp);
+            this.wss.to(this.iddd[user2.id]).emit('chatToClientMp', {idSend: mp.idSend,
+                idReceive: mp.idSend,
+                texte: mp.texte,
+            });
             return;
         }
         const cha = await this.Prisma.mp.create({
@@ -1166,7 +1169,10 @@ export class ChatGateway implements OnGatewayInit {
         });
             this.wss.to(this.iddd[user.id]).emit('chatToClientMp', mp);
             if (user.id !=  user2.id)
-            this.wss.to(this.iddd[user2.id]).emit('chatToClientMp', mp);
+            this.wss.to(this.iddd[user2.id]).emit('chatToClientMp', {idSend: mp.idSend,
+                idReceive: mp.idSend,
+                texte: mp.texte,
+            });
             return;
     }
 

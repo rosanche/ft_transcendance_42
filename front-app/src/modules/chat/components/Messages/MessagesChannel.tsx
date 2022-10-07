@@ -18,7 +18,10 @@ export const MessagesChannel = (a: Props) => {
 
   useEffect(() => {
     console.log(socket.connected);
-    socket.emit("me blocks");
+    if (socket.connected)
+    {
+      socket.emit("me blocks");
+    }
     socket.on("use info block", (c: number[]) => {
       SetBlocked(c);
       console.log("toi et vous", c);

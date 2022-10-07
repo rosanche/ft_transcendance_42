@@ -25,8 +25,8 @@ export const NotificationsContainer = ({ friends }: Props) => {
       console.log("$$Status invitations", invitations);
       console.log("$$Status gameInvitationsIds ", gameInvitationsIds);
     });
-
-    socket.emit("Get Game Invitations");
+    
+    
   }, []);
 
   useEffect(() => {
@@ -36,6 +36,8 @@ export const NotificationsContainer = ({ friends }: Props) => {
       gameInvitationsIds,
       users?.map((user) => gameInvitationsIds.some((id) => id === user.id))
     );
+    if (socket.connected)
+      socket.emit("Get Game Invitations");
   }, [isLoading, status]);
 
   return (

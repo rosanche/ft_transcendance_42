@@ -4,6 +4,7 @@ import { RoundedContainer } from "modules/common/components/_ui/RoundedContainer
 import React, { useState, useRef, useEffect } from "react";
 import { users, form, pass, ban, channel } from "modules/chat/types";
 import { useSocketContext } from "modules/common/context/SocketContext";
+import IconLock from "modules/common/components/_icons/lock";
 
 interface Props {
   info: channel;
@@ -32,22 +33,7 @@ export const ChannelCreate = () => {
 
   return (
     <div className="text-white">
-      password:{" "}
-      <input
-        className=" px-2 py-1 text-black"
-        type="password"
-        value={passj.password}
-        onChange={(e) => {
-          setPassj({
-            name: passj.name,
-            password: e.target.value,
-            private: passj.private,
-          });
-        }}
-        placeholder="Enter password"
-        name="chat"
-      />
-      name:{" "}
+       name:{" "}
       <input
         className=" px-2 py-1 text-black"
         type="text"
@@ -62,38 +48,40 @@ export const ChannelCreate = () => {
         placeholder="name channel"
         name="chat"
       />
+      {
+      !passj.private &&
+      <>password:{" "}
+      <input
+        className=" px-2 py-1 text-black"
+        type="password"
+        value={passj.password}
+        onChange={(e) => {
+          setPassj({
+            name: passj.name,
+            password: e.target.value,
+            private: passj.private,
+          });
+        }}
+        placeholder="Enter password"
+        name="chat"
+      />
+      </>
+      }
       <div>
-        <input
-          type="radio"
-          id="private"
-          name="type"
-          value={passj.texte}
-          onChange={() => {
-            console.log("mute");
-            setPassj({
-              name: passj.name,
-              password: passj.password,
-              private: true,
-            });
-          }}
-        />
-        <label>private</label>
-
-        <input
-          type="radio"
-          id="public"
-          name="type"
-          value={passj.texte}
-          onChange={() => {
-            setPassj({
-              name: passj.name,
-              password: passj.password,
-              private: false,
-            });
-          }}
-          checked
-        />
-        <label>public</label>
+      <Button
+          className="ml-3 px-2 py-1"
+          variant="icon"
+          color="active"
+          onClick={() => { setPassj({
+            name: passj.name,
+            password: passj.password,
+            private: !passj.private,
+          });
+        }}
+        >
+          <IconLock />
+        </Button>
+        {passj.private ? (<>private</>) : <>public</>}
       </div>
       {passj.name != "" && (
         <Button

@@ -116,6 +116,11 @@ export const FriendItem = ({
     socket.emit("newAdminUserChannel", { UserbanId: id, channelId: channelId });
   };
 
+  const NewOwnerUserChannel = () => {
+    console.log("AAAAAA AAAAA", id, channelId);
+    socket.emit("NewOwnerUserChannel",  {UserId: id, channelId: channelId });
+  };
+
   const blockUser = async () => {
     console.log("$$user blocked", id);
     socket.emit("Get status");
@@ -271,10 +276,13 @@ export const FriendItem = ({
               <Button variant="icon" onClick={MuteUserChannel}>
                 <IconMute />
               </Button>
-              {chatName?.owner && (
+              {chatName?.owner && (<>
                 <Button variant="icon" onClick={NewAdminUserChannel}>
                   <IconAdmin />
                 </Button>
+                <Button variant="icon" onClick={NewOwnerUserChannel}>
+                new owner
+              </Button></>
               )}
             </>
           )}

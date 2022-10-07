@@ -20,7 +20,10 @@ const Messages = (a: Props) => {
   const [blocked, SetBlocked] = useState<number[]>([]);
 
   useEffect(() => {
-    socket.emit("me blocks");
+    if (!socket.connected)
+        socket.connect();
+    if (socket.connected)
+      socket.emit("me blocks");
     socket.on("use info block", (c: number[]) => {
       SetBlocked(c);
       console.log("toi et moi", c);
