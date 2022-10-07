@@ -111,9 +111,9 @@ export const useUserInfosModal = () => {
             width={96}
             height={96}
             loading="eager"
-            loader={() => urlImage || "/assets/img/42.png"}
+            loader={() => (urlImage || "/assets/img/42.png")}
             src={urlImage || "/assets/img/42.png"}
-            priority={false}
+            priority={true}
             className="rounded-full border border-gray-100 shadow-sm"
           />
         </div>
@@ -175,6 +175,7 @@ export const useUserInfosModal = () => {
               height={120}
               src={QrCode}
               className="rounded-3x"
+              priority
             />
             <div className="space-y-4">
               <TextField

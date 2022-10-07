@@ -27,7 +27,7 @@ export const UserItem = ({
                   ? `http://localhost:3000/users/me/pp/${profileImage}`
                   : "/assets/img/42.png"
               }
-              priority={false}
+              priority
               className="rounded-full"
             />
           </div>
@@ -44,7 +44,7 @@ export const UserItem = ({
               width={28}
               height={28}
               loading="eager"
-              priority={false}
+              priority
               loader={() =>
                 profileImage &&
                 `http://localhost:3000/users/me/pp/${profileImage}`

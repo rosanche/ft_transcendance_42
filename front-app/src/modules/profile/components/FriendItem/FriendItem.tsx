@@ -156,7 +156,7 @@ export const FriendItem = ({
             loading="eager"
             loader={() => urlImage}
             src={urlImage != null ? urlImage : "/assets/img/42.png"}
-            priority={false}
+            priority
             className="rounded-full"
           />
         </div>

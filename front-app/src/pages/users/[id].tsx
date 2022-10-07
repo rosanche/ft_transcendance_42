@@ -43,7 +43,7 @@ const Profil = () => {
                   `http://localhost:3000/users/me/pp/${user?.profileImage}`) ||
                 "/assets/img/42.png"
               }
-              priority={true}
+              priority
               className="rounded-full border border-gray-100 shadow-sm"
             />
           </div>

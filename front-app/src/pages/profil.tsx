@@ -23,8 +23,6 @@ const Profil = () => {
   });
   const { data: newUser, isLoading: isNewUserLoading } = useNewUserQuery();
 
-  const { doubleFaEnabled } = useAppContextState();
-
   const { showModal } = useUserInfosModal();
 
   useEffect(() => {
@@ -53,7 +51,7 @@ const Profil = () => {
               width={176}
               height={176}
               loading="eager"
-              loader={() => urlImage || "/assets/img/42.png"}
+              loader={() => (urlImage || "/assets/img/42.png")}
               src={urlImage || "/assets/img/42.png"}
               priority={true}
               className="rounded-full border border-gray-100 shadow-sm"

@@ -14,14 +14,15 @@ const Connexion = () => {
 
   return (
     <Page>
+      <div>
       <Image
         width={392}
         height={175}
         loading="eager"
         layout="responsive"
-        priority={false}
+        priority
         src="/assets/img/ping-pong.png"
-      />
+      /></div>
       <RoundedContainer className="px-14 py-20 mt-16">
         {router.query["2faEnabled"] === "true" ? (
           <OtpAuthentification />
