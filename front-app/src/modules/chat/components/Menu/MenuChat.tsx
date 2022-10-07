@@ -99,10 +99,10 @@ export const MenuChat = (a: Props) => {
         {!create && (
           <div>
             {cha_mp == "message private" && (
-              <MenuMessagesMp key="DDD" users={a.users} msgMp={a.msgMp} />
+              <MenuMessagesMp users={a.users} msgMp={a.msgMp} />
             )}
             {cha_mp == "channel" && (
-              <MenuMessagesChannel key="SSS" channels={a.channel} />
+              <MenuMessagesChannel  channels={a.channel} />
             )}
           </div>
         )}

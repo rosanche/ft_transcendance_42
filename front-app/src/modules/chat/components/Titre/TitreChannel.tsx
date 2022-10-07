@@ -41,23 +41,23 @@ export const TitreChannel = () => {
   const { chatName } = useChannelContext();
   const { cha_mp } = useModeChannelMpContext();
   return (
-    <div className="text-white justify-center align-middle flex flex-col font-medium text-2xl text-center leading-[3rem]">
-      <span>
+    <div className="text-white justify-center align-middle flex flex-col font-medium text-2xl text-center ">
+      {
+        chatName.name && chatName.id  &&
+      <div className="flex flex-row justify-center align-middle ">
         {chatName?.name}
+        {chatName.private && <IconLock />}
         {chatName.admin && chatName.owner && (
           <span className="ml-1">(owner)</span>
         )}
-        {chatName.admin && !chatName.owner && <span>(admin)</span>}{chatName.private && <Button
-                disabled={true}
-                variant="link"
-                onClick={() => {
-                 
-                }}
-              ><IconLock /> </Button> }
+        {chatName.admin && !chatName.owner && <span className="ml-1">(admin)</span>}
+        {!chatName.admin && !chatName.owner && chatName.user &&<span className="ml-1">(user)</span> }
+        {!chatName.admin && !chatName.owner && !chatName.user &&<span className="ml-1">(no join)</span> } 
             {
               cha_mp === "channel" &&
               <ActionsChannel />
-            }</span>
+            }</div>
+          } 
     </div>
   );
 };
