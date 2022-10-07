@@ -50,7 +50,9 @@ const Profil = () => {
         <div className="flex row-start-1 col-start-1 row-span-2 flex-col items-center  mb-16 space-y-4">
           <div className="flex relative rounded-full border border-gray-100 w-44 h-44 shadow-sm">
             <Image
-              layout="fill"
+              layout="fixed"
+              width={176}
+              height={176}
               unoptimized={true}
               loader={() => urlImage || "/assets/img/42.png"}
               src={urlImage || "/assets/img/42.png"}

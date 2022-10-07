@@ -7,8 +7,9 @@ import { TextField } from "modules/common/components/_ui/TextField/TextField";
 import { useActivate2Fa } from "modules/profile/mutation/useActivate2Fa.mutation";
 import { useGenerate2Fa } from "modules/profile/mutation/useGenerate2Fa.mutation";
 import { useMyProfileQuery } from "modules/profile/queries/useMyProfileQuery";
+import React, { createRef, useCallback } from "react";
 import Image from "next/image";
-import { useDropzone } from "react-dropzone";
+import Dropzone, { useDropzone } from "react-dropzone";
 
 import { useController, useForm } from "react-hook-form";
 
@@ -31,6 +32,30 @@ export const useUserInfosModal = () => {
         file: "",
       },
     });
+
+  const dropzoneRef = createRef();
+  const openDialog = () => {
+    // Note that the ref is set async,
+    // so it might be null at some point
+    if (dropzoneRef.current) {
+      dropzoneRef.current.open();
+    }
+  };
+
+  const onDropAccepted = useCallback((file: File[]) => {
+    console.log("$$file", file);
+    file && uploadImgProfile(file?.[0]);
+  }, []);
+
+  const onDropRejected = useCallback((fileRejections) => {
+    changeFile(fileRejections?.[0]?.file);
+  }, []);
+
+  const onDrop = useCallback((acceptedFiles) => {
+    console.log(acceptedFiles);
+  }, []);
+
+  // Disable click and keydown behavior on the <Dropzone>
 
   const { errors } = formState;
 
@@ -58,20 +83,12 @@ export const useUserInfosModal = () => {
     file && onChange(file);
   };
 
-  const { open: openFileDialogHandler } = useDropzone({
+  const { open } = useDropzone({
     multiple: false,
-    noClick: true,
-    // accept: {
-    //   "image/png": [".png"],
-    //   "image/jpeg": [".jpg", ".jpeg"],
-    // },
-    onDropAccepted: (file: File[]) => {
-      console.log("$$file", file);
-      file && uploadImgProfile(file?.[0]);
-    },
-    onDropRejected: (fileRejections) => {
-      changeFile(fileRejections?.[0]?.file);
-    },
+    noClick: false,
+    noKeyboard: true,
+    onDropAccepted,
+    onDropRejected,
   });
 
   const { mutate: changePseudo, isLoading: isChangingPseudo } =
@@ -86,7 +103,9 @@ export const useUserInfosModal = () => {
       <div>
         <div className="flex relative rounded-full border border-gray-100 w-24 h-24 shadow-sm mb-3">
           <Image
-            layout="fill"
+            layout="fixed"
+            width={96}
+            height={96}
             unoptimized={true}
             loader={() => urlImage || "/assets/img/42.png"}
             src={urlImage || "/assets/img/42.png"}
@@ -94,14 +113,32 @@ export const useUserInfosModal = () => {
             className="rounded-full border border-gray-100 shadow-sm"
           />
         </div>
-        <Button
-          variant="link"
-          onClick={openFileDialogHandler}
-          isLoading={isUploadingImg}
-        >
-          Modifier
-        </Button>
       </div>
+      <Dropzone
+        ref={dropzoneRef}
+        noClick={false}
+        noKeyboard={true}
+        onDropAccepted={onDropAccepted}
+        onDropRejected={onDropRejected}
+        multiple={false}
+      >
+        {({ getRootProps, getInputProps, acceptedFiles }) => {
+          return (
+            <div className="container">
+              <div {...getRootProps({ className: "dropzone" })}>
+                <input {...getInputProps()} />
+                <Button
+                  variant="link"
+                  onClick={open}
+                  isLoading={isUploadingImg}
+                >
+                  Modifier
+                </Button>
+              </div>
+            </div>
+          );
+        }}
+      </Dropzone>
       <form
         onSubmit={handleSubmit(({ username }) => {
           changePseudo(username);
@@ -169,7 +206,10 @@ export const useUserInfosModal = () => {
             <Button
               variant="contained"
               color="active"
-              onClick={() => generateQrCode()}
+              onClick={() => {
+                console.log("generateQrCode");
+                generateQrCode();
+              }}
               isLoading={isGeneratingQrCode}
             >
               Activer

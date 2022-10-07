@@ -4,6 +4,7 @@ import { PassportStrategy } from "@nestjs/passport";
 import { ExtractJwt, Strategy } from "passport-jwt";
 import { PrismaService } from "../../prisma/prisma.service";
 import { TokenPayload } from "../entities/payload.entity";
+import { UnauthorizedException } from "@nestjs/common";
 import { Request } from "express";
 
 @Injectable()
@@ -34,7 +35,10 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt')
                 id: payload.sub
             }
         });
-
+        if(!user)
+        {
+            throw new UnauthorizedException('User don´t exist');
+        }
 
         delete user.hash;
         return user;

@@ -39,7 +39,7 @@ export class Jwt2FAStrategy extends PassportStrategy(Strategy, 'jwt-2fa')
 
         if (!user)
         {
-            throw new UnauthorizedException('Wrong authentication code');
+            throw new UnauthorizedException('User don´t exist');
         }
         //console.log("user, authenticator validate", user);
         delete user.hash;
