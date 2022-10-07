@@ -39,7 +39,7 @@ const Profil = () => {
               height={176}
               src={
                 (user?.profileImage &&
-                  `http://localhost:3000/${user?.profileImage}`) ||
+                  `http://localhost:3000/users/me/pp/${user?.profileImage}`) ||
                 "/assets/img/42.png"
               }
               priority={true}
