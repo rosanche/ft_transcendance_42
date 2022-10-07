@@ -572,7 +572,7 @@ export class ChatGateway implements OnGatewayInit {
     };
     
         // chef channel
-    @SubscribeMessage('change owner')
+    @SubscribeMessage('NewOwnerUserChannel')
     async newOwner(client: Socket, src: {UserId: number, channelId: number }) {
         const user = await this.authService.getUserFromSocket(client); 
         const user2 = await this.Prisma.user.findUnique({
