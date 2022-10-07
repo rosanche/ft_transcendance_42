@@ -87,13 +87,13 @@ export const useUserInfosModal = () => {
     file && onChange(file);
   };
 
-  const { open } = useDropzone({
-    multiple: false,
-    noClick: false,
-    noKeyboard: true,
-    onDropAccepted,
-    onDropRejected,
-  });
+  // const { open } = useDropzone({
+  //   multiple: false,
+  //   noClick: true,
+  //   noKeyboard: true,
+  //   onDropAccepted,
+  //   onDropRejected,
+  // });
 
   const { mutate: changePseudo, isLoading: isChangingPseudo } =
     useChangePseudoMutation();
@@ -120,13 +120,13 @@ export const useUserInfosModal = () => {
       </div>
       <Dropzone
         ref={dropzoneRef}
-        noClick={false}
+        noClick={true}
         noKeyboard={true}
         onDropAccepted={onDropAccepted}
         onDropRejected={onDropRejected}
         multiple={false}
       >
-        {({ getRootProps, getInputProps, acceptedFiles }) => {
+        {({ getRootProps, getInputProps, open, acceptedFiles }) => {
           return (
             <div className="container">
               <div {...getRootProps({ className: "dropzone" })}>

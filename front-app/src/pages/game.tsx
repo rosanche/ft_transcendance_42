@@ -1,7 +1,7 @@
 import { Page } from "modules/common/components/_ui/Page/Page";
 import { RoundedContainer } from "modules/common/components/_ui/RoundedContainer/RoundedContainer";
 import { useSocketContext } from "modules/common/context/SocketContext";
-import { useSocketGameContext } from "modules/common/context/SocketGameContext";
+
 import Canvas from "modules/game/Canvas";
 
 import React, { useEffect } from "react";
