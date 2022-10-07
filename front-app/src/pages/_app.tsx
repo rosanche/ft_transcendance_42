@@ -24,24 +24,25 @@ function MyApp({ Component, pageProps }) {
     <div className="flex flex-col min-h-screen bg-black">
       <QueryClientProvider client={queryClient}>
         <AppContextProvider>
+          
           <SocketContextProvider>
-            <SocketGameContextProvider>
-              <ModalProvider rootComponent={TransitionGroup}>
-                <SideBarContextProvider>
-                  <AuthenticatedGuard>
-                    <SideBar>
-                      <ChannelContextProvider>
-                        <ModeChannelMpContextProvider>
-                          <UsersChannelContextProvider>
-                            <Component {...pageProps} />
-                          </UsersChannelContextProvider>
-                        </ModeChannelMpContextProvider>
-                      </ChannelContextProvider>
-                    </SideBar>
-                  </AuthenticatedGuard>
-                </SideBarContextProvider>
-              </ModalProvider>
-            </SocketGameContextProvider>
+          <SocketGameContextProvider>
+          <ChannelContextProvider>
+          <ModeChannelMpContextProvider>
+          <UsersChannelContextProvider>
+            <ModalProvider rootComponent={TransitionGroup}>
+              <SideBarContextProvider>
+                <AuthenticatedGuard>
+                  <SideBar>
+                    <Component {...pageProps} />
+                  </SideBar>
+                </AuthenticatedGuard>
+              </SideBarContextProvider>
+            </ModalProvider>
+            </UsersChannelContextProvider>
+          </ModeChannelMpContextProvider>
+          </ChannelContextProvider>
+          </SocketGameContextProvider>
           </SocketContextProvider>
         </AppContextProvider>
       </QueryClientProvider>

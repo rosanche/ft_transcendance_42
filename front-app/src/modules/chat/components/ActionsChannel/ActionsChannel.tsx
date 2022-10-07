@@ -12,12 +12,13 @@ import IconEdit from "modules/common/components/_icons/edit";
 import IconEnter from "modules/common/components/_icons/enter";
 import IconQuit from "modules/common/components/_icons/quit";
 import { useUsersQuery } from "modules/profile/queries/useUsersQuery";
+import { Channel } from "modules/chat/types";
 
 interface Props {
   usersChannelId: number[];
 }
 
-const ActionsChannel = (a: Props) => {
+const ActionsChannel = () => {
   const { chatName, changeChatName } = useChannelContext();
   const socket = useSocketContext();
   const { cha_mp } = useModeChannelMpContext();
@@ -65,6 +66,7 @@ const ActionsChannel = (a: Props) => {
       console.log("$$ids babe", ids);
       setIdsMember(ids);
     });
+    
   }, [socket]);
 
   const join = async () => {
@@ -103,8 +105,8 @@ const ActionsChannel = (a: Props) => {
                     socket.connect();
                   }
                   socket.emit("list users channel", chatName.id);
-                  showChangeOwnerModal();
-                  // quit();
+                  idsMember.length != 1 && chatName.owner ? (showChangeOwnerModal()):
+                  (quit())
                 }}
               >
                 <IconQuit />

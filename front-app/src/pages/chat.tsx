@@ -134,6 +134,13 @@ const Chat = () => {
       console.log("oui 1000");
       setMsg(mm);
     });
+
+    socket.on("action channel", (cha: Channel) => {
+      console.log("Aaaa", cha, chatName);
+      if (cha  && cha.id == chatName.id && cha_mp === "channel")
+        changeChatName(cha)
+    });
+
     socket.on("info mp", (mm: form[]) => {
       console.log(mm);
       console.log("oui 1000");

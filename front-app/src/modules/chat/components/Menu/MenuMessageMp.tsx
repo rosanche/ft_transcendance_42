@@ -28,7 +28,15 @@ export const MenuMessagesMp = (a: Props) => {
         variant="link"
         color=""
         onClick={() => {
-          changeChatName(el);
+          changeChatName({
+            id: el.id,
+            name: el.pseudo,
+            private: false,
+            user: false,
+            admin: false,
+            owner: false,
+            password: false,
+          });
         }}
       >
         <UserMp key={i} user={el} />

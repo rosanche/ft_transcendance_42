@@ -50,7 +50,7 @@ export const FriendItem = ({
   isChangeOnMember?: boolean;
 }) => {
   const socket = useSocketContext();
-  const chatName = useChannelContext();
+  const {chatName, changeChatName} = useChannelContext();
   const queryClient = useQueryClient();
   const { data: myProfil } = useMyProfileQuery();
   const [status, setStatus] = useState<UserStatus>("offline");
@@ -65,6 +65,7 @@ export const FriendItem = ({
   };
 
   console.log("$$Status component", status, socket.connected);
+
 
   useEffect(() => {
     if (!socket.connected) {

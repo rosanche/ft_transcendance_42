@@ -35,7 +35,6 @@ const Messages = (a: Props) => {
       {cha_mp === "message private" &&
         blocked.find((el) => el === chatName.id) === undefined && (
           <MessagesMp
-            key="mp"
             msgMp={a.msgMp}
             idme={a.idme}
             idCourant={chatName.id}
