@@ -12,14 +12,16 @@ interface Props {
 export const ChannelItem = (a: Props) => {
   return (
     <RoundedContainer>
-      <div className="flex flex-row text-white">{a.info.name} {a.info.admin && a.info.owner && (
-          <span className="ml-1">(owner)</span>
-        )}
+      <div className="flex flex-row text-white">
+        {a.info.name}{" "}
+        {a.info.admin && a.info.owner && <span className="ml-1">(owner)</span>}
         {a.info.admin && !a.info.owner && <span>(admin)</span>}
-        {!a.info.admin && !a.info.owner && a.info.user &&<span>(user)</span> }
-        {!a.info.admin && !a.info.owner && !a.info.user &&<span>(no join)</span> } 
+        {!a.info.admin && !a.info.owner && a.info.user && <span>(user)</span>}
+        {!a.info.admin && !a.info.owner && !a.info.user && (
+          <span>(no join)</span>
+        )}
         {a.info.private ? <IconLock /> : <></>}
-           </div>
+      </div>
     </RoundedContainer>
   );
 };
