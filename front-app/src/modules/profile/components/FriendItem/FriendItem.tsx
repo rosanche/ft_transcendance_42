@@ -50,7 +50,7 @@ export const FriendItem = ({
   isChangeOnMember?: boolean;
 }) => {
   const socket = useSocketContext();
-  const {chatName, changeChatName} = useChannelContext();
+  const { chatName, changeChatName } = useChannelContext();
   const queryClient = useQueryClient();
   const { data: myProfil } = useMyProfileQuery();
   const [status, setStatus] = useState<UserStatus>("offline");
@@ -65,7 +65,6 @@ export const FriendItem = ({
   };
 
   console.log("$$Status component", status, socket.connected);
-
 
   useEffect(() => {
     if (!socket.connected) {
@@ -151,11 +150,13 @@ export const FriendItem = ({
       >
         <div className="w-7 h-7 shadow-sm mt-2 relative">
           <Image
-            layout="fill"
-            unoptimized={true}
+            layout="fixed"
+            width={28}
+            height={28}
+            loading="eager"
             loader={() => urlImage}
-            src={urlImage || "/assets/img/42.png"}
-            priority={true}
+            src={urlImage != null ? urlImage : "/assets/img/42.png"}
+            priority={false}
             className="rounded-full"
           />
         </div>

@@ -10,8 +10,9 @@ import { useMyProfileQuery } from "modules/profile/queries/useMyProfileQuery";
 import React, { createRef, useCallback } from "react";
 import Image from "next/image";
 import Dropzone, { useDropzone } from "react-dropzone";
-
+import { useRouter } from "next/router";
 import { useController, useForm } from "react-hook-form";
+import { useDesactivate2Fa } from "modules/profile/mutation/useDesactivate2Fa.mutation";
 
 interface FormData {
   username: string;
@@ -22,7 +23,7 @@ interface FormData {
 export const useUserInfosModal = () => {
   const { data: user } = useMyProfileQuery();
   const { data: newUser } = useNewUserQuery();
-
+  const router = useRouter();
   const { handleSubmit, formState, register, control, setValue } =
     useForm<FormData>({
       mode: "onTouched",
@@ -71,6 +72,9 @@ export const useUserInfosModal = () => {
   const { mutateAsync: activate2Fa, isLoading: isActivating2Fa } =
     useActivate2Fa();
 
+  const { mutateAsync: desactivate2Fa, isLoading: isDesactivating2Fa } =
+    useDesactivate2Fa();
+
   const {
     field: { onChange },
     fieldState: { error },
@@ -106,10 +110,10 @@ export const useUserInfosModal = () => {
             layout="fixed"
             width={96}
             height={96}
-            unoptimized={true}
+            loading="eager"
             loader={() => urlImage || "/assets/img/42.png"}
             src={urlImage || "/assets/img/42.png"}
-            priority={true}
+            priority={false}
             className="rounded-full border border-gray-100 shadow-sm"
           />
         </div>
@@ -159,6 +163,7 @@ export const useUserInfosModal = () => {
         <form
           onSubmit={handleSubmit(({ otp }) => {
             activate2Fa(otp);
+            router.reload();
           })}
         >
           <div className="flex flex-1  space-y-4 flex-col items-center">
@@ -191,14 +196,17 @@ export const useUserInfosModal = () => {
         <div className="flex flex-1 space-y-4 flex-col">
           <span className="text-pink text-2xl font-default font-medium italic">
             Double authentification{" "}
-            {newUser?.is2FaEnabled ? "activé" : "désactivé"}
+            {newUser?.is2faEnabled ? "activé" : "désactivé"}
           </span>
-          {newUser?.is2FaEnabled ? (
+          {newUser?.is2faEnabled ? (
             <Button
               variant="contained"
               color="active"
-              onClick={() => generateQrCode()}
-              isLoading={isGeneratingQrCode}
+              onClick={() => {
+                desactivate2Fa();
+                router.reload();
+              }}
+              isLoading={isDesactivating2Fa}
             >
               Désactiver
             </Button>

@@ -2,7 +2,6 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/router";
 import { Button } from "modules/common/components/_ui/Button/Button";
 import { useAppContextState } from "modules/common/context/AppContext";
-import { useSocketGameContext } from "modules/common/context/SocketGameContext";
 import socketio from "socket.io-client";
 
 type PongProps = {
@@ -76,6 +75,7 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
   let windowWidth: number = props.width;
   let windowHeight: number = props.height;
   const [direction, setDirection] = useState<number>(0);
+  const [id, setId] = useState<string>("");
   const [info, setInfo] = useState<PongState>({
     paddle1Y: (Number(props.height) - paddleHeight) / 2,
     paddle2Y: (Number(props.height) - paddleHeight) / 2,
@@ -95,6 +95,7 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
 
   const keyDownHandler = (event: KeyboardEvent) => {
     event.preventDefault();
+    let newDirection: number = 0;
     if (event.key == "ArrowUp") {
       keyRef.current.up = true;
     } else if (event.key == "ArrowDown") {
@@ -102,8 +103,6 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
     } else {
       return;
     }
-
-    let newDirection: number = 0;
 
     if (keyRef.current.up && !keyRef.current.down) {
       newDirection = -1;
@@ -119,6 +118,7 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
 
   const keyUpHandler = (event: KeyboardEvent) => {
     event.preventDefault();
+    let newDirection: number = 0;
     if (event.key == "ArrowUp") {
       keyRef.current.up = false;
     } else if (event.key == "ArrowDown") {
@@ -126,7 +126,6 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
     } else {
       return;
     }
-    let newDirection: number = 0;
 
     if (keyRef.current.up && !keyRef.current.down) {
       newDirection = -1;
@@ -191,7 +190,8 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
       setIsEndGame(false);
       setIsGame(false);
     });
-    socket.on("game start", () => {
+    socket.on("game start", (id: number) => {
+      setId(id);
       setIsGame(true);
       setIsEndGame(false);
       setIsWaiting(false);
@@ -211,7 +211,7 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
 
     socket.emit("move", { move: 0 });
 
-    //   socket.on('user', (user : {name: string, id: }))
+    // socket.on('user', (user : {name: string, id: }))
 
     return () => {
       socket.off("connect");
@@ -236,24 +236,6 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
       socket.disconnect();
     };
   }, []);
-
-  // useEffect(() => {
-  //   const handleRouteChange = (url, { shallow }) => {
-  //     console.log(
-  //       `App is changing to ${url} ${
-  //         shallow ? "with" : "without"
-  //       } shallow routing`
-  //     );
-  //   };
-
-  //   router.events.on("routeChangeStart", handleRouteChange);
-
-  //   // If the component is unmounted, unsubscribe
-  //   // from the event with the `off` method:
-  //   return () => {
-  //     router.events.off("routeChangeStart", handleRouteChange);
-  //   };
-  // }, []);
 
   useEffect(() => {
     document.addEventListener("keydown", keyDownHandler);
@@ -291,6 +273,22 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
         }
       }
     }
+
+    if (id === "1") {
+      if (info.paddle1Y == 0) {
+        keyRef.current.up = false;
+      } else if (info.paddle1Y == 900 - H1) {
+        keyRef.current.down = false;
+      }
+    } else if (id === "2") {
+      if (info.paddle2Y == 0) {
+        keyRef.current.up = false;
+        keyRef.current.down = false;
+      } else if (info.paddle2Y == 900 - H2) {
+        keyRef.current.down = false;
+      }
+    }
+
     const drawPong = (
       ctx: CanvasRenderingContext2D,
       props: CanvasProps,
@@ -427,7 +425,7 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
     );
   } else {
     return (
-      <>
+      <div className="flex flex-col">
         <span className="text-white text-4xl font-default font-bold italic mb-16">
           {!isWaiting ? "Lancez une partie!" : "Un adversaire arrive!"}
         </span>
@@ -439,8 +437,9 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
             onClick={() => {
               if (isCreate) {
                 console.log("socket.connected isCreate", socket.connected);
-                socket.emit("create private game", router.query.CREATE, true);
+                socket.emit("create private game", router.query.CREATE, "true");
                 router.replace("/game", undefined, { shallow: true });
+                setIsCreate(false);
               } else {
                 console.log("queue bonus");
                 console.log(socket.connected);
@@ -457,8 +456,13 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
             onClick={() => {
               if (isCreate) {
                 console.log("socket.connected isCreate", socket.connected);
-                socket.emit("create private game", router.query.CREATE, false);
+                socket.emit(
+                  "create private game",
+                  router.query.CREATE,
+                  "false"
+                );
                 router.replace("/game", undefined, { shallow: true });
+                setIsCreate(false);
               } else {
                 console.log("queue classic");
                 console.log(socket.connected);
@@ -469,7 +473,21 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
             Classique
           </Button>
         </div>
-      </>
+        {isWaiting ? (
+          <Button
+            variant="contained"
+            color="active"
+            onClick={() => {
+              socket.emit("cancel queue");
+              setIsWaiting(false);
+            }}
+          >
+            Cancel
+          </Button>
+        ) : (
+          <></>
+        )}
+      </div>
     );
   }
 };

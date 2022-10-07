@@ -127,6 +127,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
             if (game.timeOut1 != null)
             {
               clearTimeout(game.timeOut1);
+              client.emit("game start", "1");
               game.timeOut1 = null;
             }
           }
@@ -136,9 +137,9 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
             {
               clearTimeout(game.timeOut2);
               game.timeOut2 = null;
+              client.emit("game start", "2");
             }
           }
-          client.emit("game start");
           client.join(game.roomID);
         }
       }
@@ -225,6 +226,19 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     }
   };
 
+  @SubscribeMessage('cancel queue')
+  handleCancelQueue(client: Socket): void {
+
+    let id = this.mapIdSocket.get(client.id);
+    this.queue = this.queue.filter(e => e.sock.id != client.id);
+    this.queueBonus = this.queueBonus.filter(e => e.sock.id != client.id);
+    this.gamePongs.forEach((game) => {
+      if ((game.id1 == id) && game.idInterval == null ){
+        this.cancelGame(game, client);
+      }
+    });
+  };
+
   @SubscribeMessage('join')
   async handleJoin(client: Socket, roomID: string){
     const game = this.gamePongs.get(roomID);
@@ -241,7 +255,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       else
       {
         client.join(roomID);
-        client.emit("game start");
+        client.emit("game start","2");
       }
     }
   }
@@ -260,7 +274,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     {
         console.log("spectate test game")
         client.join(game.roomID);
-        client.emit("game start");
+        client.emit("game start", "2");
     }
   }
 
@@ -321,6 +335,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     console.log("receive.invite");
     const id1 = this.mapIdSocket.get(client.id);
     const bonus = (arg[1] == "true" ? true : false);
+    console.log("bonus", arg[1],  bonus)
     const id2 = Number(arg[0]);
     if(!id2)
     {
@@ -406,7 +421,14 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     this.chatGateway.sendAllStatus();
     // console.log(this.players);
     // console.log(game.roomID);
-    this.server.to(game.roomID).emit("game start");
+    const socks1 = this.getAllSocketID(game.id1);
+    const socks2 = this.getAllSocketID(game.id2);
+    socks1.forEach((el)=> {
+      this.server.to(el).emit("game start", "1");
+    })
+    socks2.forEach((el)=> {
+      this.server.to(el).emit("game start", "2");
+    })
     this.gamePongs.forEach((value, key)  => {
       if(value.idInterval == null && (game.id1==value.id1 || game.id2==value.id2) )
       {

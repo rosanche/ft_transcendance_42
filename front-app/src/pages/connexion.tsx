@@ -10,19 +10,24 @@ import { useNewUserQuery } from "modules/auth/queries/useNewUserQuery";
 const Connexion = () => {
   const router = useRouter();
 
-  const { data: newUser, isLoading: isNewUserLoading } = useNewUserQuery();
+  //const { data: newUser, isLoading: isNewUserLoading } = useNewUserQuery();
 
   return (
-    <Page isLoading={isNewUserLoading}>
+    <Page>
       <Image
         width={392}
         height={175}
+        loading="eager"
         layout="responsive"
-        priority={true}
+        priority={false}
         src="/assets/img/ping-pong.png"
       />
       <RoundedContainer className="px-14 py-20 mt-16">
-        {newUser?.is2FaEnabled ? <OtpAuthentification /> : <Login />}
+        {router.query["2faEnabled"] === "true" ? (
+          <OtpAuthentification />
+        ) : (
+          <Login />
+        )}
       </RoundedContainer>
     </Page>
   );

@@ -17,6 +17,7 @@ export const UserItem = ({
               layout="fixed"
               width={28}
               height={28}
+              loading="eager"
               loader={() =>
                 profileImage &&
                 `http://localhost:3000/users/me/pp/${profileImage}`
@@ -26,7 +27,7 @@ export const UserItem = ({
                   ? `http://localhost:3000/users/me/pp/${profileImage}`
                   : "/assets/img/42.png"
               }
-              priority={true}
+              priority={false}
               className="rounded-full"
             />
           </div>
@@ -42,6 +43,8 @@ export const UserItem = ({
               layout="fixed"
               width={28}
               height={28}
+              loading="eager"
+              priority={false}
               loader={() =>
                 profileImage &&
                 `http://localhost:3000/users/me/pp/${profileImage}`
@@ -51,7 +54,6 @@ export const UserItem = ({
                   `http://localhost:3000/users/me/pp/${profileImage}`) ||
                 "/assets/img/42.png"
               }
-              priority={true}
               className="rounded-full"
             />
           </div>

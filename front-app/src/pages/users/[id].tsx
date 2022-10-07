@@ -37,6 +37,7 @@ const Profil = () => {
               layout="fixed"
               width={176}
               height={176}
+              loading="eager"
               src={
                 (user?.profileImage &&
                   `http://localhost:3000/users/me/pp/${user?.profileImage}`) ||
@@ -57,9 +58,10 @@ const Profil = () => {
           friends={user?.myfriends}
           withAddFriendButton={false}
         />
-        <GameHistoryContainer id={userId} />
-        <LeaderboardContainer id={userId} />
-        <AchievementsContainer id={userId} />
+
+        <AchievementsContainer id={user?.id} />
+        <GameHistoryContainer id={user?.id} />
+        <LeaderboardContainer id={user?.id} />
       </div>
     </Page>
   );
