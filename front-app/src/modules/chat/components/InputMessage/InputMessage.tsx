@@ -65,6 +65,7 @@ const InputMessage = (a: Props) => {
         }}
         placeholder="Enter Character Name"
         onKeyPress={(event) => {
+          console.log(chatName);
           event.key === "Enter" && sendMessage();
         }}
       ></input>

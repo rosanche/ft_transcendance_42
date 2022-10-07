@@ -18,12 +18,14 @@ export const useAddFriendModal = ({
   idsToAvoid = [],
   channelId = 0,
   isChangeOnMember = false,
+  usersChannel = false
 }: {
   title?: string;
   isInChannel?: boolean;
   channelId?: number;
   idsToAvoid?: number[];
   isChangeOnMember?: boolean;
+  usersChannel?: boolean
 }) => {
   const { formState, register, watch } = useForm<FormData>({
     defaultValues: {
@@ -94,7 +96,7 @@ export const useAddFriendModal = ({
           {users?.map(
             (friend) =>
               friend.id !== profil?.id &&
-              (!isInChannel || idsToAvoid.some((id) => id !== friend.id)) && (
+              (!isInChannel || (usersChannel ? (idsToAvoid.some((id) => id === friend.id)) : !(idsToAvoid.some((id) => id === friend.id) ))) && (
                 <FriendItem
                   {...friend}
                   key={friend.id}

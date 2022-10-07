@@ -270,8 +270,8 @@ export class ChatGateway implements OnGatewayInit {
                 password: (channel.hash !== null)})
                 await this.postChannel(client);
         } 
-        else 
-           this.wss.to(this.iddd[user.id]).emit('join channel false', channel.id);
+        else
+           this.wss.to(this.iddd[user.id]).emit('join channel false');
    }
 
     @SubscribeMessage('quit')
@@ -388,7 +388,7 @@ export class ChatGateway implements OnGatewayInit {
     async handleMessage(client: Socket, message: form) {
             console.log("oui")
         const user = await this.authService.getUserFromSocket(client);
-        if (!user)
+        if (!user || !message || message.texte.length == 0)
             return null;
         const cha = await this.verifChannelUsers(message.idReceive, user.id)
         if (!cha)
@@ -475,7 +475,7 @@ export class ChatGateway implements OnGatewayInit {
                 }
             }) 
             var a = Array<number>();
-            await chanel_user.users.forEach(e => a.push(e.id))
+            await chanel_user.users.forEach(e => a.push(e.id));
             // // console.log("ouiuiuiuiu")
             // // console.log(a);
             client.emit('channel users', a);
@@ -1096,7 +1096,7 @@ export class ChatGateway implements OnGatewayInit {
     async messageMP(client: Socket, mp : form)
     {
         const user = await this.authService.getUserFromSocket(client);
-        if (!user)
+        if (!user || !mp || mp.texte.length == 0)
             return null;
         const user2 = await this.Prisma.user.findFirst({
             where: {
@@ -1164,9 +1164,9 @@ export class ChatGateway implements OnGatewayInit {
                 userID: user.id,
             }
         });
-            this.wss.to(this.iddd[user.id]).emit('chatToClient', mp);
+            this.wss.to(this.iddd[user.id]).emit('chatToClientMp', mp);
             if (user.id !=  user2.id)
-            this.wss.to(this.iddd[user2.id]).emit('chatToClient', mp);
+            this.wss.to(this.iddd[user2.id]).emit('chatToClientMp', mp);
             return;
     }
 

@@ -78,11 +78,6 @@ const Chat = () => {
       setUsers(c);
       console.log(c);
     });
-    /*
-    socket.on("use info block", (c: string[]) => {
-      //  setChannel((u)=> [...u,c]);
-      // console.log("oui 2");
-    });*/
 
     socket.on("use info", (c: users) => {
       console.log("nija");
@@ -136,9 +131,9 @@ const Chat = () => {
     });
 
     socket.on("action channel", (cha: Channel) => {
-      console.log("Aaaa", cha, chatName);
-      if (cha  && cha.id == chatName.id && cha_mp === "channel")
-        changeChatName(cha)
+      console.log("Aaaa 12", cha, chatName);
+      if (cha && cha.id == chatName.id && cha_mp === "channel")
+        changeChatName(cha);
     });
 
     socket.on("info mp", (mm: form[]) => {
@@ -231,17 +226,17 @@ const Chat = () => {
   const { cha_mp } = useModeChannelMpContext();
 
   return (
-    <Page title="Chat" width="w-2/3">
-      <div className="flex flex-1 flex-row h-5/6 scroll-smooth max-h-scren ">
-        <RoundedContainer className="flex-none w-1/3  mu-3 ">
+    <Page title="Chat" width="max-h-full w-2/3">
+      <div className="flex min-h-[50%] flex-row  scroll-smooth max-h-scren ">
+        <RoundedContainer className="flex-none w-1/3  max-h-[50%]  mu-3 ">
           <MenuChat key="ss" users={users} msgMp={msgMp} channel={channel} />
         </RoundedContainer>
-        <div className="flex flex-1 flex-col ml-8 w-2/3 justify-between ">
+        <div className="flex max-h-[50%] min-h-[50%] min flex-col ml-8 w-2/3 justify-between ">
           <TitreChannel usersChannelId={usersChannel_} />
-          <RoundedContainer className="flex overflow-auto overscroll-contain h-3/4  mu-3  mb-9">
+          <RoundedContainer className="flex overflow-auto overscroll-contain mu-3  mb-9">
             <Messages key="SS" msg={msg} msgMp={msgMp} idme={me.id} />
           </RoundedContainer>
-          <InputMessage id={me.id} />
+          {chatName.id != 0 && chatName.name && <InputMessage id={me.id} />}
         </div>
       </div>
     </Page>
@@ -262,10 +257,7 @@ const Chat = () => {
           <span className="text-white">Kelly</span>
           <div className="flex justify-end h-8   mr-5 mb-10">
             <input className="rounded-lg ml-5 " type="text"></input>
-            {true && (
-              <div>
-                {msg
-                  .filter(
+            {true && (mp.create
                     (el) =>
                       el.idReceive === data.idReceive &&
                       users.find((u) => u.myblocked) === undefined

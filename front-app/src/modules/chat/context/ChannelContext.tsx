@@ -30,7 +30,7 @@ const ChannelContext = createContext<ChannelContext>(null);
 const ChannelContextProvider: React.FC<PropsWithChildren> = ({ children }) => {
   const [chatName, setChannel] = useState<Channel>({
     id: 0,
-    name: "",
+    name: undefined,
     private: false,
     user: false,
     admin: false,
