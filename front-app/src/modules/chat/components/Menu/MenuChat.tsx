@@ -56,7 +56,7 @@ export const MenuChat = (a: Props) => {
             console.log(chatName);
           }}
         >
-          channel
+          Channels
         </Button>
         <Button
           className=" text-lg"
@@ -68,7 +68,7 @@ export const MenuChat = (a: Props) => {
             setCreate(false);
           }}
         >
-          message private
+          Messages Privés
         </Button>
       </div>
       <div className="text-white flex flex-row justify-between align-middle font-medium text-2xl text-center leading-[3rem]">
