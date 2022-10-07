@@ -1,10 +1,6 @@
 import { useContentModal } from "modules/common/components/modals/useContentModal/useContentModal";
 import { Button } from "modules/common/components/_ui/Button/Button";
 import { Spinner } from "modules/common/components/_ui/Spinner/Spinner";
-import { TextField } from "modules/common/components/_ui/TextField/TextField";
-import { useAppContextState } from "modules/common/context/AppContext";
-import { useActivate2Fa } from "modules/profile/mutation/useActivate2Fa.mutation";
-import { useGenerate2Fa } from "modules/profile/mutation/useGenerate2Fa.mutation";
 import { useMyProfileQuery } from "modules/profile/queries/useMyProfileQuery";
 import { useUsersQuery } from "modules/profile/queries/useUsersQuery";
 import Image from "next/image";

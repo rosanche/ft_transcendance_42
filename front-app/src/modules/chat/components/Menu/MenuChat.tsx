@@ -22,8 +22,8 @@ export const MenuChat = (a: Props) => {
   const [create, setCreate] = useState<boolean>(false);
   const { showModal: showAddUserModal } = useAddFriendModal({
     isInChannel: false,
-    idsToAvoid: [],
-    channelId: chatName?.id,
+    // idsToAvoid: [],
+    // channelId: chatName?.id,
   });
   const socket = useSocketContext();
 
@@ -40,7 +40,6 @@ export const MenuChat = (a: Props) => {
         <Button
           className="ml-1 text-lg"
           variant="link"
-          disabled={false}
           color=""
           onClick={() => {
             !create && { showAddUserModal };
@@ -48,8 +47,8 @@ export const MenuChat = (a: Props) => {
             setCreate(!create);
           }}
         >
-          {cha_mp === "channel" && <span>create Channel</span>}
-          {cha_mp === "message private" && <span>search user</span>}
+          {cha_mp === "channel" && "create Channel"}
+          {cha_mp === "message private" && "search user"}
         </Button>
       </span>
       <div>
