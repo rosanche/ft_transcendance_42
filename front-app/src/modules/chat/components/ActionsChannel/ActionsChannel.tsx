@@ -159,7 +159,7 @@ const ActionsChannel = () => {
                 >
                   <IconAddFriend />
                 </Button>
-                {chatName.owner && (
+                {chatName.owner && !chatName.private && (
                   <span>
                     <Button
                       variant="icon"

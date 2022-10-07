@@ -449,7 +449,7 @@ export class ChatGateway implements OnGatewayInit {
              }
          })
           // console.log("enfin")this.wss.to(client.id).emit('change owner sucess', src);
-            await this.actionChannel(user2, info.channelId);
+            await this.actionChannel(user ,user2, info.channelId, client);
     }
 
     @SubscribeMessage('list users channel')
@@ -529,11 +529,14 @@ export class ChatGateway implements OnGatewayInit {
             }}));
     };
 
-    async actionChannel(user2 : User, channelId : number)
+    async actionChannel(user : User ,user2 : User, channelId : number, client : Socket)
     {
         const chanew =  await this.listChannelsUser(null,user2);
+        const chanew2 =  await this.listChannelsUser(null,user);
         await this.wss.to(this.iddd[user2.id]).emit('channels list',  chanew);
-        this.wss.to(this.iddd[user2.id]).emit('action channel', chanew.find((e) => e.id === channelId));
+        await this.wss.to(client.id).emit('channels list',  chanew2);
+        await this.wss.to(this.iddd[user2.id]).emit('action channel', chanew.find((e) => e.id === channelId));
+        await this.wss.to(client.id).emit('action channel', chanew2.find((e) => e.id === channelId));
     }
 
     @SubscribeMessage("muteUserChannel")
@@ -549,7 +552,7 @@ export class ChatGateway implements OnGatewayInit {
         if (cha)
         {
             const ban = await this.createBan(src.channelId,  src.UserbanId, "mute")
-            await this.actionChannel(user2, src.channelId);
+            await this.actionChannel(user,user2, src.channelId, client);
         }
     };
 
@@ -567,7 +570,7 @@ export class ChatGateway implements OnGatewayInit {
         if (cha)
         {
             const ban = await this.createBan(src.channelId, src.UserbanId, "ban")
-            await this.actionChannel(user2, src.channelId);
+            await this.actionChannel(user, user2, src.channelId, client);
         }
     };
     
@@ -598,7 +601,7 @@ export class ChatGateway implements OnGatewayInit {
                 }
             });
             this.wss.to(client.id).emit('change owner sucess', src);
-            await this.actionChannel(user2, src.channelId);
+            await this.actionChannel(user, user2, src.channelId, client);
         }
         
     }
@@ -629,7 +632,7 @@ export class ChatGateway implements OnGatewayInit {
             }
         });
         this.wss.to(client.id).emit('change owner sucess', src);
-        await this.actionChannel(user2, src.channelId);
+        await this.actionChannel(user, user2, src.channelId, client);
     }
 
     @SubscribeMessage('modif channel')
