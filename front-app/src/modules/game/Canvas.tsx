@@ -148,7 +148,6 @@ const Canvas: React.FC<CanvasProps> = ({ ...props }) => {
       setIsCreate(false);
       setIsConnected(true);
       //ID=(ROOMID)
-      console.log("user info");
       console.log(socket.connected);
       queryRef.current = router.query.ID;
       if (router.query.ID) {

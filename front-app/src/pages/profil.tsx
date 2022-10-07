@@ -42,11 +42,10 @@ const Profil = () => {
       `http://localhost:3000/users/me/pp/${user?.profileImage}`,
     [user?.profileImage]
   );
-  console.log("$$usersssss", user);
 
   return (
     <Page title="Profil" isLoading={isProfilLoading || isNewUserLoading}>
-      <div className="grid grid-flow-row  gap-3  space-x-3 m-2">
+      <div className="grid grid-flow-col gap-3  space-x-3 m-2">
         <div className="flex row-start-1 col-start-1 row-span-2 flex-col items-center  mb-16 space-y-4">
           <div className="flex relative rounded-full border border-gray-100 w-44 h-44 shadow-sm">
             <Image

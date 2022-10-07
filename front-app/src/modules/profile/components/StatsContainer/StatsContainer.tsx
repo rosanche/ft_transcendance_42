@@ -11,7 +11,7 @@ export const StatsContainer = ({ id }: Props) => {
     return el.id == id;
   });
   return (
-    <div className="grid min-w-min grid-cols-3 grid-rows-2">
+    <div className="grid grid-cols-3 grid-rows-2">
       <StatsItem title="Level" info={user?.level} />
       <StatsItem type="positive" title="Wins" info={user?.nbr_wins} />
       <StatsItem type="negative" title="Looses" info={user?.nbr_looses} />
